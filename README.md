@@ -176,24 +176,139 @@ flowchart TD
     <tr>
       <td align="center" style="padding: 20px;">
         <p>
-          <img src="https://img.shields.io/badge/ESPACIO_DE_DIAGRAMA-DRAW.IO_/_PLANTUML-12063A?style=for-the-badge" alt="Diagrama Opcional" /><br />
-          <strong><font color="#5600EF" size="3">DIAGRAMA DE ARQUITECTURA HEXAGONAL Y UML EXPORTADO</font></strong>
+          <img src="https://img.shields.io/badge/ESPACIO_DE_DIAGRAMA-DRAW.IO_/_PLANTUML-12063A?style=for-the-badge" alt="Diagramas de Arquitectura" /><br />
+          <strong><font color="#5600EF" size="3">DIAGRAMAS DE ARQUITECTURA HEXAGONAL Y UML DEL SERVICIO</font></strong>
         </p>
         <p>
-          <sub>Los diagramas de clases, componentes específico, entidad-relación y secuencia del servicio se versionan en <code>docs/uml/</code>. Archivos fuente Draw.io: <a href="docs/uml/DiagramaClases.drawio"><code>DiagramaClases.drawio</code></a> · <a href="docs/uml/DiagramaBaseDatos.drawio"><code>DiagramaBaseDatos.drawio</code></a> · <a href="docs/uml/DiagramaComponentesEspecifico.drawio"><code>DiagramaComponentesEspecifico.drawio</code></a>.</sub>
-        </p>
-        <p>
-          <strong>Diagrama de Clases (<code>ms-usuarios</code>)</strong><br />
-          <img src="docs/uml/DiagramaClases.png" width="95%" alt="Diagrama de Clases ms-usuarios" /><br /><br />
-          <strong>Diagrama de Base de Datos Relacional y No Relacional (<code>ms-usuarios</code>)</strong><br />
-          <img src="docs/uml/DiagramaBaseDatos.png" width="95%" alt="Diagrama de Base de Datos ms-usuarios" /><br /><br />
-          <strong>Diagrama de Componentes Específico en Arquitectura Hexagonal (<code>ms-usuarios</code>)</strong><br />
-          <img src="docs/uml/DiagramaComponentesEspecifico.png" width="95%" alt="Diagrama de Componentes Específico ms-usuarios" /><br />
+          <sub>Los diagramas de clases, base de datos, componentes específico y secuencia se versionan en <code>docs/uml/</code>. Archivos fuente Draw.io: <a href="docs/uml/DiagramaClases.drawio"><code>DiagramaClases.drawio</code></a> · <a href="docs/uml/DiagramaBaseDatos.drawio"><code>DiagramaBaseDatos.drawio</code></a> · <a href="docs/uml/DiagramaComponentesEspecifico.drawio"><code>DiagramaComponentesEspecifico.drawio</code></a>.</sub>
         </p>
       </td>
     </tr>
   </table>
 </div>
+
+#### 7.1 Diagrama de Clases de Dominio (`ms-usuarios`)
+
+<div align="center">
+  <img src="docs/uml/DiagramaClases.png" width="95%" alt="Diagrama de Clases ms-usuarios" /><br />
+  <sub>Figura 7.1: Diagrama de clases del núcleo de dominio puro para ms-usuarios (Draw.io editable en <a href="docs/uml/DiagramaClases.drawio"><code>docs/uml/DiagramaClases.drawio</code></a>).</sub>
+</div>
+
+##### Justificación de Diseño y Principios Arquitecturales
+El diagrama de clases de `ms-usuarios` estructura el modelo de información del usuario y su personalización aplicando Domain-Driven Design y alta cohesión:
+- **Aislamiento del Dominio de Personalización**: El perfil de usuario no se limita a datos demográficos básicos, sino que incorpora de forma cohesiva la matriz de tallas por tipo de prenda y las búsquedas guardadas. El dominio se mantiene libre de dependencias de persistencia o serialización HTTP.
+- **Modelado de Value Objects Específicos de Moda**: Conceptos como `TallaPrenda`, `CriterioFiltro` y `PreferenciaEstilo` se diseñan como Value Objects inmutables con validación en su construcción, garantizando que el sistema no opere con medidas físicas imposibles o categorías inexistentes.
+- **Calculadores y Validadores Puros**: La lógica de correspondencia de prendas y afinidad de recomendaciones se encapsula en calculadores de dominio (`SimilaridadPrendaCalculator`), permitiendo evolucionar las heurísticas de recomendación sin tocar la infraestructura ni los controladores.
+
+##### Explicación Detallada de los Elementos
+1. **Agregado Raíz `Usuario`**:
+   - `id`: Identificador global único UUID coordinado con el registro de autenticación.
+   - `nombreCompleto`, `celular`, `fechaNacimiento`: Datos personales y de contacto.
+   - `rol`: Rol de usuario dentro del ecosistema (`COMPRADOR`, `VENDEDOR`, `ADMINISTRADOR`).
+   - `estado`: Estado de la cuenta (`ACTIVO`, `INACTIVO`, `SUSPENDIDO`).
+   - `tallas`: Colección de objetos `TallaPrendaUsuario` asociados al perfil.
+   - `busquedas`: Colección de entidades `BusquedaGuardada`.
+   - Métodos de negocio: `actualizarPerfil()`, `configurarTalla()`, `eliminarTalla()`, `cambiarEstadoCuenta()`, `registrarBusquedaGuardada()`.
+2. **Entidad `TallaPrendaUsuario`**:
+   - Representa la medida física configurada por el usuario para una categoría específica de indumentaria.
+   - Atributos: `tipoPrenda` (enumeración: `SUPERIOR`, `INFERIOR`, `CALZADO`, `ACCESORIOS`), `talla` (Value Object: `XS`, `S`, `M`, `L`, `XL`, `38`, `40`), `medidasCm` (mapa de dimensiones en centímetros para busto, cintura, cadera o largo de pie).
+3. **Entidad `BusquedaGuardada`**:
+   - Modela los criterios de búsqueda personalizados que el comprador almacena para recibir alertas y alimentar su feed.
+   - Atributos: `nombreAlerta`, `criteriosFiltro` (Value Object con marcas, rangos de precio, colores y estilos), `notificarNovedad`, `fechaCreacion`.
+4. **Validadores y Calculadores de Dominio**:
+   - `UsuarioValidator`: Valida mayoría de edad, coherencia de números celulares y nombres completos válidos.
+   - `TallaPrendaValidator`: Comprueba compatibilidad entre la categoría de prenda y el sistema de tallaje (numérico vs. alfanumérico).
+   - `SimilaridadPrendaCalculator`: Calcula el índice de afinidad vectorial entre el perfil del usuario y los atributos de una prenda.
+5. **Puertos de Entrada y Salida**:
+   - Puertos de Entrada: `GestionarUsuarioUseCase`, `PersonalizacionUseCase`, `CambiarEstadoCuentaUseCase`.
+   - Puertos de Salida: `UsuarioRepositoryPort`, `BusquedaGuardadaRepositoryPort`, `HistorialEstadoRepositoryPort`, `EventPublisherPort`.
+
+---
+
+#### 7.2 Diagrama de Base de Datos Relacional y No Relacional (`ms-usuarios`)
+
+<div align="center">
+  <img src="docs/uml/DiagramaBaseDatos.png" width="95%" alt="Diagrama de Base de Datos ms-usuarios" /><br />
+  <sub>Figura 7.2: Esquema híbrido relacional y semiestructurado JSONB en PostgreSQL 15 para ms-usuarios (Draw.io editable en <a href="docs/uml/DiagramaBaseDatos.drawio"><code>docs/uml/DiagramaBaseDatos.drawio</code></a>).</sub>
+</div>
+
+##### Justificación del Modelo Híbrido (Database-per-Service & Polyglot Persistence)
+El microservicio `ms-usuarios` gestiona tanto información estrictamente relacional como datos dinámicos y semiestructurados de preferencias de moda:
+- **Base de Datos Relacional (PostgreSQL 15)**: Los datos maestros de usuario, la relación 1:N entre el usuario y sus tallas por prenda, y el historial de cambios de estado administrativo exigen integridad referencial estricta, claves foráneas con comportamiento en cascada (`ON DELETE CASCADE`) y transaccionalidad ACID.
+- **Persistencia Documental / JSONB en PostgreSQL**: Los criterios de búsqueda guardada y los perfiles de estilo contienen atributos altamente heterogéneos y mutables (múltiples rangos de precio, listas dinámicas de diseñadores, paletas de colores estacionales y etiquetas de ocasión). Normalizar estos filtros en múltiples tablas intermedias relacionales generaría costosos JOINs y requeriría alterar el esquema DDL con cada nueva temporada de moda. El tipo nativo `JSONB` de PostgreSQL, indexado mediante operadores GIN (`jsonb_path_ops`), proporciona la flexibilidad de una base de datos NoSQL documental combinada con las garantías ACID del motor relacional.
+
+##### Explicación Detallada del Esquema de Datos
+1. **Esquema Relacional PostgreSQL (`styleradar_usuarios`)**:
+   - **Tabla `usuarios`**:
+     - `id (UUID, PK)`: Llave primaria del usuario.
+     - `nombre_completo (VARCHAR(150), NOT NULL)`: Nombre completo del usuario.
+     - `correo (VARCHAR(150), UNIQUE, NOT NULL)`: Correo electrónico sincronizado.
+     - `celular (VARCHAR(25), NULL)`: Número telefónico validado.
+     - `fecha_nacimiento (DATE, NULL)`: Fecha de nacimiento para validación de edad y personalización.
+     - `estado (VARCHAR(30), NOT NULL)`: `ACTIVO`, `INACTIVO`, `SUSPENDIDO`.
+     - `created_at, updated_at (TIMESTAMP WITH TIME ZONE, NOT NULL)`: Auditoría temporal.
+   - **Tabla `tallas_prenda_usuario`**:
+     - `id (UUID, PK)`: Identificador de la talla registrada.
+     - `usuario_id (UUID, FK, NOT NULL)`: Referencia a `usuarios(id)` con `ON DELETE CASCADE`.
+     - `tipo_prenda (VARCHAR(50), NOT NULL)`: Categoría de prenda (`SUPERIOR`, `INFERIOR`, `CALZADO`, etc.).
+     - `talla (VARCHAR(20), NOT NULL)`: Valor de la talla (`M`, `38`, `L`).
+     - `medidas_cm (VARCHAR(255), NULL)`: Detalle dimensional complementario.
+     - Restricción: `UNIQUE(usuario_id, tipo_prenda)` que impide registros duplicados para una misma categoría.
+   - **Tabla `historial_estado_cuenta`**:
+     - `id (UUID, PK)`: Identificador de registro histórico.
+     - `usuario_id (UUID, FK, NOT NULL)`: Referencia al usuario.
+     - `estado_anterior, nuevo_estado (VARCHAR(30), NOT NULL)`: Transición de estado registrada.
+     - `motivo (TEXT, NOT NULL)`: Razón del cambio (sanción, inactividad o reactivación).
+     - `admin_id (UUID, NULL)`: Identificador del administrador responsable si fue manual.
+     - `fecha_cambio (TIMESTAMP WITH TIME ZONE, NOT NULL)`: Marca temporal de auditoría.
+2. **Almacenamiento NoSQL / Documental JSONB**:
+   - **Tabla `busquedas_guardadas`**:
+     - `id (UUID, PK)`: Identificador de la búsqueda guardada.
+     - `usuario_id (UUID, FK, NOT NULL)`: Usuario propietario de la alerta.
+     - `nombre_alerta (VARCHAR(100), NOT NULL)`: Título descriptivo asignado por el comprador.
+     - `criterios_filtro (JSONB, NOT NULL)`: Documento semiestructurado con estructura:
+       `{"marcas": ["Zara", "Mango"], "colores": ["Negro", "Beige"], "precio_max": 250000, "estilo": "Minimalista"}`.
+     - `notificar_novedad (BOOLEAN, DEFAULT TRUE)`: Flag para despacho de notificaciones automáticas.
+     - Índice GIN: `CREATE INDEX idx_busquedas_criterios ON busquedas_guardadas USING gin (criterios_filtro jsonb_path_ops);` permitiendo consultas de contención (`@>`) de alto desempeño.
+
+---
+
+#### 7.3 Diagrama de Componentes Específico en Arquitectura Hexagonal (`ms-usuarios`)
+
+<div align="center">
+  <img src="docs/uml/DiagramaComponentesEspecifico.png" width="95%" alt="Diagrama de Componentes Específico ms-usuarios" /><br />
+  <sub>Figura 7.3: Diagrama de componentes específico en arquitectura hexagonal para ms-usuarios (Draw.io editable en <a href="docs/uml/DiagramaComponentesEspecifico.drawio"><code>docs/uml/DiagramaComponentesEspecifico.drawio</code></a>).</sub>
+</div>
+
+##### Justificación del Enfoque Hexagonal (Puertos y Adaptadores)
+El diseño por componentes de `ms-usuarios` aísla las reglas de negocio de los detalles de transporte y almacenamiento:
+- **Puertos de Entrada como Fronteras de Dominio**: Los controladores REST y consumidores AMQP únicamente interactúan con interfaces `*UseCase` ubicadas en `domain/port/in/`. No tienen visibilidad directa sobre las entidades JPA ni los adaptadores de salida.
+- **Separación de Mappers In y Out**: En cumplimiento de la regla 6 del estándar hexagonal, la transformación de DTOs se divide estrictamente en `*DtoInMapper` (solicitud REST hacia dominio) y `*DtoOutMapper` (dominio hacia respuesta REST), evitando clases monolíticas de mapeo.
+- **Protección contra Vulnerabilidades IDOR**: La capa de infraestructura transversal valida que los identificadores de usuario solicitados en los endpoints coincidan con el sujeto extraído del token JWT criptográfico (`SecurityConfig` y Ownership Guards).
+
+##### Explicación Detallada de los Flujos de Componentes
+1. **Flujo 1: Gestión de Perfil, Preferencias de Estilo y Tallas (SR-RF-01, SR-RF-03, SR-RF-04)**:
+   - **Entrada (Driving)**: `UsuarioController` (`adapter/in/rest/`) implementa `UsuarioApi` y expone los endpoints para consultar y actualizar perfil y tallas.
+   - **Puerto In y Aplicación**: Invoca `GestionarUsuarioUseCase`, cuya lógica reside en `GestionarUsuarioUseCaseImpl`, coordinado con `UsuarioDtoInMapper`, `TallaDtoInMapper` y `UsuarioDtoOutMapper`.
+   - **Servicio y Dominio**: `UsuarioServiceImpl` y `TallaPreferenciaServiceImpl` aplican las invariantes mediante el agregado `Usuario`, el Value Object `TallaPrenda` y `UsuarioValidator` (0% Spring).
+   - **Salida**: Se comunican a través de `UsuarioRepositoryPort` y `TallaRepositoryPort`, delegando a `UsuarioPersistenceMapper`, `SpringDataUsuarioRepo` y `UsuarioRepositoryAdapter` hacia PostgreSQL 15.
+2. **Flujo 2: Feed Personalizado, Recomendaciones y Búsquedas Guardadas (SR-RF-05, SR-RF-06, SR-RF-28)**:
+   - **Entrada**: `PersonalizacionController` expone `GET /feed-context`, `GET /recomendaciones` y el CRUD de `/busquedas-guardadas`.
+   - **Puerto In y Aplicación**: Conexión a `PersonalizacionUseCase` y ejecución en `PersonalizacionUseCaseImpl`, asistido por `BusquedaGuardadaDtoInMapper` y `BusquedaGuardadaDtoOutMapper`.
+   - **Servicio y Dominio**: `PersonalizacionServiceImpl` utiliza el modelo `BusquedaGuardada`, el Value Object `CriterioFiltro` y el motor de afinidad pura `SimilaridadPrendaCalculator`.
+   - **Salida**: `BusquedaPersistenceMapper` y `BusquedaGuardadaRepositoryAdapter` persisten el documento JSONB mediante `SpringDataBusquedaRepo` sobre PostgreSQL 15.
+3. **Flujo 3: Gestión Administrativa de Estados de Cuenta y Eventos AMQP (SR-RF-66)**:
+   - **Entrada**: `GestionEstadoCuentaController` (`adapter/in/rest`) y `AuthEventsListener` (`adapter/in/amqp` con `@RabbitListener` que sincroniza altas de usuarios desde `ms-auth`).
+   - **Puerto In y Aplicación**: Invoca `CambiarEstadoCuentaUseCase` e interactúa con `CambiarEstadoCuentaUseCaseImpl`.
+   - **Servicio y Dominio**: `GestionEstadoCuentaServiceImpl` valida la transición mediante `TransicionEstadoValidator` e instancia el evento `UsuarioEstadoCambiadoEvent`.
+   - **Salida**: `HistorialEstadoPersistenceMapper` y `HistorialEstadoRepositoryAdapter` registran la auditoría en PostgreSQL, mientras que `RabbitMqEventPublisherAdapter` publica la notificación al Topic Exchange `usuarios.events`.
+4. **Banda Transversal de Infraestructura**:
+   - `BeanConfig.java`: Registra `@Bean` para use cases y servicios de aplicación manteniendo la pureza de las clases.
+   - `SecurityConfig.java` & `JwtAuthFilter`: Restringe accesos administrativos mediante `@PreAuthorize("hasRole('ADMINISTRADOR')")` y previene vulnerabilidades IDOR en perfiles.
+   - `GlobalExceptionHandler.java`: Mapea errores de dominio (`UserNotFoundException`, `DuplicateSizeException`) a respuestas normalizadas RFC 7807 Problem Details.
+   - `RabbitMqConfig.java`: Configura colas, Topic Exchanges y DLQ para eventos de usuarios.
+   - `OpenApiConfig.java`: Swagger 3 con esquemas OpenAPI 3.0 documentados.
+   - `Flyway SQL Migrations` (`V1__init_schema.sql`): Control de versiones del esquema `styleradar_usuarios`.
 
 ### Estructura Oficial de Paquetes en `src/main/java/`
 
