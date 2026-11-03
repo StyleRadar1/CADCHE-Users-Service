@@ -1,0 +1,45 @@
+
+services:
+
+  ms-usuarios:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ms-usuarios
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://usuarios-db:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      usuarios-db:
+        condition: service_healthy
+    networks:
+      - usuarios-network
+
+  usuarios-db:
+    image: postgres:15
+    container_name: usuarios-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - usuarios-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - usuarios-network
+
+volumes:
+  usuarios-data:
+
+networks:
+  usuarios-network:
+    driver: bridge
