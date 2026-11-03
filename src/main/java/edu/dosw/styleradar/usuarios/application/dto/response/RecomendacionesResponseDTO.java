@@ -1,9 +1,11 @@
 package edu.dosw.styleradar.usuarios.application.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
+@EqualsAndHashCode(callSuper = true)
 @Schema(description = "Respuesta paginada de recomendaciones de prendas según el perfil del comprador (SR-RF-06)")
 public class RecomendacionesResponseDTO extends PageResponseDTO<CatalogoItemResponseDTO> {
 
@@ -16,4 +18,3 @@ public class RecomendacionesResponseDTO extends PageResponseDTO<CatalogoItemResp
         this.generalSinPreferencias = generalSinPreferencias;
     }
 }
-

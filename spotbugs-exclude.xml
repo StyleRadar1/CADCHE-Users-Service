@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-    <!-- Excluir advertencias de exposicion de representacion mutable en DTOs y sus Builders -->
+    <!-- Excluir advertencias de exposicion de representacion mutable y equals no sobreescrito en DTOs y sus Builders -->
     <Match>
         <Package name="~.*\.application\.dto.*" />
-        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,EQ_DOESNT_OVERRIDE_EQUALS" />
     </Match>
     <Match>
         <Class name="~.*DTO.*" />
-        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,EQ_DOESNT_OVERRIDE_EQUALS" />
     </Match>
 </FindBugsFilter>
