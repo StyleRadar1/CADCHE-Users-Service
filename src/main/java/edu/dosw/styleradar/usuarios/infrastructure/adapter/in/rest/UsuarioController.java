@@ -21,6 +21,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
+import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.UsuarioApi;
 import jakarta.validation.Valid;
 
@@ -28,18 +29,19 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController implements UsuarioApi {
 
+    private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
+
+    public UsuarioController(RegistrarUsuarioUseCase registrarUsuarioUseCase) {
+        this.registrarUsuarioUseCase = registrarUsuarioUseCase;
+    }
+
     @Override
-    public ResponseEntity<UsuarioResponseDTO> registrar(@Valid @RequestBody RegistrarUsuarioRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioResponseDTO.builder()
-                .id(12L)
-                .nombre(request.getNombre())
-                .email(request.getEmail())
-                .telefono(request.getTelefono())
-                .fechaRegistro(Instant.now())
-                .preferenciasEstilo(Set.of())
-                .tallasHabituales(Set.of())
-                .tallasPorTipoPrenda(Map.of())
-                .build());
+    public ResponseEntity<UsuarioResponseDTO> registrar(
+            @Valid @RequestBody RegistrarUsuarioRequestDTO request) {
+
+        UsuarioResponseDTO usuario = registrarUsuarioUseCase.registrar(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
     @Override
@@ -69,13 +71,15 @@ public class UsuarioController implements UsuarioApi {
                 .fechaRegistro(Instant.now())
                 .preferenciasEstilo(Set.of(Estilo.CASUAL))
                 .tallasHabituales(Set.of(Talla.M))
-                .tallasPorTipoPrenda(Map.of(TipoPrenda.SUPERIOR, Set.of("M")))
+                .tallasPorTipoPrenda(Map.of(
+                        TipoPrenda.SUPERIOR, Set.of("M")))
                 .build());
     }
 
     @Override
     public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request) {
+
         return ResponseEntity.ok(UsuarioResponseDTO.builder()
                 .id(12L)
                 .nombre("Laura Gómez")
@@ -84,13 +88,15 @@ public class UsuarioController implements UsuarioApi {
                 .fechaRegistro(Instant.now())
                 .preferenciasEstilo(request.getPreferencias())
                 .tallasHabituales(Set.of(Talla.M))
-                .tallasPorTipoPrenda(Map.of(TipoPrenda.SUPERIOR, Set.of("M")))
+                .tallasPorTipoPrenda(Map.of(
+                        TipoPrenda.SUPERIOR, Set.of("M")))
                 .build());
     }
 
     @Override
     public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request) {
+
         return ResponseEntity.ok(UsuarioResponseDTO.builder()
                 .id(12L)
                 .nombre("Laura Gómez")
@@ -108,21 +114,23 @@ public class UsuarioController implements UsuarioApi {
     @Override
     public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(BusquedaGuardadaResponseDTO.builder()
-                .id(5L)
-                .nombre(request.getNombre())
-                .query(request.getQuery())
-                .tipo(request.getTipo())
-                .color(request.getColor())
-                .talla(request.getTalla())
-                .precioMin(request.getPrecioMin())
-                .precioMax(request.getPrecioMax())
-                .marca(request.getMarca())
-                .estilo(request.getEstilo())
-                .latitud(request.getLatitud())
-                .longitud(request.getLongitud())
-                .fechaCreacion(Instant.now())
-                .build());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                BusquedaGuardadaResponseDTO.builder()
+                        .id(5L)
+                        .nombre(request.getNombre())
+                        .query(request.getQuery())
+                        .tipo(request.getTipo())
+                        .color(request.getColor())
+                        .talla(request.getTalla())
+                        .precioMin(request.getPrecioMin())
+                        .precioMax(request.getPrecioMax())
+                        .marca(request.getMarca())
+                        .estilo(request.getEstilo())
+                        .latitud(request.getLatitud())
+                        .longitud(request.getLongitud())
+                        .fechaCreacion(Instant.now())
+                        .build());
     }
 
     @Override
@@ -131,7 +139,8 @@ public class UsuarioController implements UsuarioApi {
     }
 
     @Override
-    public ResponseEntity<Void> eliminarBusquedaGuardada(@PathVariable Long busquedaId) {
+    public ResponseEntity<Void> eliminarBusquedaGuardada(
+            @PathVariable Long busquedaId) {
         return ResponseEntity.noContent().build();
     }
 }
