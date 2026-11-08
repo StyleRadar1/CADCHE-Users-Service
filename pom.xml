@@ -27,6 +27,7 @@
         <flyway.version>10.20.1</flyway.version>
         <testcontainers.version>1.19.8</testcontainers.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <sonar.organization>styleradar1</sonar.organization>
     </properties>
 
     <dependencies>
