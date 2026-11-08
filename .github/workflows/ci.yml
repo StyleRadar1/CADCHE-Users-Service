@@ -3,12 +3,14 @@ name: CI - Usuarios
 on:
   push:
     branches:
-      - develop
-      - main
+      - "**"
   pull_request:
     branches:
       - develop
       - main
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -23,11 +25,22 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: maven
 
       - name: Compilar y ejecutar pruebas
         run: mvn -B clean verify
 
       - name: Analisis estatico con SpotBugs
-        run: mvn -B com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:check -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
+        run: >
+          mvn -B
+          com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:check
+          -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
+
+      - name: Guardar reporte JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-jacoco
+          path: target/site/jacoco/
+          if-no-files-found: warn
