@@ -55,7 +55,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Autenticarse en Azure
-        if: github.ref == 'refs/heads/feature/registro-usuario' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -63,11 +63,11 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Iniciar sesion en Azure Container Registry
-        if: github.ref == 'refs/heads/feature/registro-usuario' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
         run: az acr login --name styleradarusersacr
 
       - name: Construir y publicar imagen Docker
-        if: github.ref == 'refs/heads/feature/registro-usuario' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
         env:
           ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
         run: |
@@ -86,7 +86,7 @@ jobs:
           docker push "$ACR_LOGIN_SERVER/ms-usuarios:$ENV_TAG"
 
       - name: Desplegar en Azure App Service QA
-        if: github.ref == 'refs/heads/feature/registro-usuario' || github.ref == 'refs/heads/develop'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
         env:
           ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
         run: |
@@ -101,7 +101,7 @@ jobs:
             --resource-group styleradar-qa-rg
 
       - name: Desplegar en Azure App Service PROD
-        if: github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/feature/registro-usuario' && contains(github.event.head_commit.message, '[deploy-prod]'))
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
         run: |
@@ -114,4 +114,5 @@ jobs:
           az webapp restart \
             --name styleradar-prod-app \
             --resource-group styleradar-prod-rg
+
 

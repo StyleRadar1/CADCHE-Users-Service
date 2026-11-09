@@ -18,10 +18,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${INTERNAL_AUTH_USERNAME}")
+    @Value("${INTERNAL_AUTH_USERNAME:ms-auth}")
     private String username;
 
-    @Value("${INTERNAL_AUTH_PASSWORD}")
+    @Value("${INTERNAL_AUTH_PASSWORD:password-de-prueba}")
     private String password;
 
     @Bean
