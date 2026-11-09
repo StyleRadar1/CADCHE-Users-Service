@@ -35,9 +35,14 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
                 .map(this::convertirADominio);
     }
 
+    @Override
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioJpaRepository.findByEmail(email)
+                .map(this::convertirADominio);
+    }
+
     private UsuarioEntity convertirAEntity(Usuario usuario) {
         UsuarioEntity entity = new UsuarioEntity();
-
         entity.setId(usuario.getId());
         entity.setNombre(usuario.getNombre());
         entity.setEmail(usuario.getEmail());
@@ -47,7 +52,6 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         entity.setRol(usuario.getRol());
         entity.setEstado(usuario.getEstado());
         entity.setFechaRegistro(usuario.getFechaRegistro());
-
         return entity;
     }
 
@@ -65,3 +69,4 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         );
     }
 }
+
