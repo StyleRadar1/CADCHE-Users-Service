@@ -101,7 +101,7 @@ jobs:
             --resource-group styleradar-qa-rg
 
       - name: Desplegar en Azure App Service PROD
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/feature/registro-usuario' && contains(github.event.head_commit.message, '[deploy-prod]'))
         env:
           ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
         run: |
