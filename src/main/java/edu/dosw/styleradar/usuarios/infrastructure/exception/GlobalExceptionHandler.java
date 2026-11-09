@@ -17,6 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,6 +82,16 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY,
+                exception.getMessage(),
+                request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(CuentaNoActivaException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCuentaNoActiva(
+            CuentaNoActivaException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(HttpStatus.FORBIDDEN,
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
