@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
             EmailYaRegistradoException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY,
+        return buildResponse(HttpStatus.CONFLICT,
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }

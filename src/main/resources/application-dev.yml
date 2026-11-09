@@ -2,7 +2,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/styleradar_usuarios}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:Febrero26022006*}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:

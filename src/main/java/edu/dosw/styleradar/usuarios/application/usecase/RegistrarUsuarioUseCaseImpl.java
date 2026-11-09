@@ -3,6 +3,7 @@ package edu.dosw.styleradar.usuarios.application.usecase;
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.model.Email;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
@@ -31,7 +32,8 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     @Override
     public UsuarioResponseDTO registrar(RegistrarUsuarioRequestDTO request) {
 
-        String email = request.getEmail().trim().toLowerCase();
+        Email emailValue = new Email(request.getEmail());
+        String email = emailValue.valor();
 
         if (usuarioRepository.existePorEmail(email)) {
             throw new EmailYaRegistradoException(email);
@@ -43,7 +45,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
                 email,
                 request.getTelefono(),
                 passwordEncoder.encode(request.getPassword()),
-                request.isAceptaHabeasData(),
+                request.getAceptaHabeasData(),
                 Rol.COMPRADOR,
                 EstadoCuenta.ACTIVA,
                 Instant.now()
@@ -64,3 +66,4 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         return response;
     }
 }
+

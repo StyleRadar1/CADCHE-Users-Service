@@ -6,3 +6,4 @@ public class EmailYaRegistradoException extends RuntimeException {
         super("El correo electrónico " + email + " ya se encuentra registrado");
     }
 }
+

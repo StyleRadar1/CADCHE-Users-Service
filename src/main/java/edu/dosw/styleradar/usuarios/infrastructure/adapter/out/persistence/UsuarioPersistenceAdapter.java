@@ -1,9 +1,11 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
 
+import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -25,8 +27,13 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     @Override
     public Usuario guardar(Usuario usuario) {
         UsuarioEntity entity = convertirAEntity(usuario);
-        UsuarioEntity guardado = usuarioJpaRepository.save(entity);
-        return convertirADominio(guardado);
+
+        try {
+            UsuarioEntity guardado = usuarioJpaRepository.saveAndFlush(entity);
+            return convertirADominio(guardado);
+        } catch (DataIntegrityViolationException exception) {
+            throw new EmailYaRegistradoException(usuario.getEmail());
+        }
     }
 
     @Override
