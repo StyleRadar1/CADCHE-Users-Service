@@ -27,6 +27,7 @@ import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.UsuarioApi;
@@ -38,15 +39,18 @@ public class UsuarioController implements UsuarioApi {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private final ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
+    private final ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
     private final UsuarioRepositoryPort usuarioRepository;
 
     public UsuarioController(
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
             ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase,
+            ActualizarTallasHabitualesUseCase actualizarTallasUseCase,
             UsuarioRepositoryPort usuarioRepository) {
 
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
         this.actualizarPreferenciasUseCase = actualizarPreferenciasUseCase;
+        this.actualizarTallasUseCase = actualizarTallasUseCase;
         this.usuarioRepository = usuarioRepository;
     }
 
@@ -127,18 +131,33 @@ public class UsuarioController implements UsuarioApi {
     public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request) {
 
-        return ResponseEntity.ok(UsuarioResponseDTO.builder()
-                .id(12L)
-                .nombre("Laura Gómez")
-                .email("laura.gomez@styleradar.com")
-                .telefono("+57 300 123 4567")
-                .fechaRegistro(Instant.now())
-                .preferenciasEstilo(Set.of(Estilo.CASUAL))
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long usuarioId = Long.valueOf(jwt.getSubject());
+
+        Map<TipoPrenda, Set<String>> tallas =
+                actualizarTallasUseCase.actualizar(
+                        usuarioId,
+                        request.getTallasPorTipoPrenda()
+                );
+
+        Usuario usuario = usuarioRepository.buscarPorId(usuarioId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(usuarioId));
+
+        UsuarioResponseDTO respuesta = UsuarioResponseDTO.builder()
+                .id(usuario.getId())
+                .nombre(usuario.getNombre())
+                .email(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .fechaRegistro(usuario.getFechaRegistro())
+                .preferenciasEstilo(Set.of())
                 .tallasHabituales(request.getTallas())
-                .tallasPorTipoPrenda(request.getTallasPorTipoPrenda() != null
-                        ? request.getTallasPorTipoPrenda()
-                        : Map.of())
-                .build());
+                .tallasPorTipoPrenda(tallas)
+                .build();
+
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

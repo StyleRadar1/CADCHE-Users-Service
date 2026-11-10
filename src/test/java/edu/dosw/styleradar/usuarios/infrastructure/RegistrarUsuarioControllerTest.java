@@ -6,6 +6,8 @@ import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.PreferenciaEstiloJpaRepository;
 
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.TallaJpaRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class RegistrarUsuarioControllerTest {
+
+    @MockBean
+    private TallaJpaRepository tallaJpaRepository;
 
     @Autowired
     private MockMvc mockMvc;
