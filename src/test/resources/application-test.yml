@@ -17,3 +17,8 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
+
+styleradar:
+  security:
+    jwt:
+      secret-base64: "VGhpc0lzQVN1ZmZpY2llbnRseUxvbmdTZWNyZXRLZXlGb3JUZXN0czEyMzQ1Ng=="

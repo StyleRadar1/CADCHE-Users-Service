@@ -1,6 +1,8 @@
 package edu.dosw.styleradar.usuarios.infrastructure;
 
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.PreferenciaEstiloJpaRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,6 +24,9 @@ class SwaggerOpenApiTest {
 
     @MockBean
     private UsuarioJpaRepository usuarioJpaRepository;
+
+    @MockBean
+    private PreferenciaEstiloJpaRepository preferenciaEstiloJpaRepository;
 
     @Test
     void debeExponerInterfazSwaggerUi() throws Exception {

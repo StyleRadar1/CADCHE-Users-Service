@@ -4,7 +4,7 @@ import java.util.Set;
 
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,11 +14,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Solicitud para reemplazar las preferencias de estilo del comprador autenticado (SR-RF-03)")
+@Schema(description = "Solicitud para actualizar las preferencias de estilo")
 public class ActualizarPreferenciasEstiloRequestDTO {
 
-    @NotNull(message = "El conjunto de preferencias de estilo es obligatorio")
-    @Schema(description = "Conjunto de estilos preferidos seleccionados por el comprador", example = "[\"CASUAL\",\"URBANO\"]", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "Debe seleccionar al menos un estilo")
+    @Schema(
+            description = "Estilos preferidos del comprador",
+            example = "[\"CASUAL\", \"URBANO\"]",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private Set<Estilo> preferencias;
 }
 

@@ -21,3 +21,8 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+styleradar:
+  security:
+    jwt:
+      secret-base64: "VGhpc0lzQVN1ZmllbnRseUxvbmdTZWNyZXRLZXlGb3JUZXN0czEyMzQ1Ng=="

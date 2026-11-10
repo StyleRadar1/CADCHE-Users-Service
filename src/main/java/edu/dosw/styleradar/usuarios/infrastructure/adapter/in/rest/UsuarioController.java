@@ -7,6 +7,9 @@ import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,10 +21,14 @@ import edu.dosw.styleradar.usuarios.application.dto.request.GuardarBusquedaReque
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.BusquedaGuardadaResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
+import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
+import edu.dosw.styleradar.usuarios.domain.model.Usuario;
+import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.UsuarioApi;
 import jakarta.validation.Valid;
 
@@ -30,9 +37,17 @@ import jakarta.validation.Valid;
 public class UsuarioController implements UsuarioApi {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
+    private final ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
+    private final UsuarioRepositoryPort usuarioRepository;
 
-    public UsuarioController(RegistrarUsuarioUseCase registrarUsuarioUseCase) {
+    public UsuarioController(
+            RegistrarUsuarioUseCase registrarUsuarioUseCase,
+            ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase,
+            UsuarioRepositoryPort usuarioRepository) {
+
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
+        this.actualizarPreferenciasUseCase = actualizarPreferenciasUseCase;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -80,17 +95,32 @@ public class UsuarioController implements UsuarioApi {
     public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request) {
 
-        return ResponseEntity.ok(UsuarioResponseDTO.builder()
-                .id(12L)
-                .nombre("Laura Gómez")
-                .email("laura.gomez@styleradar.com")
-                .telefono("+57 300 123 4567")
-                .fechaRegistro(Instant.now())
-                .preferenciasEstilo(request.getPreferencias())
-                .tallasHabituales(Set.of(Talla.M))
-                .tallasPorTipoPrenda(Map.of(
-                        TipoPrenda.SUPERIOR, Set.of("M")))
-                .build());
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long usuarioId = Long.valueOf(jwt.getSubject());
+
+        Set<Estilo> preferencias = actualizarPreferenciasUseCase.actualizar(
+                usuarioId,
+                request.getPreferencias()
+        );
+
+        Usuario usuario = usuarioRepository.buscarPorId(usuarioId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(usuarioId));
+
+        UsuarioResponseDTO respuesta = UsuarioResponseDTO.builder()
+                .id(usuario.getId())
+                .nombre(usuario.getNombre())
+                .email(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .fechaRegistro(usuario.getFechaRegistro())
+                .preferenciasEstilo(preferencias)
+                .tallasHabituales(Set.of())
+                .tallasPorTipoPrenda(Map.of())
+                .build();
+
+        return ResponseEntity.ok(respuesta);
     }
 
     @Override

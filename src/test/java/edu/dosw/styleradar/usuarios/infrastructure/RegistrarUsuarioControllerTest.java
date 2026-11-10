@@ -4,6 +4,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.PreferenciaEstiloJpaRepository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ class RegistrarUsuarioControllerTest {
 
     @MockBean
     private UsuarioJpaRepository usuarioJpaRepository;
+
+    @MockBean
+    private PreferenciaEstiloJpaRepository preferenciaEstiloJpaRepository;
 
     @Test
     void debeRegistrarUsuarioYResponder201() throws Exception {
