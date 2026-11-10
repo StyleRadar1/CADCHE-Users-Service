@@ -3,16 +3,19 @@ name: CI - Usuarios
 on:
   push:
     branches:
-      - develop
-      - main
+      - "**"
   pull_request:
     branches:
       - develop
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
-    name: Build, Tests y Analisis Estatico
+    name: Build, Tests, Analisis Estatico, SonarQube y Docker
     runs-on: ubuntu-latest
 
     steps:
@@ -23,11 +26,93 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: maven
 
       - name: Compilar y ejecutar pruebas
         run: mvn -B clean verify
 
       - name: Analisis estatico con SpotBugs
-        run: mvn -B com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:check -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
+        run: >
+          mvn -B
+          com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:check
+          -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
+
+      - name: Analisis de codigo con SonarQube Cloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          mvn -B
+          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service
+
+      - name: Guardar reporte JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-jacoco
+          path: target/site/jacoco/
+          if-no-files-found: warn
+
+      - name: Autenticarse en Azure
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Iniciar sesion en Azure Container Registry
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+        run: az acr login --name styleradarusersacr
+
+      - name: Construir y publicar imagen Docker
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+        env:
+          ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            ENV_TAG="prod"
+          else
+            ENV_TAG="qa"
+          fi
+
+          docker build \
+            -t "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" \
+            -t "$ACR_LOGIN_SERVER/ms-usuarios:$ENV_TAG" \
+            .
+
+          docker push "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA"
+          docker push "$ACR_LOGIN_SERVER/ms-usuarios:$ENV_TAG"
+
+      - name: Desplegar en Azure App Service QA
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+        env:
+          ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
+        run: |
+          az webapp config container set \
+            --name styleradar-qa-app \
+            --resource-group styleradar-qa-rg \
+            --docker-custom-image-name "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" \
+            --docker-registry-server-url "https://$ACR_LOGIN_SERVER"
+
+          az webapp restart \
+            --name styleradar-qa-app \
+            --resource-group styleradar-qa-rg
+
+      - name: Desplegar en Azure App Service PROD
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
+        run: |
+          az webapp config container set \
+            --name styleradar-prod-app \
+            --resource-group styleradar-prod-rg \
+            --docker-custom-image-name "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" \
+            --docker-registry-server-url "https://$ACR_LOGIN_SERVER"
+
+          az webapp restart \
+            --name styleradar-prod-app \
+            --resource-group styleradar-prod-rg
+
+

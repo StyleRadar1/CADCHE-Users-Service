@@ -1,16 +1,22 @@
 server:
-  port: ${SERVER_PORT:8082}
+  port: ${SERVER_PORT:8120}
 
 spring:
   application:
     name: ms-usuarios
+
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  security:
+    user:
+      name: ${INTERNAL_AUTH_USERNAME}
+      password: "{noop}${INTERNAL_AUTH_PASSWORD}"
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/styleradar_usuarios}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,6 +31,12 @@ spring:
   flyway:
     enabled: ${FLYWAY_ENABLED:false}
     locations: classpath:db/migration
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 springdoc:
   api-docs:
@@ -41,3 +53,4 @@ management:
     web:
       exposure:
         include: health,info
+

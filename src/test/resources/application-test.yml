@@ -5,6 +5,11 @@ spring:
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 
+  security:
+    user:
+      name: ms-auth
+      password: "{noop}password-de-prueba"
+
 springdoc:
   api-docs:
     enabled: true
@@ -13,3 +18,7 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 
+styleradar:
+  security:
+    jwt:
+      secret-base64: "VGhpc0lzQVN1ZmZpY2llbnRseUxvbmdTZWNyZXRLZXlGb3JUZXN0czEyMzQ1Ng=="
