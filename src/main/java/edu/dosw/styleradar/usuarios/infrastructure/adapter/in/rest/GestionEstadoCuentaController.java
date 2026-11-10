@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,8 +19,8 @@ import edu.dosw.styleradar.usuarios.application.dto.request.CambioEstadoCuentaRe
 import edu.dosw.styleradar.usuarios.application.dto.request.CuentasConsultaRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.CuentaAdministrativaResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
-import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
-import edu.dosw.styleradar.usuarios.domain.model.Rol;
+import edu.dosw.styleradar.usuarios.domain.model.Usuario;
+import edu.dosw.styleradar.usuarios.domain.port.in.CambiarEstadoCuentaUseCase;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.GestionEstadoCuentaApi;
 import jakarta.validation.Valid;
 
@@ -26,14 +28,23 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/admin/usuarios")
 public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
+    private final CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase;
+
+    public GestionEstadoCuentaController(
+            CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase) {
+        this.cambiarEstadoCuentaUseCase = cambiarEstadoCuentaUseCase;
+    }
+
     @InitBinder
     void validarEstado(WebDataBinder binder) {
-        binder.registerCustomEditor(EstadoCuenta.class, new java.beans.PropertyEditorSupport() {
-            @Override
-            public void setAsText(String text) {
-                setValue(EstadoCuenta.valueOf(text));
-            }
-        });
+        binder.registerCustomEditor(
+                edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.class,
+                new java.beans.PropertyEditorSupport() {
+                    @Override
+                    public void setAsText(String text) {
+                        setValue(edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.valueOf(text));
+                    }
+                });
     }
 
     @Override
@@ -53,11 +64,11 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
     public ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(@PathVariable Long id) {
         return ResponseEntity.ok(new CuentaAdministrativaResponseDTO(
                 id,
-                "Laura Gómez",
-                "laura.gomez@styleradar.com",
-                Set.of(Rol.COMPRADOR),
-                EstadoCuenta.ACTIVA,
-                Instant.now(),
+                null,
+                null,
+                Set.of(),
+                null,
+                null,
                 null,
                 null,
                 null));
@@ -67,16 +78,33 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
     public ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
             @PathVariable Long id,
             @Valid @RequestBody CambioEstadoCuentaRequestDTO request) {
-        return ResponseEntity.ok(new CuentaAdministrativaResponseDTO(
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Long administradorId = Long.valueOf(authentication.getName());
+
+        Instant fechaCambio = Instant.now();
+
+        Usuario usuario = cambiarEstadoCuentaUseCase.ejecutar(
                 id,
-                "Laura Gómez",
-                "laura.gomez@styleradar.com",
-                Set.of(Rol.COMPRADOR),
                 request.getEstado(),
-                Instant.now(),
-                Instant.now(),
-                1L,
-                request.getMotivo()));
+                administradorId,
+                request.getMotivo());
+
+        CuentaAdministrativaResponseDTO response =
+                new CuentaAdministrativaResponseDTO(
+                        usuario.getId(),
+                        usuario.getNombre(),
+                        usuario.getEmail(),
+                        Set.of(usuario.getRol()),
+                        usuario.getEstado(),
+                        usuario.getFechaRegistro(),
+                        fechaCambio,
+                        administradorId,
+                        request.getMotivo());
+
+        return ResponseEntity.ok(response);
     }
 }
 

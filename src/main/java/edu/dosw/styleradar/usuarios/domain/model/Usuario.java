@@ -35,6 +35,14 @@ public class Usuario {
         this.fechaRegistro = fechaRegistro;
     }
 
+    public void cambiarEstado(EstadoCuenta nuevoEstado) {
+        if (nuevoEstado == null) {
+            throw new IllegalArgumentException("El estado no puede ser nulo");
+        }
+
+        this.estado = nuevoEstado;
+    }
+
     public Long getId() {
         return id;
     }
@@ -71,4 +79,5 @@ public class Usuario {
         return fechaRegistro;
     }
 }
+
 

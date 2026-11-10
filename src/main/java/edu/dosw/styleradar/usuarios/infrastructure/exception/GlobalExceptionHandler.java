@@ -17,10 +17,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
+import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 
 @RestControllerAdvice
 @Slf4j
@@ -97,6 +98,26 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(), Map.of());
     }
 
+    @ExceptionHandler(CambioEstadoNoPermitidoException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCambioEstadoNoPermitido(
+            CambioEstadoNoPermitidoException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(HttpStatus.FORBIDDEN,
+                exception.getMessage(),
+                request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(UsuarioNoEncontradoException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUsuarioNoEncontrado(
+            UsuarioNoEncontradoException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                request.getRequestURI(), Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleUnexpected(
             Exception exception, HttpServletRequest request) {
@@ -107,19 +128,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ocurrió un error interno. Intente nuevamente más tarde.",
                 request.getRequestURI(), Map.of());
-    }
-
-    @ExceptionHandler(UsuarioNoEncontradoException.class)
-    public ResponseEntity<ErrorResponseDTO> handleUsuarioNoEncontrado(
-            UsuarioNoEncontradoException exception,
-            HttpServletRequest request) {
-
-        return buildResponse(
-                HttpStatus.NOT_FOUND,
-                exception.getMessage(),
-                request.getRequestURI(),
-                Map.of()
-        );
     }
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(
@@ -140,5 +148,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(errorResponse);
     }
 }
-
 

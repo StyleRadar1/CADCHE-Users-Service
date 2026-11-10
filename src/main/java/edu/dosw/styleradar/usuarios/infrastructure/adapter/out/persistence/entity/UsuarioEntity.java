@@ -40,6 +40,15 @@ public class UsuarioEntity {
     @Column(name = "fecha_registro", nullable = false)
     private Instant fechaRegistro;
 
+    @Column(name = "fecha_cambio_estado")
+    private Instant fechaCambioEstado;
+
+    @Column(name = "administrador_cambio_estado_id")
+    private Long administradorCambioEstadoId;
+
+    @Column(name = "motivo_cambio_estado", length = 1000)
+    private String motivoCambioEstado;
+
     public UsuarioEntity() {
     }
 
@@ -113,6 +122,30 @@ public class UsuarioEntity {
 
     public void setFechaRegistro(Instant fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
+    }
+
+    public Instant getFechaCambioEstado() {
+        return fechaCambioEstado;
+    }
+
+    public void setFechaCambioEstado(Instant fechaCambioEstado) {
+        this.fechaCambioEstado = fechaCambioEstado;
+    }
+
+    public Long getAdministradorCambioEstadoId() {
+        return administradorCambioEstadoId;
+    }
+
+    public void setAdministradorCambioEstadoId(Long administradorCambioEstadoId) {
+        this.administradorCambioEstadoId = administradorCambioEstadoId;
+    }
+
+    public String getMotivoCambioEstado() {
+        return motivoCambioEstado;
+    }
+
+    public void setMotivoCambioEstado(String motivoCambioEstado) {
+        this.motivoCambioEstado = motivoCambioEstado;
     }
 }
 
