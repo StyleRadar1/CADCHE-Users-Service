@@ -22,6 +22,7 @@ import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 
 @RestControllerAdvice
 @Slf4j
@@ -116,6 +117,21 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND,
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(CatalogoNoDisponibleException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCatalogoNoDisponible(
+            CatalogoNoDisponibleException exception,
+            HttpServletRequest request) {
+
+        log.error("No fue posible consultar el catálogo", exception);
+
+        return buildResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
     }
 
     @ExceptionHandler(Exception.class)

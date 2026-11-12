@@ -7,6 +7,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entit
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.TallaJpaRepository;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,5 +52,19 @@ public class TallaPersistenceAdapter implements TallaRepositoryPort {
         tallaRepository.saveAllAndFlush(nuevas);
 
         return tallas;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<TipoPrenda, Set<String>> buscarPorUsuarioId(Long usuarioId) {
+        return tallaRepository.findByUsuario_Id(usuarioId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        TallaEntity::getTipoPrenda,
+                        Collectors.mapping(
+                                TallaEntity::getTalla,
+                                Collectors.toSet()
+                        )
+                ));
     }
 }
