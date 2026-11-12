@@ -46,4 +46,13 @@ public class PreferenciaEstiloPersistenceAdapter
 
         return preferencias;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<Estilo> buscarPorUsuarioId(Long usuarioId) {
+        return preferenciaRepository.findByUsuario_Id(usuarioId)
+                .stream()
+                .map(PreferenciaEstiloEntity::getEstilo)
+                .collect(Collectors.toSet());
+    }
 }

@@ -17,8 +17,11 @@ public class PersonalizacionRequestDTO {
 
     @NotNull
     @Min(1)
-    @Max(100)
-    @Schema(description = "Cantidad de elementos por página (entre 1 y 100)", example = "20", defaultValue = "20")
+    @Max(20)
+    @Schema(
+            description = "Cantidad de elementos por página (entre 1 y 20)",
+            example = "20",
+            defaultValue = "20"
+    )
     private Integer size = 20;
 }
-
