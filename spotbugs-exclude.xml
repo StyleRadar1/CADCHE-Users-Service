@@ -1,12 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-    <!-- Excluir advertencias de exposicion de representacion mutable y equals no sobreescrito en DTOs y sus Builders -->
+
+    <!-- Excluir advertencias en DTOs y sus Builders -->
     <Match>
         <Package name="~.*\.application\.dto.*" />
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,EQ_DOESNT_OVERRIDE_EQUALS" />
     </Match>
+
     <Match>
         <Class name="~.*DTO.*" />
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,EQ_DOESNT_OVERRIDE_EQUALS" />
     </Match>
+
+    <!-- Excluir advertencias en adapters de persistencia -->
+    <Match>
+        <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.PreferenciaEstiloPersistenceAdapter" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match>
+        <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.TallaPersistenceAdapter" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <!-- Excluir advertencias en el publisher de RabbitMQ -->
+    <Match>
+        <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.messaging.RabbitMQUsuarioEstadoEventPublisher" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <!-- Excluir advertencias en entidades JPA -->
+    <Match>
+        <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.PreferenciaEstiloEntity" />
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match>
+        <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.TallaEntity" />
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+    </Match>
+
 </FindBugsFilter>

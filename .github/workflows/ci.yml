@@ -1,3 +1,4 @@
+
 name: CI - Usuarios
 
 on:
@@ -18,6 +19,21 @@ jobs:
     name: Build, Tests, Analisis Estatico, SonarQube y Docker
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: styleradar_usuarios
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d styleradar_usuarios"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Descargar codigo
         uses: actions/checkout@v4
@@ -30,6 +46,10 @@ jobs:
           cache: maven
 
       - name: Compilar y ejecutar pruebas
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/styleradar_usuarios
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
         run: mvn -B clean verify
 
       - name: Analisis estatico con SpotBugs
@@ -114,5 +134,4 @@ jobs:
           az webapp restart \
             --name styleradar-prod-app \
             --resource-group styleradar-prod-rg
-
 
