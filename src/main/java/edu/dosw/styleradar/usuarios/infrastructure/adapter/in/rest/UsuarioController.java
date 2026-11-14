@@ -81,7 +81,8 @@ public class UsuarioController implements UsuarioApi {
     }
 
     @Override
-    public ResponseEntity<UsuarioResponseDTO> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponseDTO> obtenerPorId(
+            @PathVariable("id") Long id) {
         return ResponseEntity.ok(UsuarioResponseDTO.builder()
                 .id(id)
                 .nombre("Laura Gómez")
@@ -189,7 +190,7 @@ public class UsuarioController implements UsuarioApi {
 
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
-            @PathVariable Long busquedaId) {
+            @PathVariable("busquedaId") Long busquedaId) {
         return ResponseEntity.noContent().build();
     }
 }

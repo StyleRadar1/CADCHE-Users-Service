@@ -1,25 +1,21 @@
 package edu.dosw.styleradar.usuarios.infrastructure.config;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,17 +24,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${INTERNAL_AUTH_USERNAME:ms-auth}")
+    @Value("${INTERNAL_AUTH_USERNAME}")
     private String username;
 
-    @Value("${INTERNAL_AUTH_PASSWORD:password-de-prueba}")
+    @Value("${INTERNAL_AUTH_PASSWORD}")
     private String password;
 
     @Bean
-    public UserDetailsService userDetailsService() {
+    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         return new InMemoryUserDetailsManager(
                 User.withUsername(username)
-                        .password(password)
+                        .password(passwordEncoder.encode(password))
                         .roles("SERVICE")
                         .build()
         );
@@ -46,11 +42,12 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider(
-            UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
 
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
+        provider.setPasswordEncoder(passwordEncoder);
 
         return provider;
     }
@@ -83,6 +80,8 @@ public class SecurityConfig {
             JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
 
         http
+                // API stateless: autenticación mediante JWT y HTTP Basic interno.
+                // La revisión del riesgo CSRF se mantiene pendiente.
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

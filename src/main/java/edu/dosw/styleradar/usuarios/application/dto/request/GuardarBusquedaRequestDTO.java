@@ -9,7 +9,6 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,14 +27,12 @@ public class GuardarBusquedaRequestDTO {
     @Schema(description = "Nombre descriptivo asignado por el usuario a la búsqueda", example = "Chaquetas negras casuales", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nombre;
 
-    @Pattern(regexp = "^.*\\S.*$", message = "query no puede estar vacío")
     @Schema(description = "Texto libre de búsqueda", example = "chaqueta denim")
     private String query;
 
     @Schema(description = "Tipo o categoría de prenda filtrada", example = "SUPERIOR")
     private TipoPrenda tipo;
 
-    @Pattern(regexp = "^.*\\S.*$", message = "color no puede estar vacío")
     @Schema(description = "Color filtrado en la búsqueda", example = "Negro")
     private String color;
 
@@ -50,7 +47,6 @@ public class GuardarBusquedaRequestDTO {
     @Schema(description = "Precio máximo del rango en COP", example = "180000.0")
     private Double precioMax;
 
-    @Pattern(regexp = "^.*\\S.*$", message = "marca no puede estar vacía")
     @Schema(description = "Marca filtrada en la búsqueda", example = "Levi's")
     private String marca;
 
@@ -66,6 +62,27 @@ public class GuardarBusquedaRequestDTO {
     @DecimalMax(value = "180.0", message = "longitud debe estar entre -180 y 180")
     @Schema(description = "Longitud de la ubicación utilizada en la búsqueda (SR-RF-28)", example = "-74.0482")
     private Double longitud;
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "query no puede estar vacío")
+    public boolean isQueryValido() {
+        return query == null || !query.isBlank();
+    }
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "color no puede estar vacío")
+    public boolean isColorValido() {
+        return color == null || !color.isBlank();
+    }
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "marca no puede estar vacía")
+    public boolean isMarcaValida() {
+        return marca == null || !marca.isBlank();
+    }
 
     @JsonIgnore
     @Schema(hidden = true)
