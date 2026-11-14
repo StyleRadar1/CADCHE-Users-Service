@@ -3,7 +3,6 @@ package edu.dosw.styleradar.usuarios.application.usecase;
 import edu.dosw.styleradar.usuarios.application.dto.response.CatalogoItemResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
-import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerFeedPersonalizadoUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.CatalogoClientPort;
@@ -48,7 +47,10 @@ public class ObtenerFeedPersonalizadoUseCaseImpl
         List<CatalogoItemResponseDTO> prendasCatalogo;
 
         try {
-            prendasCatalogo = catalogoClient.obtenerPrendasDisponibles();
+            prendasCatalogo = catalogoClient.obtenerPrendasDisponibles(
+                    estilos,
+                    tallas
+            );
         } catch (Exception exception) {
             throw new CatalogoNoDisponibleException(
                     "El catálogo no está disponible en este momento",
@@ -112,7 +114,6 @@ public class ObtenerFeedPersonalizadoUseCaseImpl
 
             boolean coincideTalla = prenda.getTallasDisponibles()
                     .stream()
-                    .map(Talla::name)
                     .anyMatch(tallasUsuario::contains);
 
             if (coincideTalla) {

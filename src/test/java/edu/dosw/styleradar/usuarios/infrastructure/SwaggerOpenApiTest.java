@@ -44,4 +44,10 @@ class SwaggerOpenApiTest {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void recomendacionesDebeRequerirSesion() throws Exception {
+        mockMvc.perform(get("/api/v1/usuarios/me/recomendaciones"))
+                .andExpect(status().isUnauthorized());
+    }
 }
