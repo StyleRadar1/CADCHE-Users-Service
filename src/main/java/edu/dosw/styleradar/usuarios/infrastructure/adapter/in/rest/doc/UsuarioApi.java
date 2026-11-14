@@ -70,7 +70,7 @@ public interface UsuarioApi {
                             schema = @Schema(implementation = ErrorResponseDTO.class),
                             examples = @ExampleObject(
                                     name = "EmailDuplicado",
-                                    value = "{\"timestamp\":\"2026-11-03T01:30:00\",\"status\":422,\"error\":\"Unprocessable Entity\",\"message\":\"El correo electrónico ya se encuentra registrado\",\"path\":\"/api/v1/usuarios\",\"validationErrors\":{}}"))),
+                                    value = "{\"timestamp\":\"2026-11-03T01:30:00\",\"status\":422,\"error\":\"Unprocessable Entity\",\"message\":\"El correo electrónico ya se encuentra en uso\",\"path\":\"/api/v1/usuarios\",\"validationErrors\":{}}"))),
             @ApiResponse(
                     responseCode = "500",
                     description = "Error interno del servidor",
@@ -142,7 +142,8 @@ public interface UsuarioApi {
     })
     @GetMapping("/{id}")
     ResponseEntity<UsuarioResponseDTO> obtenerPorId(
-            @Parameter(description = "Identificador único del usuario", example = "12") @PathVariable Long id);
+            @Parameter(description = "Identificador único del usuario", example = "12")
+            @PathVariable("id") Long id);
 
     @Operation(
             summary = "Configurar mis preferencias de estilo (SR-RF-03)",
@@ -307,5 +308,6 @@ public interface UsuarioApi {
     })
     @DeleteMapping("/me/busquedas-guardadas/{busquedaId}")
     ResponseEntity<Void> eliminarBusquedaGuardada(
-            @Parameter(description = "Identificador único de la búsqueda guardada", example = "5") @PathVariable Long busquedaId);
+            @Parameter(description = "Identificador único de la búsqueda guardada", example = "5")
+            @PathVariable("busquedaId") Long busquedaId);
 }

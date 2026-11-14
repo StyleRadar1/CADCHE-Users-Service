@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,7 +56,6 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
@@ -74,18 +75,44 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
+    @Order(1)
+    public SecurityFilterChain internalSecurityFilterChain(
             HttpSecurity http,
-            AuthenticationProvider authenticationProvider,
-            JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+            AuthenticationProvider authenticationProvider) throws Exception {
 
         http
-                // API stateless: autenticación mediante JWT y HTTP Basic interno.
-                // La revisión del riesgo CSRF se mantiene pendiente.
-                .csrf(csrf -> csrf.disable())
+                .securityMatcher("/internal/api/v1/usuarios/verificar-credenciales")
+                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/internal/api/v1/usuarios/verificar-credenciales"
+                ))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().hasRole("SERVICE")
+                )
+                .httpBasic(Customizer.withDefaults());
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain apiSecurityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+
+        http
+                .securityMatcher(
+                        "/api/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/actuator/health"
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v3/api-docs/**",
@@ -93,23 +120,37 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/actuator/health"
                         ).permitAll()
-                        .requestMatchers(
-                                "/internal/api/v1/usuarios/verificar-credenciales"
-                        ).authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/usuarios")
                         .permitAll()
+                        .requestMatchers("/api/v1/admin/usuarios/**")
+                        .hasRole("ADMIN_STYLERADAR")
                         .requestMatchers(
+                                "/api/v1/usuarios/me",
                                 "/api/v1/usuarios/me/**"
                         ).hasRole("COMPRADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/*")
+                        .hasRole("ADMIN_STYLERADAR")
                         .requestMatchers("/api/v1/usuarios/**")
                         .authenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().denyAll()
                 )
-                .httpBasic(basic -> {})
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter)
                         )
+                );
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(3)
+    public SecurityFilterChain defaultSecurityFilterChain(
+            HttpSecurity http) throws Exception {
+
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().denyAll()
                 );
 
         return http.build();

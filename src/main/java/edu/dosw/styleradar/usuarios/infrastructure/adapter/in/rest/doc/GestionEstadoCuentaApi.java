@@ -52,7 +52,8 @@ public interface GestionEstadoCuentaApi {
             description = "ROLE_ADMIN_STYLERADAR. Estado efectivo y última modificación, sin credenciales ni datos privados. "
                     + "NULL histórico se muestra ACTIVA; metadatos nulos no representan una decisión.")
     ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(
-            @Parameter(description = "Identificador de la cuenta a consultar", example = "12") @PathVariable Long id);
+            @Parameter(description = "Identificador de la cuenta a consultar", example = "12")
+            @PathVariable("id") Long id);
 
     @PatchMapping("/{id}/estado")
     @Operation(
@@ -61,7 +62,8 @@ public interface GestionEstadoCuentaApi {
                     + "BLOQUEADA exige motivo no vacío; máximo 1000 caracteres. Actor y fecha del servidor. "
                     + "No permite autocambio, ni siquiera idempotente. Conserva otro administrador operativo.")
     ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
-            @Parameter(description = "Identificador de la cuenta a modificar", example = "12") @PathVariable Long id,
+            @Parameter(description = "Identificador de la cuenta a modificar", example = "12")
+            @PathVariable("id") Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(examples = {
                             @ExampleObject(name = "BLOQUEADA", value = "{\"estado\":\"BLOQUEADA\",\"motivo\":\"Incumplimiento de las condiciones\"}"),
@@ -70,4 +72,3 @@ public interface GestionEstadoCuentaApi {
                     }))
             @Valid @RequestBody CambioEstadoCuentaRequestDTO request);
 }
-
