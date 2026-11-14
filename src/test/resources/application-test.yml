@@ -1,3 +1,6 @@
+INTERNAL_AUTH_USERNAME: "test-service"
+INTERNAL_AUTH_PASSWORD: "test-service-password"
+
 spring:
   autoconfigure:
     exclude:
