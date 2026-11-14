@@ -5,7 +5,8 @@ public enum Talla {
     S,
     M,
     L,
-    XL;
+    XL,
+    XXL;
 
     public static boolean esValidaPara(TipoPrenda tipoPrenda, String talla) {
         if (tipoPrenda == null || talla == null) {
@@ -29,7 +30,7 @@ public enum Talla {
             }
 
             if (tipoPrenda == TipoPrenda.CALZADO) {
-                return numero >= 35 && numero <= 45;
+                return numero >= 34 && numero <= 45;
             }
 
             return false;

@@ -6,15 +6,32 @@ import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "Respuesta paginada de recomendaciones de prendas según el perfil del comprador (SR-RF-06)")
-public class RecomendacionesResponseDTO extends PageResponseDTO<CatalogoItemResponseDTO> {
+@Schema(description = "Respuesta de recomendaciones de prendas según el perfil del comprador")
+public class RecomendacionesResponseDTO
+        extends PageResponseDTO<CatalogoItemResponseDTO> {
 
-    @Schema(description = "true indica una selección general reciente porque no hay estilos ni tallas configurados", example = "false")
+    @Schema(description = "Indica si el usuario no tiene preferencias ni tallas configuradas")
     private final boolean generalSinPreferencias;
 
-    public RecomendacionesResponseDTO(PageResponseDTO<CatalogoItemResponseDTO> pagina, boolean generalSinPreferencias) {
-        super(pagina.getContent(), pagina.getPage(), pagina.getSize(), pagina.getTotalElements(),
-                pagina.getTotalPages(), pagina.isFirst(), pagina.isLast());
+    @Schema(description = "Mensaje informativo sobre las recomendaciones")
+    private final String mensaje;
+
+    public RecomendacionesResponseDTO(
+            PageResponseDTO<CatalogoItemResponseDTO> pagina,
+            boolean generalSinPreferencias,
+            String mensaje) {
+
+        super(
+                pagina.getContent(),
+                pagina.getPage(),
+                pagina.getSize(),
+                pagina.getTotalElements(),
+                pagina.getTotalPages(),
+                pagina.isFirst(),
+                pagina.isLast()
+        );
+
         this.generalSinPreferencias = generalSinPreferencias;
+        this.mensaje = mensaje;
     }
 }

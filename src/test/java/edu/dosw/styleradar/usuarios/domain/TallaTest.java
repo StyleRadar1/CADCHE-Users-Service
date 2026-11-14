@@ -15,11 +15,11 @@ class TallaTest {
         assertTrue(Talla.esValidaPara(TipoPrenda.SUPERIOR, "M"));
         assertTrue(Talla.esValidaPara(TipoPrenda.SUPERIOR, "L"));
         assertTrue(Talla.esValidaPara(TipoPrenda.SUPERIOR, "XL"));
+        assertTrue(Talla.esValidaPara(TipoPrenda.SUPERIOR, "XXL"));
     }
 
     @Test
     void debeRechazarTallasNoValidasParaPrendasSuperiores() {
-        assertFalse(Talla.esValidaPara(TipoPrenda.SUPERIOR, "XXL"));
         assertFalse(Talla.esValidaPara(TipoPrenda.SUPERIOR, "32"));
     }
 
@@ -39,6 +39,7 @@ class TallaTest {
 
     @Test
     void debeAceptarTallasNumericasParaCalzado() {
+        assertTrue(Talla.esValidaPara(TipoPrenda.CALZADO, "34"));
         assertTrue(Talla.esValidaPara(TipoPrenda.CALZADO, "35"));
         assertTrue(Talla.esValidaPara(TipoPrenda.CALZADO, "40"));
         assertTrue(Talla.esValidaPara(TipoPrenda.CALZADO, "45"));
@@ -46,7 +47,6 @@ class TallaTest {
 
     @Test
     void debeRechazarTallasFueraDelRangoParaCalzado() {
-        assertFalse(Talla.esValidaPara(TipoPrenda.CALZADO, "34"));
         assertFalse(Talla.esValidaPara(TipoPrenda.CALZADO, "46"));
         assertFalse(Talla.esValidaPara(TipoPrenda.CALZADO, "50"));
     }

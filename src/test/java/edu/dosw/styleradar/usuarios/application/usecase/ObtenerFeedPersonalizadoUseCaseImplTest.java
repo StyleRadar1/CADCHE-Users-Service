@@ -72,7 +72,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 "2026-11-11T10:00:00Z"
         );
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(
                         soloEstilo,
                         soloTalla,
@@ -84,9 +84,9 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
 
         assertEquals(3, resultado.getTotalElements());
 
-        assertEquals(1L, resultado.getContent().get(0).getItemId());
-        assertEquals(3L, resultado.getContent().get(1).getItemId());
-        assertEquals(2L, resultado.getContent().get(2).getItemId());
+        assertEquals("1", resultado.getContent().get(0).getItemId());
+        assertEquals("3", resultado.getContent().get(1).getItemId());
+        assertEquals("2", resultado.getContent().get(2).getItemId());
     }
 
     @Test
@@ -111,14 +111,14 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 "2026-11-10T10:00:00Z"
         );
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(soloEstilo, soloTalla));
 
         PageResponseDTO<CatalogoItemResponseDTO> resultado =
                 useCase.obtener(usuarioId, 0, 20);
 
-        assertEquals(2L, resultado.getContent().get(0).getItemId());
-        assertEquals(1L, resultado.getContent().get(1).getItemId());
+        assertEquals("2", resultado.getContent().get(0).getItemId());
+        assertEquals("1", resultado.getContent().get(1).getItemId());
     }
 
     @Test
@@ -140,15 +140,15 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 "2026-11-12T10:00:00Z"
         );
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(prendaAntigua, prendaReciente));
 
         PageResponseDTO<CatalogoItemResponseDTO> resultado =
                 useCase.obtener(usuarioId, 0, 20);
 
         assertEquals(2, resultado.getTotalElements());
-        assertEquals(2L, resultado.getContent().get(0).getItemId());
-        assertEquals(1L, resultado.getContent().get(1).getItemId());
+        assertEquals("2", resultado.getContent().get(0).getItemId());
+        assertEquals("1", resultado.getContent().get(1).getItemId());
     }
 
     @Test
@@ -170,14 +170,14 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 "2026-11-11T10:00:00Z"
         );
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(disponible, agotada));
 
         PageResponseDTO<CatalogoItemResponseDTO> resultado =
                 useCase.obtener(usuarioId, 0, 20);
 
         assertEquals(1, resultado.getTotalElements());
-        assertEquals(1L, resultado.getContent().get(0).getItemId());
+        assertEquals("1", resultado.getContent().get(0).getItemId());
     }
 
     @Test
@@ -199,14 +199,14 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 1L, Estilo.CASUAL, List.of(Talla.L), 5, fecha
         );
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(segundaPrenda, primeraPrenda));
 
         PageResponseDTO<CatalogoItemResponseDTO> resultado =
                 useCase.obtener(usuarioId, 0, 20);
 
-        assertEquals(1L, resultado.getContent().get(0).getItemId());
-        assertEquals(2L, resultado.getContent().get(1).getItemId());
+        assertEquals("1", resultado.getContent().get(0).getItemId());
+        assertEquals("2", resultado.getContent().get(1).getItemId());
     }
 
     @Test
@@ -233,7 +233,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 "2026-11-10T10:00:00Z"
         );
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(primera, segunda, tercera));
 
         PageResponseDTO<CatalogoItemResponseDTO> resultado =
@@ -244,7 +244,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
         assertEquals(3, resultado.getTotalElements());
         assertEquals(2, resultado.getTotalPages());
         assertEquals(1, resultado.getContent().size());
-        assertEquals(3L, resultado.getContent().get(0).getItemId());
+        assertEquals("3", resultado.getContent().get(0).getItemId());
         assertFalse(resultado.isFirst());
         assertTrue(resultado.isLast());
     }
@@ -258,7 +258,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
         when(tallasRepository.buscarPorUsuarioId(usuarioId))
                 .thenReturn(Map.of());
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenReturn(List.of(
                         crearPrenda(
                                 1L, Estilo.URBANO, List.of(Talla.M), 5,
@@ -287,7 +287,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                         Set.of("M")
                 ));
 
-        when(catalogoClient.obtenerPrendasDisponibles())
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenThrow(new RuntimeException("Catálogo no disponible"));
 
         CatalogoNoDisponibleException excepcion = assertThrows(
@@ -302,7 +302,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
 
         assertNotNull(excepcion.getCause());
 
-        verify(catalogoClient).obtenerPrendasDisponibles();
+        verify(catalogoClient).obtenerPrendasDisponibles(anySet(), anyMap());
     }
 
     private CatalogoItemResponseDTO crearPrenda(
@@ -313,7 +313,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
             String fecha) {
 
         return CatalogoItemResponseDTO.builder()
-                .itemId(itemId)
+                .itemId(itemId.toString())
                 .prendaId(itemId)
                 .nombre("Prenda de prueba " + itemId)
                 .tipo(TipoPrenda.SUPERIOR)
@@ -322,7 +322,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
                 .stock(stock)
                 .estado(EstadoItem.DISPONIBLE)
                 .fechaPublicacion(Instant.parse(fecha))
-                .tallasDisponibles(tallas)
+                .tallasDisponibles(tallas.stream().map(Enum::name).toList())
                 .build();
     }
 }

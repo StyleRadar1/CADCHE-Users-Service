@@ -8,15 +8,19 @@ import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import edu.dosw.styleradar.usuarios.domain.port.out.CatalogoClientPort;
 
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Instant;
 import java.util.List;
 
 @Component
+@Profile("mock-catalogo")
 public class CatalogoMockAdapter implements CatalogoClientPort {
 
     @Override
-    public List<CatalogoItemResponseDTO> obtenerPrendasDisponibles() {
+    public List<CatalogoItemResponseDTO> obtenerPrendasDisponibles(
+            java.util.Set<Estilo> estilos,
+            java.util.Map<TipoPrenda, java.util.Set<String>> tallasPorTipo) {
 
         return List.of(
                 crearPrenda(101L, "Chaqueta urbana", Estilo.URBANO,
@@ -48,7 +52,7 @@ public class CatalogoMockAdapter implements CatalogoClientPort {
             int diasAntiguedad) {
 
         return CatalogoItemResponseDTO.builder()
-                .itemId(id)
+                .itemId(id.toString())
                 .prendaId(id)
                 .nombre(nombre)
                 .descripcion("Prenda de prueba para el feed de StyleRadar")
@@ -62,7 +66,7 @@ public class CatalogoMockAdapter implements CatalogoClientPort {
                 .fechaPublicacion(
                         Instant.now().minusSeconds(diasAntiguedad * 86400L)
                 )
-                .tallasDisponibles(tallas)
+                .tallasDisponibles(tallas.stream().map(Enum::name).toList())
                 .build();
     }
 }

@@ -38,6 +38,10 @@ spring:
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
 
+styleradar:
+  catalogo:
+    base-url: ${CATALOGO_API_BASE_URL:https://rst-itemcatalog-service-qa.redwave-74d6e30f.northcentralus.azurecontainerapps.io}
+
 springdoc:
   api-docs:
     enabled: true

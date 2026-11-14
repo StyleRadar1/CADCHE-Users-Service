@@ -61,7 +61,8 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
     }
 
     @Override
-    public ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(@PathVariable Long id) {
+    public ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(
+            @PathVariable("id") Long id) {
         return ResponseEntity.ok(new CuentaAdministrativaResponseDTO(
                 id,
                 null,
@@ -76,7 +77,7 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody CambioEstadoCuentaRequestDTO request) {
 
         Authentication authentication =
