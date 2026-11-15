@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,6 +82,7 @@ public class UsuarioController implements UsuarioApi {
                 .build());
     }
 
+    @GetMapping("/{id}")
     @Override
     public ResponseEntity<UsuarioResponseDTO> obtenerPorId(
             @PathVariable("id") Long id) {
@@ -188,6 +191,7 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(List.of());
     }
 
+    @DeleteMapping("/me/busquedas-guardadas/{busquedaId}")
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
             @PathVariable("busquedaId") Long busquedaId) {

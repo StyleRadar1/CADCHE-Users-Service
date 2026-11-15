@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,6 +62,7 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
                 true));
     }
 
+    @GetMapping("/{id}")
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(
             @PathVariable("id") Long id) {
@@ -75,6 +78,7 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
                 null));
     }
 
+    @PatchMapping("/{id}/estado")
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
             @PathVariable("id") Long id,
@@ -108,4 +112,3 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
         return ResponseEntity.ok(response);
     }
 }
-
