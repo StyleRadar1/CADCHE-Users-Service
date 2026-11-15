@@ -8,6 +8,7 @@ import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,18 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioJpaRepository.findByEmail(email)
                 .map(this::convertirADominio);
+    }
+
+    @Override
+    public java.util.List<Usuario> buscarCuentas(EstadoCuenta estado, int page, int size) {
+        var pageable = PageRequest.of(page, size);
+        var resultados = usuarioJpaRepository.buscarCuentas(estado, pageable);
+        return resultados.map(this::convertirADominio).getContent();
+    }
+
+    @Override
+    public long contarCuentas(EstadoCuenta estado) {
+        return usuarioJpaRepository.contarCuentas(estado);
     }
 
     @Override
@@ -109,7 +122,10 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
                 entity.getAceptaHabeasData(),
                 entity.getRol(),
                 entity.getEstado(),
-                entity.getFechaRegistro()
+                entity.getFechaRegistro(),
+                entity.getFechaCambioEstado(),
+                entity.getAdministradorCambioEstadoId(),
+                entity.getMotivoCambioEstado()
         );
     }
 }

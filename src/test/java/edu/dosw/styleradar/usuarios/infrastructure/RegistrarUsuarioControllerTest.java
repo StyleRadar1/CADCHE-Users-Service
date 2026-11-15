@@ -7,6 +7,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repos
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.PreferenciaEstiloJpaRepository;
 
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.TallaJpaRepository;
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.BusquedaGuardadaJpaRepository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ class RegistrarUsuarioControllerTest {
 
     @MockBean
     private PreferenciaEstiloJpaRepository preferenciaEstiloJpaRepository;
+
+    @MockBean
+    private BusquedaGuardadaJpaRepository busquedaGuardadaJpaRepository;
 
     @Test
     void debeRegistrarUsuarioYResponder201() throws Exception {

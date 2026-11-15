@@ -12,6 +12,10 @@ import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloU
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.PreferenciaEstiloRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.TallaRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.BusquedaGuardadaRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.model.BusquedaGuardada;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +42,9 @@ class UsuarioControllerTest {
     private ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
     private ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
     private UsuarioRepositoryPort usuarioRepository;
+    private PreferenciaEstiloRepositoryPort preferenciasRepository;
+    private TallaRepositoryPort tallasRepository;
+    private BusquedaGuardadaRepositoryPort busquedasRepository;
     private UsuarioController controller;
 
     @BeforeEach
@@ -48,12 +55,18 @@ class UsuarioControllerTest {
         actualizarTallasUseCase =
                 mock(ActualizarTallasHabitualesUseCase.class);
         usuarioRepository = mock(UsuarioRepositoryPort.class);
+        preferenciasRepository = mock(PreferenciaEstiloRepositoryPort.class);
+        tallasRepository = mock(TallaRepositoryPort.class);
+        busquedasRepository = mock(BusquedaGuardadaRepositoryPort.class);
 
         controller = new UsuarioController(
                 registrarUsuarioUseCase,
                 actualizarPreferenciasUseCase,
                 actualizarTallasUseCase,
-                usuarioRepository
+                usuarioRepository,
+                preferenciasRepository,
+                tallasRepository,
+                busquedasRepository
         );
 
         Jwt jwt = Jwt.withTokenValue("token-de-prueba")
@@ -110,29 +123,32 @@ class UsuarioControllerTest {
 
     @Test
     void debeObtenerPerfil() {
+        when(usuarioRepository.buscarPorId(144L)).thenReturn(Optional.of(crearUsuario()));
+        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of(Estilo.CASUAL));
+        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of(TipoPrenda.SUPERIOR, Set.of("M")));
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.obtenerPerfil();
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
-        assertEquals(12L, respuesta.getBody().getId());
-        assertEquals("Laura Gómez", respuesta.getBody().getNombre());
+        assertEquals(144L, respuesta.getBody().getId());
         assertTrue(respuesta.getBody().getPreferenciasEstilo()
                 .contains(Estilo.CASUAL));
-        assertTrue(respuesta.getBody().getTallasHabituales()
-                .contains(Talla.M));
+        assertEquals(Set.of("M"), respuesta.getBody().getTallasPorTipoPrenda().get(TipoPrenda.SUPERIOR));
     }
 
     @Test
     void debeObtenerUsuarioPorId() {
+        when(usuarioRepository.buscarPorId(144L)).thenReturn(Optional.of(crearUsuario()));
+        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of());
+        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of());
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.obtenerPorId(144L);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         assertEquals(144L, respuesta.getBody().getId());
-        assertEquals("laura.gomez@styleradar.com",
-                respuesta.getBody().getEmail());
+        assertEquals("laura@styleradar.com", respuesta.getBody().getEmail());
     }
 
     @Test
@@ -152,6 +168,9 @@ class UsuarioControllerTest {
 
         when(usuarioRepository.buscarPorId(144L))
                 .thenReturn(Optional.of(crearUsuario()));
+        when(preferenciasRepository.buscarPorUsuarioId(144L))
+                .thenReturn(request.getPreferencias());
+        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of());
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.actualizarPreferenciasEstilo(request);
@@ -208,6 +227,9 @@ class UsuarioControllerTest {
 
         when(usuarioRepository.buscarPorId(144L))
                 .thenReturn(Optional.of(crearUsuario()));
+        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of());
+        when(tallasRepository.buscarPorUsuarioId(144L))
+                .thenReturn(request.getTallasPorTipoPrenda());
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.actualizarTallasHabituales(request);
@@ -264,12 +286,18 @@ class UsuarioControllerTest {
         request.setTalla(Talla.M);
         request.setEstilo(Estilo.CASUAL);
 
+        when(busquedasRepository.guardar(any())).thenReturn(new BusquedaGuardada(
+                10L, 144L, request.getNombre(), request.getQuery(), request.getTipo(),
+                request.getColor(), request.getTalla(), request.getPrecioMin(),
+                request.getPrecioMax(), request.getMarca(), request.getEstilo(),
+                request.getLatitud(), request.getLongitud(), Instant.now()));
+
         ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
                 controller.guardarBusqueda(request);
 
         assertEquals(HttpStatus.CREATED, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
-        assertEquals(5L, respuesta.getBody().getId());
+        assertEquals(10L, respuesta.getBody().getId());
         assertEquals("Chaquetas casuales",
                 respuesta.getBody().getNombre());
         assertEquals("chaqueta", respuesta.getBody().getQuery());
@@ -279,6 +307,7 @@ class UsuarioControllerTest {
 
     @Test
     void debeObtenerListaDeBusquedasGuardadas() {
+        when(busquedasRepository.buscarPorUsuarioId(144L)).thenReturn(List.of());
         ResponseEntity<List<BusquedaGuardadaResponseDTO>> respuesta =
                 controller.obtenerBusquedasGuardadas();
 
@@ -294,5 +323,6 @@ class UsuarioControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, respuesta.getStatusCode());
         assertNull(respuesta.getBody());
+        verify(busquedasRepository).eliminarPorIdYUsuarioId(5L, 144L);
     }
 }

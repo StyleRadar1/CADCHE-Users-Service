@@ -13,6 +13,9 @@ public class Usuario {
     private Rol rol;
     private EstadoCuenta estado;
     private Instant fechaRegistro;
+    private Instant fechaCambioEstado;
+    private Long administradorCambioEstadoId;
+    private String motivoCambioEstado;
 
     public Usuario(
             Long id,
@@ -24,6 +27,15 @@ public class Usuario {
             Rol rol,
             EstadoCuenta estado,
             Instant fechaRegistro) {
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData, rol,
+                estado, fechaRegistro, null, null, null);
+    }
+
+    public Usuario(
+            Long id, String nombre, String email, String telefono,
+            String passwordHash, Boolean aceptaHabeasData, Rol rol,
+            EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
+            Long administradorCambioEstadoId, String motivoCambioEstado) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
@@ -33,6 +45,9 @@ public class Usuario {
         this.rol = rol;
         this.estado = estado;
         this.fechaRegistro = fechaRegistro;
+        this.fechaCambioEstado = fechaCambioEstado;
+        this.administradorCambioEstadoId = administradorCambioEstadoId;
+        this.motivoCambioEstado = motivoCambioEstado;
     }
 
     public void cambiarEstado(EstadoCuenta nuevoEstado) {
@@ -78,6 +93,10 @@ public class Usuario {
     public Instant getFechaRegistro() {
         return fechaRegistro;
     }
+
+    public Instant getFechaCambioEstado() { return fechaCambioEstado; }
+    public Long getAdministradorCambioEstadoId() { return administradorCambioEstadoId; }
+    public String getMotivoCambioEstado() { return motivoCambioEstado; }
 }
 
 

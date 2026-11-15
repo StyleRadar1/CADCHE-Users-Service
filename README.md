@@ -14,7 +14,7 @@
 
   <p align="center">
     <img src="https://img.shields.io/badge/BOUNDED_CONTEXT-Gesti%C3%B3n_de_Usuarios_y_Preferencias-12063A?style=for-the-badge" alt="Context" />
-    <img src="https://img.shields.io/badge/PUERTO_OFICIAL-8082-5600EF?style=for-the-badge" alt="Port" />
+    <img src="https://img.shields.io/badge/PUERTO_OFICIAL-8120-5600EF?style=for-the-badge" alt="Port" />
     <img src="https://img.shields.io/badge/ARQUITECTURA-HEXAGONAL-16A34A?style=for-the-badge" alt="Hexagonal" />
   </p>
 
@@ -24,14 +24,14 @@
   </p>
 
   <p align="center">
-    <a href="https://styleradar-backend-prod.azurewebsites.net/swagger-ui/index.html">
-      <img src="https://img.shields.io/badge/PROD-Active-16A34A?style=for-the-badge&logo=azure-app-services&logoColor=white" alt="PROD Deployment" />
+    <a href="https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html">
+      <img src="https://img.shields.io/badge/PROD-No_confirmado-6B7280?style=for-the-badge&logo=azure-app-services&logoColor=white" alt="PROD Deployment" />
     </a>
-    <a href="https://styleradar-backend-qa.azurewebsites.net/swagger-ui/index.html">
-      <img src="https://img.shields.io/badge/QA-Active-5600EF?style=for-the-badge&logo=azure-app-services&logoColor=white" alt="QA Deployment" />
+    <a href="https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html">
+      <img src="https://img.shields.io/badge/QA-Pendiente_de_validar-6B7280?style=for-the-badge&logo=azure-app-services&logoColor=white" alt="QA Deployment" />
     </a>
     <a href="https://sonarcloud.io/organizations/styleradar/projects">
-      <img src="https://img.shields.io/badge/SonarQube-Quality_Gate_Passed-16A34A?style=for-the-badge&logo=sonarqube&logoColor=white" alt="Quality Gate" />
+      <img src="https://img.shields.io/badge/SonarQube-See_Report-6B7280?style=for-the-badge&logo=sonarqube&logoColor=white" alt="Quality Gate" />
     </a>
     <a href="target/site/jacoco/index.html">
       <img src="https://img.shields.io/badge/JaCoCo_Coverage-%E2%89%A5_85%25-16A34A?style=for-the-badge&logo=codecov&logoColor=white" alt="Coverage" />
@@ -76,7 +76,7 @@
 
 * **Identificador de Servicio:** `ms-usuarios` (`CADCHE-Users-Service`)
 * **Paquete Arquitectónico:** `Paquete 1: Identidad`
-* **Puerto de Escucha Oficial:** `8082` (definido en la matriz de puertos sin colisión)
+* **Puerto de Escucha Oficial:** `8120` (definido en la matriz de puertos sin colisión)
 * **Base de Datos Asignada:** `PostgreSQL 16` (`styleradar_usuarios`), aislada bajo el patrón *Database-per-Service*.
 * **Bounded Context:** `Gestión de Perfiles de Usuario, Preferencias de Estilo, Tallas y Búsquedas Guardadas`
 
@@ -355,17 +355,20 @@ src/main/java/edu/dosw/styleradar/usuarios/
 
 ## <img src="https://img.shields.io/badge/04-5600EF?style=for-the-badge" height="20" align="absmiddle" /> 4. ENDPOINTS Y ENLACE A SWAGGER
 
-La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encuentran desplegados y clasificados por entorno:
+La documentación OpenAPI 3.0 está disponible localmente y en los entornos cuando estos se encuentran operativos.
 
 ### Matriz Oficial de Enlaces por Entorno (PROD, QA, LOCAL)
 
 | Entorno | Estado | Propósito | URL Base del Servicio | Swagger OpenAPI UI | Health Check |
 | :--- | :---: | :--- | :--- | :--- | :--- |
-| **Producción (PROD)** | Active | Despliegue productivo de StyleRadar | `https://styleradar-backend-prod.azurewebsites.net` | [Swagger UI PROD](https://styleradar-backend-prod.azurewebsites.net/swagger-ui/index.html) | [`/actuator/health`](https://styleradar-backend-prod.azurewebsites.net/actuator/health) |
-| **Calidad / Pruebas (QA)** | Active | Pruebas integradas de Sprint y QA | `https://styleradar-backend-qa.azurewebsites.net` | [Swagger UI QA](https://styleradar-backend-qa.azurewebsites.net/swagger-ui/index.html) | [`/actuator/health`](https://styleradar-backend-qa.azurewebsites.net/actuator/health) |
-| **Desarrollo Local (DEV)** | Local | Entorno de desarrollo local en máquina | `http://localhost:8082` | [Swagger UI Local](http://localhost:8082/swagger-ui.html) | [`/actuator/health`](http://localhost:8082/actuator/health) |
+| **Producción (PROD)** | No confirmado | Despliegue productivo de StyleRadar | `https://styleradar-prod-app.azurewebsites.net` | [Swagger UI PROD](https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html) | [`/actuator/health`](https://styleradar-prod-app.azurewebsites.net/actuator/health) |
+| **Calidad / Pruebas (QA)** | Pendiente de validar | Pruebas integradas de Sprint y QA | `https://styleradar-qa-app.azurewebsites.net` | [Swagger UI QA](https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html) | [`/actuator/health`](https://styleradar-qa-app.azurewebsites.net/actuator/health) |
+| **Desarrollo Local (DEV)** | Local | Entorno de desarrollo local en máquina | `http://localhost:8120` | [Swagger UI Local](http://localhost:8120/swagger-ui.html) | [`/actuator/health`](http://localhost:8120/actuator/health) |
 
-* **Especificación OpenAPI (Contrato JSON Schema):** `http://localhost:8082/v3/api-docs` (o `/v3/api-docs` en los dominios de PROD y QA).
+* **Especificación OpenAPI (Contrato JSON Schema):** `http://localhost:8120/v3/api-docs` (o `/v3/api-docs` en los dominios de PROD y QA).
+
+> Revisado el 15/11/2026: `/actuator/health` de PROD responde HTTP 403 desde este entorno y QA no respondió antes del timeout. Esto no confirma si el App Service está detenido o restringido por red.
+
 
 
 <div align="center">
@@ -377,7 +380,7 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
           <strong><font color="#5600EF" size="3">DOCUMENTACIÓN SWAGGER OPENAPI UI ACTIVA</font></strong>
         </p>
         <p>
-          <sub>Pega aquí la captura de pantalla de la interfaz interactiva corriendo en <code>http://localhost:8082/swagger-ui.html</code> mostrando los endpoints del controlador.</sub>
+          <sub>Pega aquí la captura de pantalla de la interfaz interactiva corriendo en <code>http://localhost:8120/swagger-ui.html</code> mostrando los endpoints del controlador.</sub>
         </p>
         <p>
 <!-- Al generar tu captura, descomenta la siguiente línea y guarda la imagen en la ruta indicada: -->
@@ -418,7 +421,7 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
 #### Ejemplo Request (`PUT /api/v1/usuarios/me/tallas`)
 
 ```bash
-curl -X PUT "http://localhost:8082/api/v1/usuarios/me/tallas" \
+curl -X PUT "http://localhost:8120/api/v1/usuarios/me/tallas" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <JWT_TOKEN>" \
   -d '{
@@ -455,7 +458,7 @@ curl -X PUT "http://localhost:8082/api/v1/usuarios/me/tallas" \
 #### Ejemplo Request (`PATCH /api/v1/admin/usuarios/1/estado`)
 
 ```bash
-curl -X PATCH "http://localhost:8082/api/v1/admin/usuarios/1/estado" \
+curl -X PATCH "http://localhost:8120/api/v1/admin/usuarios/1/estado" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <JWT_ADMIN_TOKEN>" \
   -d '{
@@ -598,7 +601,7 @@ docker build -t styleradar/ms-usuarios:v1.0 .
 docker run -d \
   --name ms-usuarios \
   --network styleradar-net \
-  -p 8082:8082 \
+  -p 8120:8120 \
   --env-file .env \
   styleradar/ms-usuarios:v1.0
 ```
@@ -618,10 +621,10 @@ services:
     container_name: ms-usuarios
     restart: always
     ports:
-      - "8082:8082"
+      - "8120:8120"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SERVER_PORT=8082
+      - SERVER_PORT=8120
       - DB_URL=jdbc:postgresql://postgres:5432/styleradar_usuarios
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
@@ -662,7 +665,7 @@ services:
 ### Comprobación de Salud (Health Check)
 
 ```bash
-curl -s http://localhost:8082/actuator/health | jq .
+curl -s http://localhost:8120/actuator/health | jq .
 # Esperado: {"status":"UP"}
 ```
 
@@ -698,7 +701,7 @@ Todas las configuraciones sensibles y dependientes de entorno se externalizan me
 
 | Variable | Descripción | Valor por Defecto (`dev`) | Requerido en Prod |
 | :--- | :--- | :--- | :---: |
-| `SERVER_PORT` | Puerto de escucha HTTP del microservicio | `8082` | Sí |
+| `SERVER_PORT` | Puerto de escucha HTTP del microservicio | `8120` | Sí |
 | `SPRING_PROFILES_ACTIVE` | Perfil de configuración Spring Boot activo | `dev` | Sí |
 | `DB_URL` | URL JDBC de conexión a PostgreSQL | `jdbc:postgresql://localhost:5432/styleradar_usuarios` | Sí |
 | `DB_USERNAME` | Usuario de conexión a la base de datos | `postgres` | Sí |
@@ -709,7 +712,7 @@ Todas las configuraciones sensibles y dependientes de entorno se externalizan me
 | `RABBITMQ_PORT` | Puerto AMQP de RabbitMQ | `5672` | Sí |
 | `RABBITMQ_USERNAME` | Usuario de conexión a RabbitMQ | `guest` | Sí |
 | `RABBITMQ_PASSWORD` | Contraseña de conexión a RabbitMQ | `guest` | Sí |
-| `JWT_SECRET` | Clave secreta o pública para validar tokens JWT | `<SECRET_KEY_256_BITS>` | Sí |
+| `JWT_SECRET_BASE64` | Clave secreta o pública para validar tokens JWT | `<BASE64_SECRET_OF_AT_LEAST_32_BYTES>` | Sí |
 
 <details>
 <summary><b>Click para copiar la Plantilla de Archivo .env.example</b></summary>
@@ -720,7 +723,7 @@ Todas las configuraciones sensibles y dependientes de entorno se externalizan me
 # ==============================================================================
 # STYLERADAR · ms-usuarios · VARIABLES DE ENTORNO LOCALES (.env)
 # ==============================================================================
-SERVER_PORT=8082
+SERVER_PORT=8120
 SPRING_PROFILES_ACTIVE=dev
 
 # Persistencia PostgreSQL
@@ -737,7 +740,9 @@ RABBITMQ_USERNAME=guest
 RABBITMQ_PASSWORD=guest
 
 # Seguridad JWT
-JWT_SECRET=change_this_secret_in_production_minimum_32_characters
+JWT_SECRET_BASE64=c3R5bGVyYWRhci1sb2NhbC1vbmx5LWp3dC1zZWNyZXQta2V5LTIwMjY=
+INTERNAL_AUTH_USERNAME=ms-usuarios-local
+INTERNAL_AUTH_PASSWORD=cambiar-esta-clave-local
 ```
 
 </details>
@@ -805,27 +810,24 @@ El ciclo de vida del software implementa integración continua y entrega continu
 
 ### Matriz de Pipelines por Entorno (PROD y QA)
 
-| Pipeline | Entorno Destino | Desencadenador (Trigger) | Quality Gate Exigido | Badge de Estado |
-| :--- | :--- | :--- | :--- | :---: |
-| **CI - Staging / QA** | Calidad (`QA`) | Pull Request o Push a rama `develop` | Build OK + Tests Unitarios/Integración + JaCoCo ≥ 85% + SonarQube OK | [![QA Pipeline](https://img.shields.io/badge/Pipeline_QA-Passing-5600EF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/StyleRadar1/CADCHE-Users-Service/actions) |
-| **CD - Producción (PROD)** | Producción (`PROD`) | Merge a rama `main` / `master` tras validación QA | Aprobación manual + Imagen OCI desplegada en Azure App Service | [![PROD Pipeline](https://img.shields.io/badge/Pipeline_PROD-Passing-16A34A?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/StyleRadar1/CADCHE-Users-Service/actions) |
-| **Quality Gate SonarQube** | Transversal | Ejecutado en cada build de CI | 0 Vulnerabilidades, 0 Bugs, Deuda Técnica &lt; 5% | [![Quality Gate](https://img.shields.io/badge/SonarQube-Quality_Gate_Passed-16A34A?style=for-the-badge&logo=sonarqube&logoColor=white)](https://sonarcloud.io/organizations/styleradar/projects) |
+| Pipeline | Entorno Destino | Desencadenador | Resultado |
+| :--- | :--- | :--- | :--- |
+| Build y pruebas | Todos | Push y Pull Request a `develop` o `main` | Compilación, pruebas y SpotBugs |
+| Despliegue QA | Calidad (`QA`) | Push/merge a `develop`, si Build pasa | Imagen Docker por SHA en Azure App Service QA |
+| Despliegue PROD | Producción (`PROD`) | Push/merge a `main`, si Build pasa | Imagen Docker por SHA en Azure App Service PROD |
+| SonarQube | Transversal | Después de Build | Se ejecuta en job separado; su fallo no impide los despliegues |
 
-### Diagrama del Flujo Automatizado (Pipeline Stages)
+QA usa `styleradar-qa-app` en `styleradar-qa-rg`; PROD usa `styleradar-prod-app` en `styleradar-prod-rg`. El despliegue PROD queda detenido hasta que el equipo verifique PostgreSQL y establezca `PROD_DATABASE_VERIFIED=true` en GitHub Actions Variables. El workflow comprueba los nombres de los App Settings requeridos antes de cambiar el contenedor. Los despliegues usan `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` y `AZURE_SUBSCRIPTION_ID` (o los secretos `PROD_AZURE_*` para PROD). La identidad federada de Azure debe permitir los eventos `push` de `develop` y `main`.
+
+### Flujo del pipeline
 
 ```mermaid
 flowchart LR
-    A["Push / PR<br>(GitHub)"] --> B["Build & Compile<br>(Maven Java)"]
-    B --> C["Tests & JaCoCo<br>(Coverage ≥ 85%)"]
-    C --> D["Análisis SonarQube<br>(0 Vulnerabilities)"]
-    D --> E["Build Docker OCI<br>(Multi-stage Build)"]
-    E --> F["Deploy Cloud<br>(Azure App Service)"]
-
-    classDef step fill:#12063A,stroke:#5600EF,stroke-width:2px,color:#FFFFFF;
-    classDef pass fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#0C0C12;
-
-    class A,B,E,F step;
-    class C,D pass;
+    A[Push o merge] --> B[Build y pruebas]
+    B --> C[Publicar imagen Docker por SHA]
+    C -->|develop| D[Desplegar QA]
+    C -->|main| E[Desplegar PROD]
+    B --> F[SonarQube independiente]
 ```
 
 ### Reglas de Calidad en SonarQube (*Quality Gate Passed*)
@@ -920,8 +922,8 @@ El seguimiento de requerimientos, evidencias y artefactos de entrega se centrali
 
 * **Épica Oficial del Microservicio (Jira):** [https://mail-team-nyjtgqcj.atlassian.net/jira/software/projects/CADCHE/boards/75/backlog](https://mail-team-nyjtgqcj.atlassian.net/jira/software/projects/CADCHE/boards/75/backlog)
 * **Tablero Scrum del Squad CADche (Jira):** [https://mail-team-nyjtgqcj.atlassian.net/jira/software/projects/CADCHE/boards/75/backlog](https://mail-team-nyjtgqcj.atlassian.net/jira/software/projects/CADCHE/boards/75/backlog)
-* **API Swagger en Producción (PROD):** [https://styleradar-backend-prod.azurewebsites.net/swagger-ui/index.html](https://styleradar-backend-prod.azurewebsites.net/swagger-ui/index.html)
-* **API Swagger en Calidad (QA):** [https://styleradar-backend-qa.azurewebsites.net/swagger-ui/index.html](https://styleradar-backend-qa.azurewebsites.net/swagger-ui/index.html)
+* **API Swagger en Producción (PROD):** [https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html](https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html)
+* **API Swagger en Calidad (QA):** [https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html](https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html)
 * **Colección de Pruebas Postman:** [CatrachoINXS/StyleRadar-Backend/tree/main/postman](https://github.com/CatrachoINXS/StyleRadar-Backend/tree/main/postman)
 * **Contenedor OCI Oficial (Docker Hub):** [hub.docker.com/r/juanamunoz/styleradar](https://hub.docker.com/r/juanamunoz/styleradar)
 * **Video de Respaldo de la Demostración:** [Demostración Funcional en Google Drive](https://drive.google.com/file/d/1W6dklNVi8Bp8LQUx1dkGrkMlly0gRjd7/view?usp=sharing)
@@ -971,7 +973,7 @@ Este apartado constituye la transcripción y aplicación integral de la **Planti
 ### Ficha Técnica del Documento
 
 * **Proyecto / Asignatura:** StyleRadar · DOSW 2026
-* **Microservicio:** `CADCHE-Users-Service` (`ms-usuarios`, Puerto `8082`)
+* **Microservicio:** `CADCHE-Users-Service` (`ms-usuarios`, Puerto `8120`)
 * **Paquete Arquitectónico:** Paquete 1: Identidad
 * **Alcance Arquitectónico:** Evaluación multicriterio de 13 Microservicios, API Gateway y Arquitectura Orientada a Eventos
 * **Equipo Responsable (CADche):** Juan Nicolás Álvarez, Camilo Ortiz, Daniel Valero, Juan Diego Valderrama, Paula Alejandra Díaz
@@ -1205,7 +1207,7 @@ Consolidación técnica oficial del ecosistema StyleRadar:
 | Servicio / Puerto | Paquete de Dominio | Persistencia Primaria | Caché / In-Memory | Eventos RabbitMQ / Herramientas Clave |
 | :--- | :--- | :--- | :--- | :--- |
 | **`sr-api-gateway`** (`:8080`) | Perímetro | Sin estado (Stateless) | Redis (Rate Limiting) | Spring Cloud Gateway, Nimbus JWT RS256 |
-| **`ms-usuarios`** (`:8082`) | **P1: Identidad** | **PostgreSQL 16 (`styleradar_usuarios`) con JSONB** | **Redis 7 (Perfiles activos)** | **Publica: `usuario.perfil.actualizado`; Spring Security** |
+| **`ms-usuarios`** (`:8120`) | **P1: Identidad** | **PostgreSQL 16 (`styleradar_usuarios`) con JSONB** | **Redis 7 (Perfiles activos)** | **Publica: `usuario.perfil.actualizado`; Spring Security** |
 | **`ms-auth`** (`:8081`) | **P1: Identidad** | **PostgreSQL 16 (`styleradar_auth`)** | **Redis 7 (Blacklist JWT, OTP 300s)** | **Emisión JWT RS256, BCrypt, Exchange `styleradar.auth.events`** |
 | **`ms-tiendas`** (`:8083`) | **P1: Identidad** | **PostgreSQL 16 + PostGIS** | **Redis 7 (Metadatos tienda)** | **Azure Blob Storage (Fotos tiendas aliadas, RUT PDF)** |
 | **`ms-inventario`** (`:8084`) | P2: Catálogo | PostgreSQL (`stock_tallas`) | Redis Redlock (Reservas) | Publica: `stock.agotado`; Escucha: `orden.pagada` |
