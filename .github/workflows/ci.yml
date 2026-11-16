@@ -84,17 +84,20 @@ jobs:
     steps:
       - name: Descargar codigo
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
       - name: Configurar Java 17
         uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: "17"
           cache: maven
+
       - name: Descargar clases y reporte de pruebas
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: sonar-input
           path: target
+
       - name: Analisis de codigo con SonarQube Cloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -110,9 +113,11 @@ jobs:
     if: >-
       (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')) ||
       (github.event_name == 'pull_request' && github.base_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository)
+
     steps:
       - name: Descargar codigo
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
       - name: Autenticarse en Azure
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
@@ -132,12 +137,16 @@ jobs:
             .
 
           docker push "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA"
+
           if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/develop" ]]; then
             docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:qa"
             docker push "$ACR_LOGIN_SERVER/ms-usuarios:qa"
           elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
             docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:prod"
             docker push "$ACR_LOGIN_SERVER/ms-usuarios:prod"
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" && "$GITHUB_BASE_REF" == "develop" ]]; then
+            docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:qa"
+            docker push "$ACR_LOGIN_SERVER/ms-usuarios:qa"
           fi
 
   deploy-qa:
@@ -147,6 +156,7 @@ jobs:
     if: >-
       (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
       (github.event_name == 'pull_request' && github.base_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository)
+
     steps:
       - name: Autenticarse en Azure
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
@@ -154,6 +164,7 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Desplegar imagen en QA
         env:
           ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
@@ -167,7 +178,10 @@ jobs:
           az webapp config appsettings set \
             --name styleradar-qa-app \
             --resource-group styleradar-qa-rg \
-            --settings WEBSITES_PORT=8120 FLYWAY_ENABLED=true
+            --settings \
+              WEBSITES_PORT=8120 \
+              FLYWAY_ENABLED=true \
+              SPRING_PROFILES_ACTIVE=qa
 
           az webapp restart \
             --name styleradar-qa-app \
@@ -178,6 +192,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: publish-image
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     steps:
       - name: Validar configuración PROD
         env:
@@ -187,12 +202,14 @@ jobs:
             echo "No se despliega PROD hasta verificar PostgreSQL y establecer PROD_DATABASE_VERIFIED=true."
             exit 1
           fi
+
       - name: Autenticarse en Azure
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.PROD_AZURE_CLIENT_ID || secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.PROD_AZURE_TENANT_ID || secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.PROD_AZURE_SUBSCRIPTION_ID || secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Verificar App Service y configuración de base de datos
         env:
           PROD_WEBAPP_NAME: ${{ vars.PROD_AZURE_WEBAPP_NAME || 'styleradar-prod-app' }}
@@ -207,24 +224,29 @@ jobs:
               --resource-group "$PROD_RESOURCE_GROUP" \
               --query "[?name=='${key}' && value!=''] | length(@)" \
               --output tsv)
+
             if [[ "$configured" != "1" ]]; then
               echo "Falta el App Setting requerido: $key"
               missing=1
             fi
           done
+
           jwt_configured=$(az webapp config appsettings list \
             --name "$PROD_WEBAPP_NAME" \
             --resource-group "$PROD_RESOURCE_GROUP" \
             --query "[?((name=='JWT_SECRET_BASE64' || name=='JWT_SECRET') && value!='')] | length(@)" \
             --output tsv)
+
           if [[ "$jwt_configured" != "1" ]]; then
             echo "Falta JWT_SECRET_BASE64 (o el nombre heredado JWT_SECRET) en los App Settings PROD."
             missing=1
           fi
+
           if [[ "$missing" == "1" ]]; then
             echo "Configura primero las variables de PostgreSQL y seguridad en App Service PROD."
             exit 1
           fi
+
       - name: Desplegar imagen en PROD
         env:
           ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
