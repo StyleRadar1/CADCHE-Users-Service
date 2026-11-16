@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.TallaJpaRepository;
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.BusquedaGuardadaJpaRepository;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +33,9 @@ class SwaggerOpenApiTest {
 
     @MockBean
     private PreferenciaEstiloJpaRepository preferenciaEstiloJpaRepository;
+
+    @MockBean
+    private BusquedaGuardadaJpaRepository busquedaGuardadaJpaRepository;
 
     @Test
     void debeExponerInterfazSwaggerUi() throws Exception {

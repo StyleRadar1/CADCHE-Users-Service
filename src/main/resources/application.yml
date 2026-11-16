@@ -39,6 +39,9 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
 
 styleradar:
+  security:
+    jwt:
+      secret-base64: ${JWT_SECRET_BASE64:${JWT_SECRET:}}
   catalogo:
     base-url: ${CATALOGO_API_BASE_URL:https://rst-itemcatalog-service-qa.redwave-74d6e30f.northcentralus.azurecontainerapps.io}
 

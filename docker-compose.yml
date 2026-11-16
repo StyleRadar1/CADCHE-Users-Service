@@ -9,9 +9,15 @@ services:
     ports:
       - "8120:8120"
     environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SERVER_PORT: 8120
       DB_URL: jdbc:postgresql://usuarios-db:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      INTERNAL_AUTH_USERNAME: ${INTERNAL_AUTH_USERNAME:?Define INTERNAL_AUTH_USERNAME en .env}
+      INTERNAL_AUTH_PASSWORD: ${INTERNAL_AUTH_PASSWORD:?Define INTERNAL_AUTH_PASSWORD en .env}
+      JWT_SECRET_BASE64: ${JWT_SECRET_BASE64:?Define JWT_SECRET_BASE64 en .env}
+      FLYWAY_ENABLED: "true"
     depends_on:
       usuarios-db:
         condition: service_healthy

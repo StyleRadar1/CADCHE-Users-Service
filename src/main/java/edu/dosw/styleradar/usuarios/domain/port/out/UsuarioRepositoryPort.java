@@ -5,6 +5,7 @@ import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 
 public interface UsuarioRepositoryPort {
 
@@ -15,6 +16,10 @@ public interface UsuarioRepositoryPort {
     Optional<Usuario> buscarPorId(Long id);
 
     Optional<Usuario> buscarPorEmail(String email);
+
+    List<Usuario> buscarCuentas(EstadoCuenta estado, int page, int size);
+
+    long contarCuentas(EstadoCuenta estado);
 
     long contarAdministradoresActivos();
 

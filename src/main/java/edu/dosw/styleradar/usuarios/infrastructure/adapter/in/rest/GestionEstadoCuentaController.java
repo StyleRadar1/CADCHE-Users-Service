@@ -1,7 +1,5 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
@@ -23,6 +21,9 @@ import edu.dosw.styleradar.usuarios.application.dto.response.CuentaAdministrativ
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.in.CambiarEstadoCuentaUseCase;
+import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
+import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.GestionEstadoCuentaApi;
 import jakarta.validation.Valid;
 
@@ -31,10 +32,13 @@ import jakarta.validation.Valid;
 public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
     private final CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase;
+    private final UsuarioRepositoryPort usuarioRepository;
 
     public GestionEstadoCuentaController(
-            CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase) {
+            CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase,
+            UsuarioRepositoryPort usuarioRepository) {
         this.cambiarEstadoCuentaUseCase = cambiarEstadoCuentaUseCase;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @InitBinder
@@ -52,30 +56,23 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
     @Override
     public ResponseEntity<PageResponseDTO<CuentaAdministrativaResponseDTO>> consultar(
             @Valid @ModelAttribute CuentasConsultaRequestDTO request) {
+        var cuentas = usuarioRepository.buscarCuentas(
+                request.getEstado(), request.getPage(), request.getSize());
+        long total = usuarioRepository.contarCuentas(request.getEstado());
+        int paginas = (int) Math.ceil((double) total / request.getSize());
         return ResponseEntity.ok(new PageResponseDTO<>(
-                List.of(),
-                request.getPage(),
-                request.getSize(),
-                0L,
-                0,
-                true,
-                true));
+                cuentas.stream().map(this::aRespuesta).toList(),
+                request.getPage(), request.getSize(), total, paginas,
+                request.getPage() == 0, request.getPage() >= paginas - 1));
     }
 
     @GetMapping("/{id}")
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(
             @PathVariable("id") Long id) {
-        return ResponseEntity.ok(new CuentaAdministrativaResponseDTO(
-                id,
-                null,
-                null,
-                Set.of(),
-                null,
-                null,
-                null,
-                null,
-                null));
+        Usuario usuario = usuarioRepository.buscarPorId(id)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(id));
+        return ResponseEntity.ok(aRespuesta(usuario));
     }
 
     @PatchMapping("/{id}/estado")
@@ -89,26 +86,22 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
         Long administradorId = Long.valueOf(authentication.getName());
 
-        Instant fechaCambio = Instant.now();
-
         Usuario usuario = cambiarEstadoCuentaUseCase.ejecutar(
                 id,
                 request.getEstado(),
                 administradorId,
                 request.getMotivo());
 
-        CuentaAdministrativaResponseDTO response =
-                new CuentaAdministrativaResponseDTO(
-                        usuario.getId(),
-                        usuario.getNombre(),
-                        usuario.getEmail(),
-                        Set.of(usuario.getRol()),
-                        usuario.getEstado(),
-                        usuario.getFechaRegistro(),
-                        fechaCambio,
-                        administradorId,
-                        request.getMotivo());
+        return ResponseEntity.ok(aRespuesta(usuario));
+    }
 
-        return ResponseEntity.ok(response);
+    private CuentaAdministrativaResponseDTO aRespuesta(Usuario usuario) {
+        EstadoCuenta estado = usuario.getEstado() == null
+                ? EstadoCuenta.ACTIVA : usuario.getEstado();
+        return new CuentaAdministrativaResponseDTO(
+                usuario.getId(), usuario.getNombre(), usuario.getEmail(),
+                Set.of(usuario.getRol()), estado, usuario.getFechaRegistro(),
+                usuario.getFechaCambioEstado(), usuario.getAdministradorCambioEstadoId(),
+                usuario.getMotivoCambioEstado());
     }
 }
