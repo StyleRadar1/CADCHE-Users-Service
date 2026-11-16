@@ -107,7 +107,9 @@ jobs:
     name: Construir y publicar imagen
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository)
     steps:
       - name: Descargar codigo
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -130,10 +132,10 @@ jobs:
             .
 
           docker push "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA"
-          if [[ "$GITHUB_REF" == "refs/heads/develop" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/develop" ]]; then
             docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:qa"
             docker push "$ACR_LOGIN_SERVER/ms-usuarios:qa"
-          else
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
             docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:prod"
             docker push "$ACR_LOGIN_SERVER/ms-usuarios:prod"
           fi
@@ -142,7 +144,9 @@ jobs:
     name: Desplegar en Azure App Service QA
     runs-on: ubuntu-latest
     needs: publish-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository)
     steps:
       - name: Autenticarse en Azure
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
