@@ -18,6 +18,9 @@ public record CuentaAdministrativaResponseDTO(
         @Schema(description = "Correo electrónico registrado", example = "laura.gomez@styleradar.com")
         String email,
 
+        @Schema(description = "Barrio de residencia", example = "Chapinero")
+        String barrio,
+
         @Schema(description = "Roles asignados a la cuenta", example = "[\"COMPRADOR\"]")
         Set<Rol> roles,
 

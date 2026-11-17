@@ -26,6 +26,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String VERIFICAR_CREDENCIALES =
+            "/api/v1/internal/usuarios/verificar-credenciales";
+
+    private static final String VERIFICAR_CREDENCIALES_LEGACY =
+            "/internal/api/v1/usuarios/verificar-credenciales";
+
+    private static final String MARCAR_CORREO_VERIFICADO =
+            "/api/v1/internal/usuarios/*/correo-verificado";
+
     @Value("${INTERNAL_AUTH_USERNAME}")
     private String username;
 
@@ -81,9 +90,15 @@ public class SecurityConfig {
             AuthenticationProvider authenticationProvider) throws Exception {
 
         http
-                .securityMatcher("/internal/api/v1/usuarios/verificar-credenciales")
+                .securityMatcher(
+                        VERIFICAR_CREDENCIALES,
+                        VERIFICAR_CREDENCIALES_LEGACY,
+                        MARCAR_CORREO_VERIFICADO
+                )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        "/internal/api/v1/usuarios/verificar-credenciales"
+                        VERIFICAR_CREDENCIALES,
+                        VERIFICAR_CREDENCIALES_LEGACY,
+                        MARCAR_CORREO_VERIFICADO
                 ))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -156,3 +171,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+

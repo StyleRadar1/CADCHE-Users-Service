@@ -23,11 +23,17 @@ public class UsuarioEntity {
     @Column(length = 20)
     private String telefono;
 
+    @Column(length = 100)
+    private String barrio;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Column(name = "acepta_habeas_data", nullable = false)
     private Boolean aceptaHabeasData;
+
+    @Column(name = "correo_verificado", nullable = false)
+    private Boolean correoVerificado;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
@@ -84,6 +90,14 @@ public class UsuarioEntity {
         this.telefono = telefono;
     }
 
+    public String getBarrio() {
+        return barrio;
+    }
+
+    public void setBarrio(String barrio) {
+        this.barrio = barrio;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -98,6 +112,14 @@ public class UsuarioEntity {
 
     public void setAceptaHabeasData(Boolean aceptaHabeasData) {
         this.aceptaHabeasData = aceptaHabeasData;
+    }
+
+    public Boolean getCorreoVerificado() {
+        return correoVerificado;
+    }
+
+    public void setCorreoVerificado(Boolean correoVerificado) {
+        this.correoVerificado = correoVerificado;
     }
 
     public Rol getRol() {
@@ -148,4 +170,3 @@ public class UsuarioEntity {
         this.motivoCambioEstado = motivoCambioEstado;
     }
 }
-

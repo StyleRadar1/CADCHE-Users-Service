@@ -6,12 +6,14 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entit
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UsuarioPersistenceAdapterUnitTest {
@@ -26,10 +28,25 @@ class UsuarioPersistenceAdapterUnitTest {
     }
 
     private Usuario crearUsuario() {
+        return crearUsuario(false);
+    }
+
+    private Usuario crearUsuario(Boolean correoVerificado) {
         return new Usuario(
-                1L, "Julian", "julian@gmail.com", "3001234567",
-                "hash", true, Rol.COMPRADOR, EstadoCuenta.ACTIVA,
-                Instant.now()
+                1L,
+                "Julian",
+                "julian@gmail.com",
+                "3001234567",
+                "hash",
+                true,
+                Rol.COMPRADOR,
+                EstadoCuenta.ACTIVA,
+                Instant.now(),
+                null,
+                null,
+                null,
+                correoVerificado,
+                "Chapinero"
         );
     }
 
@@ -39,8 +56,10 @@ class UsuarioPersistenceAdapterUnitTest {
         entity.setNombre("Julian");
         entity.setEmail("julian@gmail.com");
         entity.setTelefono("3001234567");
+        entity.setBarrio("Chapinero");
         entity.setPasswordHash("hash");
         entity.setAceptaHabeasData(true);
+        entity.setCorreoVerificado(false);
         entity.setRol(Rol.COMPRADOR);
         entity.setEstado(EstadoCuenta.ACTIVA);
         entity.setFechaRegistro(Instant.now());
@@ -57,16 +76,42 @@ class UsuarioPersistenceAdapterUnitTest {
 
     @Test
     void debeGuardarUsuario() {
-        UsuarioEntity entity = crearEntity();
-        when(repository.saveAndFlush(any(UsuarioEntity.class))).thenReturn(entity);
+        when(repository.saveAndFlush(any(UsuarioEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         Usuario resultado = adapter.guardar(crearUsuario());
+
+        ArgumentCaptor<UsuarioEntity> captor =
+                ArgumentCaptor.forClass(UsuarioEntity.class);
+
+        verify(repository).saveAndFlush(captor.capture());
 
         assertEquals(1L, resultado.getId());
         assertEquals("Julian", resultado.getNombre());
         assertEquals("julian@gmail.com", resultado.getEmail());
+        assertEquals("Chapinero", resultado.getBarrio());
         assertEquals(Rol.COMPRADOR, resultado.getRol());
-        verify(repository).saveAndFlush(any(UsuarioEntity.class));
+
+        // Comprueba que el valor false se guarda y se recupera.
+        assertEquals(Boolean.FALSE, captor.getValue().getCorreoVerificado());
+        assertEquals(Boolean.FALSE, resultado.getCorreoVerificado());
+    }
+
+    @Test
+    void debeGuardarUsuarioConCorreoVerificado() {
+        when(repository.saveAndFlush(any(UsuarioEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Usuario resultado = adapter.guardar(crearUsuario(true));
+
+        ArgumentCaptor<UsuarioEntity> captor =
+                ArgumentCaptor.forClass(UsuarioEntity.class);
+
+        verify(repository).saveAndFlush(captor.capture());
+
+        // Comprueba que el valor true se guarda y se recupera.
+        assertEquals(Boolean.TRUE, captor.getValue().getCorreoVerificado());
+        assertEquals(Boolean.TRUE, resultado.getCorreoVerificado());
     }
 
     @Test
@@ -88,6 +133,7 @@ class UsuarioPersistenceAdapterUnitTest {
 
         assertTrue(resultado.isPresent());
         assertEquals("Julian", resultado.get().getNombre());
+        assertEquals(Boolean.FALSE, resultado.get().getCorreoVerificado());
     }
 
     @Test

@@ -21,14 +21,31 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
 
     @Query(value = "SELECT u FROM UsuarioEntity u WHERE (:estado IS NULL OR u.estado = :estado "
             + "OR (:estado = edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.ACTIVA "
-            + "AND u.estado IS NULL)) ORDER BY u.id ASC",
+            + "AND u.estado IS NULL)) "
+            + "AND (:rol IS NULL OR u.rol = :rol) "
+            + "AND (:q IS NULL OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%'))) ORDER BY u.id ASC",
             countQuery = "SELECT COUNT(u) FROM UsuarioEntity u WHERE (:estado IS NULL OR u.estado = :estado "
                     + "OR (:estado = edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.ACTIVA "
-                    + "AND u.estado IS NULL))")
-    Page<UsuarioEntity> buscarCuentas(@Param("estado") EstadoCuenta estado, Pageable pageable);
+                    + "AND u.estado IS NULL)) "
+                    + "AND (:rol IS NULL OR u.rol = :rol) "
+                    + "AND (:q IS NULL OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :q, '%')) "
+                    + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')))" )
+    Page<UsuarioEntity> buscarCuentas(
+            @Param("estado") EstadoCuenta estado,
+            @Param("rol") Rol rol,
+            @Param("q") String q,
+            Pageable pageable);
 
     @Query("SELECT COUNT(u) FROM UsuarioEntity u WHERE (:estado IS NULL OR u.estado = :estado "
             + "OR (:estado = edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.ACTIVA "
-            + "AND u.estado IS NULL))")
-    long contarCuentas(@Param("estado") EstadoCuenta estado);
+            + "AND u.estado IS NULL)) "
+            + "AND (:rol IS NULL OR u.rol = :rol) "
+            + "AND (:q IS NULL OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%'))) ")
+    long contarCuentas(
+            @Param("estado") EstadoCuenta estado,
+            @Param("rol") Rol rol,
+            @Param("q") String q);
+
 }

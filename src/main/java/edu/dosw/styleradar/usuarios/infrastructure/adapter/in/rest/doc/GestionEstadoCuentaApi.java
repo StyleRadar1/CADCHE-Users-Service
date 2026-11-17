@@ -41,8 +41,9 @@ public interface GestionEstadoCuentaApi {
     @GetMapping
     @Operation(
             summary = "Consultar cuentas de usuario (SR-RF-66)",
-            description = "ROLE_ADMIN_STYLERADAR. Filtro opcional ACTIVA, INACTIVA, BLOQUEADA. "
-                    + "ACTIVA incluye NULL histórico efectivo, sin migrarlo. page=0, size=20, máximo 100; orden id ASC; paginación en BD.")
+            description = "ROLE_ADMIN_STYLERADAR. Filtros opcionales por estado, rol y q (nombre o correo). "
+                    + "ACTIVA incluye NULL histórico efectivo, sin migrarlo. page=0, size=20, entre 1 y 100; orden id ASC; paginación en BD. "
+                    + "La respuesta incluye barrio cuando está informado.")
     ResponseEntity<PageResponseDTO<CuentaAdministrativaResponseDTO>> consultar(
             @Valid @ParameterObject @ModelAttribute CuentasConsultaRequestDTO request);
 

@@ -23,13 +23,21 @@ public class SwaggerConfig {
     OpenAPI usersServiceOpenAPI() {
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("bearerAuth", new SecurityScheme()
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT")
-                        .description("Token JWT emitido por ms-auth (HS256)")))
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("Token JWT emitido por ms-auth (HS256)"))
+                        .addSecuritySchemes("serviceBasicAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("basic")
+                                .description("Credenciales de servicio interno configuradas en INTERNAL_AUTH_USERNAME y INTERNAL_AUTH_PASSWORD")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8120").description("Servidor local ms-usuarios"),
-                        new Server().url("http://localhost:8080").description("API Gateway StyleRadar")))
+                        new Server().url("http://localhost:8120")
+                                .description("Servidor local ms-usuarios"),
+                        new Server().url("http://localhost:8080")
+                                .description("API Gateway StyleRadar"),
+                        new Server().url("https://styleradar-qa-app.azurewebsites.net")
+                                .description("Servidor QA ms-usuarios")))
                 .info(new Info()
                         .title("StyleRadar - Users Service API (ms-usuarios)")
                         .description("Especificación OpenAPI 3.0 del microservicio de gestión de usuarios de StyleRadar. "
@@ -50,9 +58,11 @@ public class SwaggerConfig {
             }
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
                 boolean publicRoute = method == PathItem.HttpMethod.POST && publicPosts.contains(path);
+                String scheme = path.startsWith("/api/v1/internal/")
+                        ? "serviceBasicAuth" : "bearerAuth";
                 operation.setSecurity(publicRoute
                         ? List.of()
-                        : List.of(new SecurityRequirement().addList("bearerAuth")));
+                        : List.of(new SecurityRequirement().addList(scheme)));
             }));
         };
     }

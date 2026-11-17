@@ -7,15 +7,15 @@ import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequ
 import edu.dosw.styleradar.usuarios.application.dto.response.BusquedaGuardadaResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
-import edu.dosw.styleradar.usuarios.domain.model.*;
+import edu.dosw.styleradar.usuarios.domain.model.BusquedaGuardada;
+import edu.dosw.styleradar.usuarios.domain.model.Estilo;
+import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
+import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
-import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
-import edu.dosw.styleradar.usuarios.domain.port.out.PreferenciaEstiloRepositoryPort;
-import edu.dosw.styleradar.usuarios.domain.port.out.TallaRepositoryPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.BusquedaGuardadaRepositoryPort;
-import edu.dosw.styleradar.usuarios.domain.model.BusquedaGuardada;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,31 +40,31 @@ class UsuarioControllerTest {
     private RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
     private ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
-    private UsuarioRepositoryPort usuarioRepository;
-    private PreferenciaEstiloRepositoryPort preferenciasRepository;
-    private TallaRepositoryPort tallasRepository;
+    private ObtenerUsuarioUseCase obtenerUsuarioUseCase;
     private BusquedaGuardadaRepositoryPort busquedasRepository;
+
     private UsuarioController controller;
 
     @BeforeEach
     void setUp() {
+
         registrarUsuarioUseCase = mock(RegistrarUsuarioUseCase.class);
+
         actualizarPreferenciasUseCase =
                 mock(ActualizarPreferenciasEstiloUseCase.class);
+
         actualizarTallasUseCase =
                 mock(ActualizarTallasHabitualesUseCase.class);
-        usuarioRepository = mock(UsuarioRepositoryPort.class);
-        preferenciasRepository = mock(PreferenciaEstiloRepositoryPort.class);
-        tallasRepository = mock(TallaRepositoryPort.class);
+
+        obtenerUsuarioUseCase = mock(ObtenerUsuarioUseCase.class);
+
         busquedasRepository = mock(BusquedaGuardadaRepositoryPort.class);
 
         controller = new UsuarioController(
                 registrarUsuarioUseCase,
                 actualizarPreferenciasUseCase,
                 actualizarTallasUseCase,
-                usuarioRepository,
-                preferenciasRepository,
-                tallasRepository,
+                obtenerUsuarioUseCase,
                 busquedasRepository
         );
 
@@ -84,30 +83,29 @@ class UsuarioControllerTest {
         SecurityContextHolder.clearContext();
     }
 
-    private Usuario crearUsuario() {
-        return new Usuario(
-                144L,
-                "Laura Gomez",
-                "laura@styleradar.com",
-                "3001234567",
-                "hash-password",
-                true,
-                Rol.COMPRADOR,
-                EstadoCuenta.ACTIVA,
-                Instant.now()
-        );
+    private UsuarioResponseDTO crearRespuestaUsuario() {
+
+        return UsuarioResponseDTO.builder()
+                .id(144L)
+                .nombre("Laura Gomez")
+                .email("laura@styleradar.com")
+                .telefono("3001234567")
+                .fechaRegistro(Instant.now())
+                .preferenciasEstilo(Set.of(Estilo.CASUAL))
+                .tallasHabituales(Set.of(Talla.M))
+                .tallasPorTipoPrenda(Map.of(
+                        TipoPrenda.SUPERIOR, Set.of("M")
+                ))
+                .build();
     }
 
     @Test
     void debeRegistrarUsuario() {
+
         RegistrarUsuarioRequestDTO request =
                 new RegistrarUsuarioRequestDTO();
 
-        UsuarioResponseDTO esperado = UsuarioResponseDTO.builder()
-                .id(144L)
-                .nombre("Laura Gomez")
-                .email("laura@styleradar.com")
-                .build();
+        UsuarioResponseDTO esperado = crearRespuestaUsuario();
 
         when(registrarUsuarioUseCase.registrar(request))
                 .thenReturn(esperado);
@@ -123,36 +121,82 @@ class UsuarioControllerTest {
 
     @Test
     void debeObtenerPerfil() {
-        when(usuarioRepository.buscarPorId(144L)).thenReturn(Optional.of(crearUsuario()));
-        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of(Estilo.CASUAL));
-        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of(TipoPrenda.SUPERIOR, Set.of("M")));
+
+        UsuarioResponseDTO esperado = crearRespuestaUsuario();
+
+        when(obtenerUsuarioUseCase.obtener(144L))
+                .thenReturn(esperado);
+
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.obtenerPerfil();
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         assertEquals(144L, respuesta.getBody().getId());
-        assertTrue(respuesta.getBody().getPreferenciasEstilo()
+
+        assertTrue(respuesta.getBody()
+                .getPreferenciasEstilo()
                 .contains(Estilo.CASUAL));
-        assertEquals(Set.of("M"), respuesta.getBody().getTallasPorTipoPrenda().get(TipoPrenda.SUPERIOR));
+
+        assertEquals(
+                Set.of("M"),
+                respuesta.getBody()
+                        .getTallasPorTipoPrenda()
+                        .get(TipoPrenda.SUPERIOR)
+        );
+
+        verify(obtenerUsuarioUseCase).obtener(144L);
     }
 
     @Test
     void debeObtenerUsuarioPorId() {
-        when(usuarioRepository.buscarPorId(144L)).thenReturn(Optional.of(crearUsuario()));
-        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of());
-        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of());
+
+        UsuarioResponseDTO esperado = crearRespuestaUsuario();
+
+        when(obtenerUsuarioUseCase.obtener(144L))
+                .thenReturn(esperado);
+
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.obtenerPorId(144L);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         assertEquals(144L, respuesta.getBody().getId());
-        assertEquals("laura@styleradar.com", respuesta.getBody().getEmail());
+        assertEquals(
+                "laura@styleradar.com",
+                respuesta.getBody().getEmail()
+        );
+
+        verify(obtenerUsuarioUseCase).obtener(144L);
+    }
+
+    @Test
+    void debeLanzarExcepcionSiUsuarioNoExisteAlObtenerPerfil() {
+
+        when(obtenerUsuarioUseCase.obtener(144L))
+                .thenThrow(new UsuarioNoEncontradoException(144L));
+
+        assertThrows(
+                UsuarioNoEncontradoException.class,
+                () -> controller.obtenerPerfil()
+        );
+    }
+
+    @Test
+    void debeLanzarExcepcionSiUsuarioNoExisteAlConsultarPorId() {
+
+        when(obtenerUsuarioUseCase.obtener(999L))
+                .thenThrow(new UsuarioNoEncontradoException(999L));
+
+        assertThrows(
+                UsuarioNoEncontradoException.class,
+                () -> controller.obtenerPorId(999L)
+        );
     }
 
     @Test
     void debeActualizarPreferenciasDeEstilo() {
+
         ActualizarPreferenciasEstiloRequestDTO request =
                 new ActualizarPreferenciasEstiloRequestDTO();
 
@@ -166,54 +210,31 @@ class UsuarioControllerTest {
                 request.getPreferencias()
         )).thenReturn(request.getPreferencias());
 
-        when(usuarioRepository.buscarPorId(144L))
-                .thenReturn(Optional.of(crearUsuario()));
-        when(preferenciasRepository.buscarPorUsuarioId(144L))
-                .thenReturn(request.getPreferencias());
-        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of());
+        UsuarioResponseDTO esperado = crearRespuestaUsuario();
+
+        when(obtenerUsuarioUseCase.obtener(144L))
+                .thenReturn(esperado);
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.actualizarPreferenciasEstilo(request);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertEquals(144L, respuesta.getBody().getId());
-        assertEquals(
-                request.getPreferencias(),
-                respuesta.getBody().getPreferenciasEstilo()
-        );
 
         verify(actualizarPreferenciasUseCase)
                 .actualizar(144L, request.getPreferencias());
-        verify(usuarioRepository).buscarPorId(144L);
-    }
 
-    @Test
-    void debeLanzarExcepcionSiUsuarioNoExisteAlActualizarPreferencias() {
-        ActualizarPreferenciasEstiloRequestDTO request =
-                new ActualizarPreferenciasEstiloRequestDTO();
-
-        request.setPreferencias(Set.of(Estilo.CASUAL));
-
-        when(actualizarPreferenciasUseCase.actualizar(
-                144L,
-                request.getPreferencias()
-        )).thenReturn(request.getPreferencias());
-
-        when(usuarioRepository.buscarPorId(144L))
-                .thenReturn(Optional.empty());
-
-        assertThrows(
-                UsuarioNoEncontradoException.class,
-                () -> controller.actualizarPreferenciasEstilo(request)
-        );
+        verify(obtenerUsuarioUseCase).obtener(144L);
     }
 
     @Test
     void debeActualizarTallasHabituales() {
+
         ActualizarTallasHabitualesRequestDTO request =
                 new ActualizarTallasHabitualesRequestDTO();
 
         request.setTallas(Set.of(Talla.M));
+
         request.setTallasPorTipoPrenda(Map.of(
                 TipoPrenda.SUPERIOR, Set.of("M"),
                 TipoPrenda.INFERIOR, Set.of("32"),
@@ -225,57 +246,26 @@ class UsuarioControllerTest {
                 request.getTallasPorTipoPrenda()
         )).thenReturn(request.getTallasPorTipoPrenda());
 
-        when(usuarioRepository.buscarPorId(144L))
-                .thenReturn(Optional.of(crearUsuario()));
-        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of());
-        when(tallasRepository.buscarPorUsuarioId(144L))
-                .thenReturn(request.getTallasPorTipoPrenda());
+        UsuarioResponseDTO esperado = crearRespuestaUsuario();
+
+        when(obtenerUsuarioUseCase.obtener(144L))
+                .thenReturn(esperado);
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
                 controller.actualizarTallasHabituales(request);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertEquals(144L, respuesta.getBody().getId());
-        assertEquals(
-                request.getTallas(),
-                respuesta.getBody().getTallasHabituales()
-        );
-        assertEquals(
-                request.getTallasPorTipoPrenda(),
-                respuesta.getBody().getTallasPorTipoPrenda()
-        );
 
         verify(actualizarTallasUseCase)
                 .actualizar(144L, request.getTallasPorTipoPrenda());
-        verify(usuarioRepository).buscarPorId(144L);
-    }
 
-    @Test
-    void debeLanzarExcepcionSiUsuarioNoExisteAlActualizarTallas() {
-        ActualizarTallasHabitualesRequestDTO request =
-                new ActualizarTallasHabitualesRequestDTO();
-
-        request.setTallas(Set.of(Talla.M));
-        request.setTallasPorTipoPrenda(
-                Map.of(TipoPrenda.SUPERIOR, Set.of("M"))
-        );
-
-        when(actualizarTallasUseCase.actualizar(
-                144L,
-                request.getTallasPorTipoPrenda()
-        )).thenReturn(request.getTallasPorTipoPrenda());
-
-        when(usuarioRepository.buscarPorId(144L))
-                .thenReturn(Optional.empty());
-
-        assertThrows(
-                UsuarioNoEncontradoException.class,
-                () -> controller.actualizarTallasHabituales(request)
-        );
+        verify(obtenerUsuarioUseCase).obtener(144L);
     }
 
     @Test
     void debeGuardarBusqueda() {
+
         GuardarBusquedaRequestDTO request =
                 new GuardarBusquedaRequestDTO();
 
@@ -286,11 +276,23 @@ class UsuarioControllerTest {
         request.setTalla(Talla.M);
         request.setEstilo(Estilo.CASUAL);
 
-        when(busquedasRepository.guardar(any())).thenReturn(new BusquedaGuardada(
-                10L, 144L, request.getNombre(), request.getQuery(), request.getTipo(),
-                request.getColor(), request.getTalla(), request.getPrecioMin(),
-                request.getPrecioMax(), request.getMarca(), request.getEstilo(),
-                request.getLatitud(), request.getLongitud(), Instant.now()));
+        when(busquedasRepository.guardar(any()))
+                .thenReturn(new BusquedaGuardada(
+                        10L,
+                        144L,
+                        request.getNombre(),
+                        request.getQuery(),
+                        request.getTipo(),
+                        request.getColor(),
+                        request.getTalla(),
+                        request.getPrecioMin(),
+                        request.getPrecioMax(),
+                        request.getMarca(),
+                        request.getEstilo(),
+                        request.getLatitud(),
+                        request.getLongitud(),
+                        Instant.now()
+                ));
 
         ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
                 controller.guardarBusqueda(request);
@@ -298,31 +300,48 @@ class UsuarioControllerTest {
         assertEquals(HttpStatus.CREATED, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         assertEquals(10L, respuesta.getBody().getId());
-        assertEquals("Chaquetas casuales",
-                respuesta.getBody().getNombre());
-        assertEquals("chaqueta", respuesta.getBody().getQuery());
-        assertEquals(Estilo.CASUAL, respuesta.getBody().getEstilo());
+        assertEquals(
+                "Chaquetas casuales",
+                respuesta.getBody().getNombre()
+        );
+        assertEquals(
+                "chaqueta",
+                respuesta.getBody().getQuery()
+        );
+        assertEquals(
+                Estilo.CASUAL,
+                respuesta.getBody().getEstilo()
+        );
+
         assertNotNull(respuesta.getBody().getFechaCreacion());
     }
 
     @Test
     void debeObtenerListaDeBusquedasGuardadas() {
-        when(busquedasRepository.buscarPorUsuarioId(144L)).thenReturn(List.of());
+
+        when(busquedasRepository.buscarPorUsuarioId(144L))
+                .thenReturn(List.of());
+
         ResponseEntity<List<BusquedaGuardadaResponseDTO>> respuesta =
                 controller.obtenerBusquedasGuardadas();
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         assertTrue(respuesta.getBody().isEmpty());
+
+        verify(busquedasRepository).buscarPorUsuarioId(144L);
     }
 
     @Test
     void debeEliminarBusquedaGuardada() {
+
         ResponseEntity<Void> respuesta =
                 controller.eliminarBusquedaGuardada(5L);
 
         assertEquals(HttpStatus.NO_CONTENT, respuesta.getStatusCode());
         assertNull(respuesta.getBody());
-        verify(busquedasRepository).eliminarPorIdYUsuarioId(5L, 144L);
+
+        verify(busquedasRepository)
+                .eliminarPorIdYUsuarioId(5L, 144L);
     }
 }

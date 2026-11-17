@@ -37,7 +37,7 @@ class VerificarCredencialesControllerTest {
     }
 
     @Test
-    void debeVerificarCredencialesCorrectas() {
+    void debeVerificarCredencialesCorrectasConCorreoVerificado() {
 
         VerificarCredencialesRequestDTO request =
                 new VerificarCredencialesRequestDTO(
@@ -54,7 +54,11 @@ class VerificarCredencialesControllerTest {
                 true,
                 Rol.COMPRADOR,
                 EstadoCuenta.ACTIVA,
-                Instant.now()
+                Instant.now(),
+                null,
+                null,
+                null,
+                true
         );
 
         when(verificarCredencialesUseCase.verificar(
@@ -75,10 +79,54 @@ class VerificarCredencialesControllerTest {
         assertEquals(Rol.COMPRADOR, body.rol());
         assertEquals(EstadoCuenta.ACTIVA, body.estado());
 
+        // U2: debe devolver el correo como verificado.
+        assertEquals(Boolean.TRUE, body.correoVerificado());
+
         verify(verificarCredencialesUseCase).verificar(
                 request.email(),
                 request.password()
         );
+    }
+
+    @Test
+    void debeDevolverCorreoNoVerificadoCuandoEsFalse() {
+
+        VerificarCredencialesRequestDTO request =
+                new VerificarCredencialesRequestDTO(
+                        "comprador@styleradar.com",
+                        "password123"
+                );
+
+        Usuario usuario = new Usuario(
+                144L,
+                "Usuario de prueba",
+                "comprador@styleradar.com",
+                "3001234567",
+                "hash-password",
+                true,
+                Rol.COMPRADOR,
+                EstadoCuenta.ACTIVA,
+                Instant.now(),
+                null,
+                null,
+                null,
+                false
+        );
+
+        when(verificarCredencialesUseCase.verificar(
+                request.email(),
+                request.password()
+        )).thenReturn(Optional.of(usuario));
+
+        ResponseEntity<?> respuesta = controller.verificar(request);
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+
+        VerificarCredencialesResponseDTO body =
+                (VerificarCredencialesResponseDTO) respuesta.getBody();
+
+        assertNotNull(body);
+        assertEquals(Boolean.FALSE, body.correoVerificado());
     }
 
     @Test
