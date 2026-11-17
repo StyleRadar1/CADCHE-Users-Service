@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -54,15 +55,16 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     }
 
     @Override
-    public java.util.List<Usuario> buscarCuentas(EstadoCuenta estado, int page, int size) {
+    public List<Usuario> buscarCuentas(
+            EstadoCuenta estado, Rol rol, String q, int page, int size) {
         var pageable = PageRequest.of(page, size);
-        var resultados = usuarioJpaRepository.buscarCuentas(estado, pageable);
+        var resultados = usuarioJpaRepository.buscarCuentas(estado, rol, q, pageable);
         return resultados.map(this::convertirADominio).getContent();
     }
 
     @Override
-    public long contarCuentas(EstadoCuenta estado) {
-        return usuarioJpaRepository.contarCuentas(estado);
+    public long contarCuentas(EstadoCuenta estado, Rol rol, String q) {
+        return usuarioJpaRepository.contarCuentas(estado, rol, q);
     }
 
     @Override
@@ -81,7 +83,8 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
             Long administradorId,
             String motivo) {
 
-        Optional<UsuarioEntity> resultado = usuarioJpaRepository.findById(usuarioId);
+        Optional<UsuarioEntity> resultado =
+                usuarioJpaRepository.findById(usuarioId);
 
         if (resultado.isEmpty()) {
             return Optional.empty();
@@ -98,17 +101,43 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         return Optional.of(convertirADominio(actualizado));
     }
 
+    @Override
+    @Transactional
+    public Optional<Usuario> marcarCorreoComoVerificado(Long usuarioId) {
+
+        Optional<UsuarioEntity> resultado =
+                usuarioJpaRepository.findById(usuarioId);
+
+        if (resultado.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UsuarioEntity entity = resultado.get();
+        entity.setCorreoVerificado(true);
+
+        UsuarioEntity actualizado =
+                usuarioJpaRepository.saveAndFlush(entity);
+
+        return Optional.of(convertirADominio(actualizado));
+    }
+
     private UsuarioEntity convertirAEntity(Usuario usuario) {
         UsuarioEntity entity = new UsuarioEntity();
         entity.setId(usuario.getId());
         entity.setNombre(usuario.getNombre());
         entity.setEmail(usuario.getEmail());
         entity.setTelefono(usuario.getTelefono());
+        entity.setBarrio(usuario.getBarrio());
         entity.setPasswordHash(usuario.getPasswordHash());
         entity.setAceptaHabeasData(usuario.getAceptaHabeasData());
+        entity.setCorreoVerificado(usuario.getCorreoVerificado());
         entity.setRol(usuario.getRol());
         entity.setEstado(usuario.getEstado());
         entity.setFechaRegistro(usuario.getFechaRegistro());
+        entity.setFechaCambioEstado(usuario.getFechaCambioEstado());
+        entity.setAdministradorCambioEstadoId(
+                usuario.getAdministradorCambioEstadoId());
+        entity.setMotivoCambioEstado(usuario.getMotivoCambioEstado());
         return entity;
     }
 
@@ -125,7 +154,9 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
                 entity.getFechaRegistro(),
                 entity.getFechaCambioEstado(),
                 entity.getAdministradorCambioEstadoId(),
-                entity.getMotivoCambioEstado()
+                entity.getMotivoCambioEstado(),
+                entity.getCorreoVerificado(),
+                entity.getBarrio()
         );
     }
 }

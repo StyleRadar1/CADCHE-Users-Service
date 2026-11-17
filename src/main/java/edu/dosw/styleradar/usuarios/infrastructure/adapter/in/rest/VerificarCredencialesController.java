@@ -10,7 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/internal/api/v1/usuarios")
+@RequestMapping({
+        "/api/v1/internal/usuarios",
+        "/internal/api/v1/usuarios"
+})
 public class VerificarCredencialesController {
 
     private final VerificarCredencialesUseCase verificarCredencialesUseCase;
@@ -37,9 +40,11 @@ public class VerificarCredencialesController {
                         usuario.getId(),
                         usuario.getEmail(),
                         usuario.getRol(),
-                        usuario.getEstado()
+                        usuario.getEstado(),
+                        usuario.getCorreoVerificado()
                 );
 
         return ResponseEntity.ok(respuesta);
     }
 }
+

@@ -8,8 +8,10 @@ public class Usuario {
     private String nombre;
     private String email;
     private String telefono;
+    private String barrio;
     private String passwordHash;
     private Boolean aceptaHabeasData;
+    private Boolean correoVerificado;
     private Rol rol;
     private EstadoCuenta estado;
     private Instant fechaRegistro;
@@ -27,8 +29,16 @@ public class Usuario {
             Rol rol,
             EstadoCuenta estado,
             Instant fechaRegistro) {
-        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData, rol,
-                estado, fechaRegistro, null, null, null);
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData,
+                rol, estado, fechaRegistro, null, null, null, false, null);
+    }
+
+    public Usuario(
+            Long id, String nombre, String email, String telefono,
+            String passwordHash, Boolean aceptaHabeasData, Rol rol,
+            EstadoCuenta estado, Instant fechaRegistro, String barrio) {
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData,
+                rol, estado, fechaRegistro, null, null, null, false, barrio);
     }
 
     public Usuario(
@@ -36,12 +46,37 @@ public class Usuario {
             String passwordHash, Boolean aceptaHabeasData, Rol rol,
             EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
             Long administradorCambioEstadoId, String motivoCambioEstado) {
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData,
+                rol, estado, fechaRegistro, fechaCambioEstado,
+                administradorCambioEstadoId, motivoCambioEstado, false, null);
+    }
+
+    public Usuario(
+            Long id, String nombre, String email, String telefono,
+            String passwordHash, Boolean aceptaHabeasData, Rol rol,
+            EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
+            Long administradorCambioEstadoId, String motivoCambioEstado,
+            Boolean correoVerificado) {
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData, rol,
+                estado, fechaRegistro, fechaCambioEstado, administradorCambioEstadoId,
+                motivoCambioEstado, correoVerificado, null);
+    }
+
+    public Usuario(
+            Long id, String nombre, String email, String telefono,
+            String passwordHash, Boolean aceptaHabeasData, Rol rol,
+            EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
+            Long administradorCambioEstadoId, String motivoCambioEstado,
+            Boolean correoVerificado, String barrio) {
+
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.telefono = telefono;
+        this.barrio = barrio;
         this.passwordHash = passwordHash;
         this.aceptaHabeasData = aceptaHabeasData;
+        this.correoVerificado = correoVerificado;
         this.rol = rol;
         this.estado = estado;
         this.fechaRegistro = fechaRegistro;
@@ -56,6 +91,10 @@ public class Usuario {
         }
 
         this.estado = nuevoEstado;
+    }
+
+    public void marcarCorreoComoVerificado() {
+        this.correoVerificado = true;
     }
 
     public Long getId() {
@@ -74,12 +113,20 @@ public class Usuario {
         return telefono;
     }
 
+    public String getBarrio() {
+        return barrio;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
 
     public Boolean getAceptaHabeasData() {
         return aceptaHabeasData;
+    }
+
+    public Boolean getCorreoVerificado() {
+        return correoVerificado;
     }
 
     public Rol getRol() {
@@ -94,9 +141,17 @@ public class Usuario {
         return fechaRegistro;
     }
 
-    public Instant getFechaCambioEstado() { return fechaCambioEstado; }
-    public Long getAdministradorCambioEstadoId() { return administradorCambioEstadoId; }
-    public String getMotivoCambioEstado() { return motivoCambioEstado; }
+    public Instant getFechaCambioEstado() {
+        return fechaCambioEstado;
+    }
+
+    public Long getAdministradorCambioEstadoId() {
+        return administradorCambioEstadoId;
+    }
+
+    public String getMotivoCambioEstado() {
+        return motivoCambioEstado;
+    }
 }
 
 

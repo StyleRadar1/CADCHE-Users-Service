@@ -2,8 +2,6 @@ package edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,18 +21,11 @@ import edu.dosw.styleradar.usuarios.application.dto.request.GuardarBusquedaReque
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.BusquedaGuardadaResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
-import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
-import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.BusquedaGuardada;
-import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
-import edu.dosw.styleradar.usuarios.domain.model.Talla;
-import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
-import edu.dosw.styleradar.usuarios.domain.port.out.PreferenciaEstiloRepositoryPort;
-import edu.dosw.styleradar.usuarios.domain.port.out.TallaRepositoryPort;
-import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.BusquedaGuardadaRepositoryPort;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.UsuarioApi;
 import jakarta.validation.Valid;
@@ -46,26 +37,20 @@ public class UsuarioController implements UsuarioApi {
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private final ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
     private final ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
-    private final UsuarioRepositoryPort usuarioRepository;
-    private final PreferenciaEstiloRepositoryPort preferenciasRepository;
-    private final TallaRepositoryPort tallasRepository;
+    private final ObtenerUsuarioUseCase obtenerUsuarioUseCase;
     private final BusquedaGuardadaRepositoryPort busquedasRepository;
 
     public UsuarioController(
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
             ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase,
             ActualizarTallasHabitualesUseCase actualizarTallasUseCase,
-            UsuarioRepositoryPort usuarioRepository,
-            PreferenciaEstiloRepositoryPort preferenciasRepository,
-            TallaRepositoryPort tallasRepository,
+            ObtenerUsuarioUseCase obtenerUsuarioUseCase,
             BusquedaGuardadaRepositoryPort busquedasRepository) {
 
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
         this.actualizarPreferenciasUseCase = actualizarPreferenciasUseCase;
         this.actualizarTallasUseCase = actualizarTallasUseCase;
-        this.usuarioRepository = usuarioRepository;
-        this.preferenciasRepository = preferenciasRepository;
-        this.tallasRepository = tallasRepository;
+        this.obtenerUsuarioUseCase = obtenerUsuarioUseCase;
         this.busquedasRepository = busquedasRepository;
     }
 
@@ -80,13 +65,18 @@ public class UsuarioController implements UsuarioApi {
 
     @Override
     public ResponseEntity<UsuarioResponseDTO> obtenerPerfil() {
-        return ResponseEntity.ok(perfilUsuario(usuarioAutenticadoId()));
+
+        Long usuarioId = usuarioAutenticadoId();
+
+        return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
     @GetMapping("/{id}")
     @Override
-    public ResponseEntity<UsuarioResponseDTO> obtenerPorId(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(perfilUsuario(id));
+    public ResponseEntity<UsuarioResponseDTO> obtenerPorId(
+            @PathVariable("id") Long id) {
+
+        return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(id));
     }
 
     @Override
@@ -100,7 +90,7 @@ public class UsuarioController implements UsuarioApi {
                 request.getPreferencias()
         );
 
-        return ResponseEntity.ok(perfilUsuario(usuarioId));
+        return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
     @Override
@@ -110,81 +100,92 @@ public class UsuarioController implements UsuarioApi {
         Long usuarioId = usuarioAutenticadoId();
 
         actualizarTallasUseCase.actualizar(
-                        usuarioId,
-                        request.getTallasPorTipoPrenda()
-                );
+                usuarioId,
+                request.getTallasPorTipoPrenda()
+        );
 
-        return ResponseEntity.ok(perfilUsuario(usuarioId));
+        return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
     @Override
     public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
+
         Long usuarioId = usuarioAutenticadoId();
-        BusquedaGuardada busqueda = new BusquedaGuardada(null, usuarioId,
-                request.getNombre(), request.getQuery(), request.getTipo(),
-                request.getColor(), request.getTalla(), request.getPrecioMin(),
-                request.getPrecioMax(), request.getMarca(), request.getEstilo(),
-                request.getLatitud(), request.getLongitud(), Instant.now());
+
+        BusquedaGuardada busqueda = new BusquedaGuardada(
+                null,
+                usuarioId,
+                request.getNombre(),
+                request.getQuery(),
+                request.getTipo(),
+                request.getColor(),
+                request.getTalla(),
+                request.getPrecioMin(),
+                request.getPrecioMax(),
+                request.getMarca(),
+                request.getEstilo(),
+                request.getLatitud(),
+                request.getLongitud(),
+                Instant.now()
+        );
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(aRespuesta(busquedasRepository.guardar(busqueda)));
     }
 
     @Override
     public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas() {
+
         Long usuarioId = usuarioAutenticadoId();
-        return ResponseEntity.ok(busquedasRepository.buscarPorUsuarioId(usuarioId).stream()
-                .map(this::aRespuesta).toList());
+
+        return ResponseEntity.ok(
+                busquedasRepository.buscarPorUsuarioId(usuarioId)
+                        .stream()
+                        .map(this::aRespuesta)
+                        .toList()
+        );
     }
 
     @DeleteMapping("/me/busquedas-guardadas/{busquedaId}")
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
             @PathVariable("busquedaId") Long busquedaId) {
-        busquedasRepository.eliminarPorIdYUsuarioId(busquedaId, usuarioAutenticadoId());
+
+        busquedasRepository.eliminarPorIdYUsuarioId(
+                busquedaId,
+                usuarioAutenticadoId()
+        );
+
         return ResponseEntity.noContent().build();
     }
 
     private BusquedaGuardadaResponseDTO aRespuesta(BusquedaGuardada busqueda) {
+
         return BusquedaGuardadaResponseDTO.builder()
-                .id(busqueda.id()).nombre(busqueda.nombre()).query(busqueda.query())
-                .tipo(busqueda.tipo()).color(busqueda.color()).talla(busqueda.talla())
-                .precioMin(busqueda.precioMin()).precioMax(busqueda.precioMax())
-                .marca(busqueda.marca()).estilo(busqueda.estilo())
-                .latitud(busqueda.latitud()).longitud(busqueda.longitud())
-                .fechaCreacion(busqueda.fechaCreacion()).build();
+                .id(busqueda.id())
+                .nombre(busqueda.nombre())
+                .query(busqueda.query())
+                .tipo(busqueda.tipo())
+                .color(busqueda.color())
+                .talla(busqueda.talla())
+                .precioMin(busqueda.precioMin())
+                .precioMax(busqueda.precioMax())
+                .marca(busqueda.marca())
+                .estilo(busqueda.estilo())
+                .latitud(busqueda.latitud())
+                .longitud(busqueda.longitud())
+                .fechaCreacion(busqueda.fechaCreacion())
+                .build();
     }
 
     private Long usuarioAutenticadoId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Jwt jwt = (Jwt) authentication.getPrincipal();
-        return Long.valueOf(jwt.getSubject());
-    }
 
-    private UsuarioResponseDTO perfilUsuario(Long id) {
-        Usuario usuario = usuarioRepository.buscarPorId(id)
-                .orElseThrow(() -> new UsuarioNoEncontradoException(id));
-        Map<TipoPrenda, Set<String>> tallas = tallasRepository.buscarPorUsuarioId(id);
-        Set<Talla> tallasAlfabeticas =
-                tallas.getOrDefault(TipoPrenda.SUPERIOR, Set.of()).stream()
-                        .map(valor -> {
-                            try {
-                                return Talla.valueOf(valor);
-                            } catch (IllegalArgumentException exception) {
-                                return null;
-                            }
-                        })
-                        .filter(java.util.Objects::nonNull)
-                        .collect(java.util.stream.Collectors.toSet());
-        return UsuarioResponseDTO.builder()
-                .id(usuario.getId())
-                .nombre(usuario.getNombre())
-                .email(usuario.getEmail())
-                .telefono(usuario.getTelefono())
-                .fechaRegistro(usuario.getFechaRegistro())
-                .preferenciasEstilo(preferenciasRepository.buscarPorUsuarioId(id))
-                .tallasHabituales(tallasAlfabeticas)
-                .tallasPorTipoPrenda(tallas)
-                .build();
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+
+        return Long.valueOf(jwt.getSubject());
     }
 }

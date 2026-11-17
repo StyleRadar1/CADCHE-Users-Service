@@ -7,6 +7,7 @@ public record VerificarCredencialesResponseDTO(
         Long id,
         String email,
         Rol rol,
-        EstadoCuenta estado
+        EstadoCuenta estado,
+        Boolean correoVerificado
 ) {
 }

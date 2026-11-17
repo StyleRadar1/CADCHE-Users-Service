@@ -48,7 +48,8 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
                 request.getAceptaHabeasData(),
                 Rol.COMPRADOR,
                 EstadoCuenta.ACTIVA,
-                Instant.now()
+                Instant.now(),
+                request.getBarrio()
         );
 
         Usuario guardado = usuarioRepository.guardar(usuario);
@@ -58,6 +59,8 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         response.setNombre(guardado.getNombre());
         response.setEmail(guardado.getEmail());
         response.setTelefono(guardado.getTelefono());
+        response.setBarrio(guardado.getBarrio());
+        response.setCorreoVerificado(guardado.getCorreoVerificado());
         response.setFechaRegistro(guardado.getFechaRegistro());
         response.setPreferenciasEstilo(new HashSet<>());
         response.setTallasHabituales(new HashSet<>());

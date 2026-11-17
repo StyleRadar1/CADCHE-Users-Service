@@ -108,6 +108,16 @@ class RequestDTOTest {
         assertFalse(validator.validate(dto).isEmpty());
 
         dto.setPage(0);
+        dto.setSize(0);
+
+        assertFalse(validator.validate(dto).isEmpty());
+
+        dto.setSize(20);
+        dto.setQ("x".repeat(101));
+
+        assertFalse(validator.validate(dto).isEmpty());
+
+        dto.setQ(null);
         dto.setSize(101);
 
         assertFalse(validator.validate(dto).isEmpty());

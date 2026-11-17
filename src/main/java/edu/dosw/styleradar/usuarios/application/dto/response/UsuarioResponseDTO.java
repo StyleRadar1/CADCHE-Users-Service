@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Representación del perfil de usuario comprador, sus preferencias de estilo y tallas habituales por tipo de prenda (SR-RF-01, SR-RF-03, SR-RF-04)")
+@Schema(description = "Representación del perfil de usuario comprador, sus preferencias de estilo y tallas habituales por tipo de prenda")
 public class UsuarioResponseDTO {
 
     @Schema(description = "Identificador único del usuario", example = "12")
@@ -32,16 +32,22 @@ public class UsuarioResponseDTO {
     @Schema(description = "Número telefónico de contacto", example = "+57 300 123 4567")
     private String telefono;
 
+    @Schema(description = "Barrio de residencia", example = "Chapinero")
+    private String barrio;
+
+    @Schema(description = "Indica si el correo electrónico fue verificado", example = "true")
+    private Boolean correoVerificado;
+
     @Schema(description = "Fecha y hora UTC de registro en la plataforma", example = "2026-11-03T01:30:00Z")
     private Instant fechaRegistro;
 
-    @Schema(description = "Preferencias de estilo configuradas por el usuario (SR-RF-03)", example = "[\"CASUAL\",\"URBANO\"]")
+    @Schema(description = "Preferencias de estilo configuradas por el usuario", example = "[\"CASUAL\",\"URBANO\"]")
     private Set<Estilo> preferenciasEstilo;
 
-    @Schema(description = "Tallas habituales configuradas por el usuario (SR-RF-04)", example = "[\"M\",\"L\"]")
+    @Schema(description = "Tallas habituales configuradas por el usuario", example = "[\"M\",\"L\"]")
     private Set<Talla> tallasHabituales;
 
-    @Schema(description = "Tallas habituales agrupadas por tipo de prenda incluyendo ropa (XS..XXL) y calzado numérico (35..45) (SR-RF-04)",
+    @Schema(description = "Tallas habituales agrupadas por tipo de prenda",
             example = "{\"SUPERIOR\":[\"M\"],\"INFERIOR\":[\"L\"],\"CALZADO\":[\"40\"]}")
     private Map<TipoPrenda, Set<String>> tallasPorTipoPrenda;
 }

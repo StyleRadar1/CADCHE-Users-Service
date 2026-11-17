@@ -40,6 +40,10 @@ public class RegistrarUsuarioRequestDTO {
             example = "+57 300 123 4567")
     private String telefono;
 
+    @Size(max = 100, message = "El barrio no puede superar 100 caracteres")
+    @Schema(description = "Barrio de residencia", example = "Chapinero")
+    private String barrio;
+
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 8, max = 72,
             message = "La contraseña debe tener entre 8 y 72 caracteres")

@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.Instant;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -56,7 +54,12 @@ class RegistrarUsuarioUseCaseTest {
                             usuario.getAceptaHabeasData(),
                             usuario.getRol(),
                             usuario.getEstado(),
-                            usuario.getFechaRegistro()
+                            usuario.getFechaRegistro(),
+                            null,
+                            null,
+                            null,
+                            usuario.getCorreoVerificado(),
+                            usuario.getBarrio()
                     );
                 });
 
@@ -66,6 +69,8 @@ class RegistrarUsuarioUseCaseTest {
         assertEquals(1L, response.getId());
         assertEquals("Laura Gómez", response.getNombre());
         assertEquals("laura@gmail.com", response.getEmail());
+        assertEquals(Boolean.FALSE, response.getCorreoVerificado());
+        assertEquals("Chapinero", response.getBarrio());
 
         verify(usuarioRepository).guardar(argThat(usuario -> {
             assertTrue(passwordEncoder.matches(
@@ -76,6 +81,10 @@ class RegistrarUsuarioUseCaseTest {
             assertEquals(Boolean.TRUE, usuario.getAceptaHabeasData());
             assertEquals(Rol.COMPRADOR, usuario.getRol());
             assertEquals(EstadoCuenta.ACTIVA, usuario.getEstado());
+
+            // U1: el correo debe iniciar sin verificar.
+            assertEquals(Boolean.FALSE, usuario.getCorreoVerificado());
+            assertEquals("Chapinero", usuario.getBarrio());
 
             return true;
         }));
@@ -105,6 +114,7 @@ class RegistrarUsuarioUseCaseTest {
         request.setNombre("Laura Gómez");
         request.setEmail(" Laura@GMAIL.COM ");
         request.setTelefono("+57 300 123 4567");
+        request.setBarrio("Chapinero");
         request.setPassword("StyleRadar2026*");
         request.setAceptaHabeasData(true);
 

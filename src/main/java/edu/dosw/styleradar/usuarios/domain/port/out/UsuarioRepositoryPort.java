@@ -2,10 +2,11 @@ package edu.dosw.styleradar.usuarios.domain.port.out;
 
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
+import edu.dosw.styleradar.usuarios.domain.model.Rol;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 public interface UsuarioRepositoryPort {
 
@@ -17,9 +18,9 @@ public interface UsuarioRepositoryPort {
 
     Optional<Usuario> buscarPorEmail(String email);
 
-    List<Usuario> buscarCuentas(EstadoCuenta estado, int page, int size);
+    List<Usuario> buscarCuentas(EstadoCuenta estado, Rol rol, String q, int page, int size);
 
-    long contarCuentas(EstadoCuenta estado);
+    long contarCuentas(EstadoCuenta estado, Rol rol, String q);
 
     long contarAdministradoresActivos();
 
@@ -29,4 +30,6 @@ public interface UsuarioRepositoryPort {
             Instant fechaCambio,
             Long administradorId,
             String motivo);
+
+    Optional<Usuario> marcarCorreoComoVerificado(Long usuarioId);
 }

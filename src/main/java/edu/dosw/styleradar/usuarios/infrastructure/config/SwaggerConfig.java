@@ -26,7 +26,11 @@ public class SwaggerConfig {
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
                         .bearerFormat("JWT")
-                        .description("Token JWT emitido por ms-auth (HS256)")))
+                        .description("Token JWT emitido por ms-auth (HS256)"))
+                        .addSecuritySchemes("serviceBasicAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("basic")
+                                .description("Credenciales de servicio interno configuradas en INTERNAL_AUTH_USERNAME y INTERNAL_AUTH_PASSWORD")))
                 .servers(List.of(
                         new Server().url("http://localhost:8120").description("Servidor local ms-usuarios"),
                         new Server().url("http://localhost:8080").description("API Gateway StyleRadar")))
@@ -50,9 +54,11 @@ public class SwaggerConfig {
             }
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
                 boolean publicRoute = method == PathItem.HttpMethod.POST && publicPosts.contains(path);
+                String scheme = path.startsWith("/api/v1/internal/")
+                        ? "serviceBasicAuth" : "bearerAuth";
                 operation.setSecurity(publicRoute
                         ? List.of()
-                        : List.of(new SecurityRequirement().addList("bearerAuth")));
+                        : List.of(new SecurityRequirement().addList(scheme)));
             }));
         };
     }
