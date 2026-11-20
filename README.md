@@ -181,7 +181,7 @@ flowchart TD
           <strong><font color="#5600EF" size="3">DIAGRAMAS DE ARQUITECTURA HEXAGONAL Y UML DEL SERVICIO</font></strong>
         </p>
         <p>
-          <sub>Los diagramas de clases, base de datos, componentes específico y secuencia se versionan en <code>docs/uml/</code>. Archivos fuente Draw.io: <a href="docs/uml/DiagramaClases.drawio"><code>DiagramaClases.drawio</code></a> · <a href="docs/uml/DiagramaBaseDatos.drawio"><code>DiagramaBaseDatos.drawio</code></a> · <a href="docs/uml/DiagramaComponentesEspecifico.drawio"><code>DiagramaComponentesEspecifico.drawio</code></a>.</sub>
+          <sub>Los diagramas de clases, base de datos, componentes específico y secuencia se versionan en <code>docs/uml/</code>. Archivos fuente Draw.io: <a href="docs/diagramas/drawio/DiagramaClases.drawio"><code>DiagramaClases.drawio</code></a> · <a href="docs/uml/DiagramaBaseDatos.drawio"><code>DiagramaBaseDatos.drawio</code></a> · <a href="docs/uml/DiagramaComponentesEspecifico.drawio"><code>DiagramaComponentesEspecifico.drawio</code></a>.</sub>
         </p>
       </td>
     </tr>
@@ -192,7 +192,7 @@ flowchart TD
 
 <div align="center">
   <img src="docs/uml/DiagramaClases.png" width="95%" alt="Diagrama de Clases ms-usuarios" /><br />
-  <sub>Figura 7.1: Diagrama de clases del núcleo de dominio puro para ms-usuarios (Draw.io editable en <a href="docs/uml/DiagramaClases.drawio"><code>docs/uml/DiagramaClases.drawio</code></a>).</sub>
+  <sub>Figura 7.1: Diagrama de clases del núcleo de dominio puro para ms-usuarios (Draw.io editable en <a href="docs/diagramas/drawio/DiagramaClases.drawio"><code>docs/uml/DiagramaClases.drawio</code></a>).</sub>
 </div>
 
 ##### Justificación de Diseño y Principios Arquitecturales
