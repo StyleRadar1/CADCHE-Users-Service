@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 public class RabbitMQUsuarioEstadoEventPublisher
         implements UsuarioEstadoEventPublisherPort {
 
-    private static final String EXCHANGE = "styleradar.usuarios";
-    private static final String ROUTING_KEY = "usuario.estado.cambiado";
+    private static final String EXCHANGE = "styleradar.exchange";
+    private static final String ROUTING_KEY = "user.status.changed";
 
     private final RabbitTemplate rabbitTemplate;
 
