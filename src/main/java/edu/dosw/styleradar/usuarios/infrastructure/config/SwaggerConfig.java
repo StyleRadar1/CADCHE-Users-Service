@@ -37,7 +37,9 @@ public class SwaggerConfig {
                         new Server().url("http://localhost:8080")
                                 .description("API Gateway StyleRadar"),
                         new Server().url("https://styleradar-qa-app.azurewebsites.net")
-                                .description("Servidor QA ms-usuarios")))
+                                .description("Servidor QA ms-usuarios"),
+                        new Server().url("https://styleradar-prod-app.azurewebsites.net")
+                                .description("Servidor PROD ms-usuarios")))
                 .info(new Info()
                         .title("StyleRadar - Users Service API (ms-usuarios)")
                         .description("Especificación OpenAPI 3.0 del microservicio de gestión de usuarios de StyleRadar. "
@@ -67,4 +69,3 @@ public class SwaggerConfig {
         };
     }
 }
-
