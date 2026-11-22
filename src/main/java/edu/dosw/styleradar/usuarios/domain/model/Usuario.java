@@ -19,6 +19,11 @@ public class Usuario {
     private Long administradorCambioEstadoId;
     private String motivoCambioEstado;
 
+    private Double heightCm;
+    private Double chestCm;
+    private Double waistCm;
+    private Double hipCm;
+
     public Usuario(
             Long id,
             String nombre,
@@ -57,9 +62,10 @@ public class Usuario {
             EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
             Long administradorCambioEstadoId, String motivoCambioEstado,
             Boolean correoVerificado) {
-        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData, rol,
-                estado, fechaRegistro, fechaCambioEstado, administradorCambioEstadoId,
-                motivoCambioEstado, correoVerificado, null);
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData,
+                rol, estado, fechaRegistro, fechaCambioEstado,
+                administradorCambioEstadoId, motivoCambioEstado,
+                correoVerificado, null);
     }
 
     public Usuario(
@@ -68,6 +74,19 @@ public class Usuario {
             EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
             Long administradorCambioEstadoId, String motivoCambioEstado,
             Boolean correoVerificado, String barrio) {
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData,
+                rol, estado, fechaRegistro, fechaCambioEstado,
+                administradorCambioEstadoId, motivoCambioEstado,
+                correoVerificado, barrio, null, null, null, null);
+    }
+
+    public Usuario(
+            Long id, String nombre, String email, String telefono,
+            String passwordHash, Boolean aceptaHabeasData, Rol rol,
+            EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
+            Long administradorCambioEstadoId, String motivoCambioEstado,
+            Boolean correoVerificado, String barrio,
+            Double heightCm, Double chestCm, Double waistCm, Double hipCm) {
 
         this.id = id;
         this.nombre = nombre;
@@ -83,6 +102,10 @@ public class Usuario {
         this.fechaCambioEstado = fechaCambioEstado;
         this.administradorCambioEstadoId = administradorCambioEstadoId;
         this.motivoCambioEstado = motivoCambioEstado;
+        this.heightCm = heightCm;
+        this.chestCm = chestCm;
+        this.waistCm = waistCm;
+        this.hipCm = hipCm;
     }
 
     public void cambiarEstado(EstadoCuenta nuevoEstado) {
@@ -151,6 +174,22 @@ public class Usuario {
 
     public String getMotivoCambioEstado() {
         return motivoCambioEstado;
+    }
+
+    public Double getHeightCm() {
+        return heightCm;
+    }
+
+    public Double getChestCm() {
+        return chestCm;
+    }
+
+    public Double getWaistCm() {
+        return waistCm;
+    }
+
+    public Double getHipCm() {
+        return hipCm;
     }
 }
 

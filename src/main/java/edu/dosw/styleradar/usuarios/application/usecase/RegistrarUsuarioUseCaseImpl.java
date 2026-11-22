@@ -49,7 +49,15 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
                 Rol.COMPRADOR,
                 EstadoCuenta.ACTIVA,
                 Instant.now(),
-                request.getBarrio()
+                null,
+                null,
+                null,
+                false,
+                request.getBarrio(),
+                request.getHeightCm(),
+                request.getChestCm(),
+                request.getWaistCm(),
+                request.getHipCm()
         );
 
         Usuario guardado = usuarioRepository.guardar(usuario);

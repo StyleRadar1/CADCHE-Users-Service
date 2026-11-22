@@ -10,11 +10,15 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -23,18 +27,20 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 class CatalogoRestAdapterTest {
 
+    private CatalogoRestAdapter crearAdapter(
+            RestClient.Builder builder,
+            String baseUrl) {
+        return new CatalogoRestAdapter(builder, baseUrl);
+    }
+
     @Test
     void consultaPorEstiloYTallaYUneLaMismaPrendaPorUuid() {
-
         RestClient.Builder builder = RestClient.builder();
-
         MockRestServiceServer server =
                 MockRestServiceServer.bindTo(builder).build();
 
-        CatalogoRestAdapter adapter = new CatalogoRestAdapter(
-                builder,
-                "https://catalogo.test"
-        );
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
 
         String respuesta = """
                 [{
@@ -55,17 +61,11 @@ class CatalogoRestAdapterTest {
 
         server.expect(requestTo(
                         "https://catalogo.test/api/v1/prendas?estilo=FORMAL"))
-                .andRespond(withSuccess(
-                        respuesta,
-                        MediaType.APPLICATION_JSON
-                ));
+                .andRespond(withSuccess(respuesta, MediaType.APPLICATION_JSON));
 
         server.expect(requestTo(
                         "https://catalogo.test/api/v1/prendas?talla=M"))
-                .andRespond(withSuccess(
-                        respuesta,
-                        MediaType.APPLICATION_JSON
-                ));
+                .andRespond(withSuccess(respuesta, MediaType.APPLICATION_JSON));
 
         List<CatalogoItemResponseDTO> prendas =
                 adapter.obtenerPrendasDisponibles(
@@ -76,19 +76,13 @@ class CatalogoRestAdapterTest {
         server.verify();
 
         assertEquals(1, prendas.size());
-
         assertEquals(
                 "3f6c1a2e-8b1d-4c7a-9f2e-1a2b3c4d5e6f",
                 prendas.get(0).getItemId()
         );
-
         assertEquals(Estilo.FORMAL, prendas.get(0).getEstilo());
         assertEquals(TipoPrenda.SUPERIOR, prendas.get(0).getTipo());
-
-        assertTrue(
-                prendas.get(0).getTallasDisponibles().contains("M")
-        );
-
+        assertTrue(prendas.get(0).getTallasDisponibles().contains("M"));
         assertEquals(
                 "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
                 prendas.get(0).getAlmacenId()
@@ -97,16 +91,12 @@ class CatalogoRestAdapterTest {
 
     @Test
     void consultaUnaTallaYLaAsociaAlTipoCorrecto() {
-
         RestClient.Builder builder = RestClient.builder();
-
         MockRestServiceServer server =
                 MockRestServiceServer.bindTo(builder).build();
 
-        CatalogoRestAdapter adapter = new CatalogoRestAdapter(
-                builder,
-                "https://catalogo.test"
-        );
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
 
         String respuesta = """
                 [
@@ -133,10 +123,7 @@ class CatalogoRestAdapterTest {
 
         server.expect(requestTo(
                         "https://catalogo.test/api/v1/prendas?talla=M"))
-                .andRespond(withSuccess(
-                        respuesta,
-                        MediaType.APPLICATION_JSON
-                ));
+                .andRespond(withSuccess(respuesta, MediaType.APPLICATION_JSON));
 
         List<CatalogoItemResponseDTO> prendas =
                 adapter.obtenerPrendasDisponibles(
@@ -167,30 +154,20 @@ class CatalogoRestAdapterTest {
 
     @Test
     void ignoraTallasQueNoPertenecenALaListaUnificada() {
-
         RestClient.Builder builder = RestClient.builder();
-
         MockRestServiceServer server =
                 MockRestServiceServer.bindTo(builder).build();
 
-        CatalogoRestAdapter adapter = new CatalogoRestAdapter(
-                builder,
-                "https://catalogo.test"
-        );
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
 
         server.expect(requestTo(
                         "https://catalogo.test/api/v1/prendas?talla=M"))
-                .andRespond(withSuccess(
-                        "[]",
-                        MediaType.APPLICATION_JSON
-                ));
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
         server.expect(requestTo(
                         "https://catalogo.test/api/v1/prendas?talla=%C3%9Anica"))
-                .andRespond(withSuccess(
-                        "[]",
-                        MediaType.APPLICATION_JSON
-                ));
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
         List<CatalogoItemResponseDTO> prendas =
                 adapter.obtenerPrendasDisponibles(
@@ -202,22 +179,228 @@ class CatalogoRestAdapterTest {
                 );
 
         server.verify();
+        assertTrue(prendas.isEmpty());
+    }
 
+    @Test
+    void aceptaTallasNumericasDentroDelRangoYNormalizaTexto() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?talla=26"))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?talla=XS"))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(
+                        Set.of(),
+                        Map.of(
+                                TipoPrenda.SUPERIOR,
+                                Set.of("  xs  ", "26", "25", "46", "026")
+                        )
+                );
+
+        server.verify();
+        assertTrue(prendas.isEmpty());
+    }
+
+    @Test
+    void ignoraPrendasSinIdONoDisponibles() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        String respuesta = """
+                [
+                  {
+                    "id": null,
+                    "tipo": "Camisa",
+                    "disponible": true
+                  },
+                  {
+                    "id": "22222222-2222-2222-2222-222222222222",
+                    "tipo": "Camisa",
+                    "disponible": false
+                  },
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "tipo": "Camisa",
+                    "disponible": null
+                  }
+                ]
+                """;
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?estilo=CASUAL"))
+                .andRespond(withSuccess(respuesta, MediaType.APPLICATION_JSON));
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(
+                        Set.of(Estilo.CASUAL),
+                        Map.of()
+                );
+
+        server.verify();
+        assertTrue(prendas.isEmpty());
+    }
+
+    @Test
+    void ignoraPrendasCuandoSuTipoNoCoincideConElEsperado() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        String respuesta = """
+                [{
+                  "id": "11111111-1111-1111-1111-111111111111",
+                  "tipo": "Pantalon",
+                  "disponible": true
+                }]
+                """;
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?talla=M"))
+                .andRespond(withSuccess(respuesta, MediaType.APPLICATION_JSON));
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(
+                        Set.of(),
+                        Map.of(TipoPrenda.SUPERIOR, Set.of("M"))
+                );
+
+        server.verify();
+        assertTrue(prendas.isEmpty());
+    }
+
+    @Test
+    void permiteEstilosYTallasNulosSinRealizarConsultas() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(null, null);
+
+        server.verify();
+        assertTrue(prendas.isEmpty());
+    }
+
+    @Test
+    void ignoraEstilosNulosYEntradasInvalidasDelMapaDeTallas() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        Set<Estilo> estilos = new HashSet<>();
+        estilos.add(null);
+        estilos.add(Estilo.CASUAL);
+
+        Map<TipoPrenda, Set<String>> tallas = new HashMap<>();
+        tallas.put(null, Set.of("M"));
+        tallas.put(TipoPrenda.SUPERIOR, null);
+        tallas.put(TipoPrenda.INFERIOR, new HashSet<>());
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?estilo=CASUAL"))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(estilos, tallas);
+
+        server.verify();
+        assertTrue(prendas.isEmpty());
+    }
+
+    @Test
+    void mapeaCamposOpcionalesNulosYEstiloInvalido() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        String respuesta = """
+                [{
+                  "id": "11111111-1111-1111-1111-111111111111",
+                  "tipo": "Camisa",
+                  "estilo": "ESTILO_DESCONOCIDO",
+                  "fotografias": null,
+                  "fechaPublicacion": null,
+                  "disponible": true
+                }]
+                """;
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?estilo=CASUAL"))
+                .andRespond(withSuccess(respuesta, MediaType.APPLICATION_JSON));
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(
+                        Set.of(Estilo.CASUAL),
+                        Map.of()
+                );
+
+        server.verify();
+
+        assertEquals(1, prendas.size());
+        assertNull(prendas.get(0).getEstilo());
+        assertNull(prendas.get(0).getFechaPublicacion());
+        assertTrue(prendas.get(0).getFotografias().isEmpty());
+        assertEquals(TipoPrenda.SUPERIOR, prendas.get(0).getTipo());
+    }
+
+    @Test
+    void respondeListaVaciaCuandoElCatalogoDevuelveCuerpoVacio() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(builder).build();
+
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
+
+        server.expect(requestTo(
+                        "https://catalogo.test/api/v1/prendas?estilo=CASUAL"))
+                .andRespond(withSuccess());
+
+        List<CatalogoItemResponseDTO> prendas =
+                adapter.obtenerPrendasDisponibles(
+                        Set.of(Estilo.CASUAL),
+                        Map.of()
+                );
+
+        server.verify();
         assertTrue(prendas.isEmpty());
     }
 
     @Test
     void propagaErrorCuandoCatalogoNoEstaDisponible() {
-
         RestClient.Builder builder = RestClient.builder();
-
         MockRestServiceServer server =
                 MockRestServiceServer.bindTo(builder).build();
 
-        CatalogoRestAdapter adapter = new CatalogoRestAdapter(
-                builder,
-                "https://catalogo.test"
-        );
+        CatalogoRestAdapter adapter =
+                crearAdapter(builder, "https://catalogo.test");
 
         server.expect(requestTo(
                         "https://catalogo.test/api/v1/prendas?estilo=FORMAL"))

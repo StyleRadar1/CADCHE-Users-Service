@@ -55,6 +55,18 @@ public class UsuarioEntity {
     @Column(name = "motivo_cambio_estado", length = 1000)
     private String motivoCambioEstado;
 
+    @Column(name = "height_cm")
+    private Double heightCm;
+
+    @Column(name = "chest_cm")
+    private Double chestCm;
+
+    @Column(name = "waist_cm")
+    private Double waistCm;
+
+    @Column(name = "hip_cm")
+    private Double hipCm;
+
     public UsuarioEntity() {
     }
 
@@ -168,5 +180,37 @@ public class UsuarioEntity {
 
     public void setMotivoCambioEstado(String motivoCambioEstado) {
         this.motivoCambioEstado = motivoCambioEstado;
+    }
+
+    public Double getHeightCm() {
+        return heightCm;
+    }
+
+    public void setHeightCm(Double heightCm) {
+        this.heightCm = heightCm;
+    }
+
+    public Double getChestCm() {
+        return chestCm;
+    }
+
+    public void setChestCm(Double chestCm) {
+        this.chestCm = chestCm;
+    }
+
+    public Double getWaistCm() {
+        return waistCm;
+    }
+
+    public void setWaistCm(Double waistCm) {
+        this.waistCm = waistCm;
+    }
+
+    public Double getHipCm() {
+        return hipCm;
+    }
+
+    public void setHipCm(Double hipCm) {
+        this.hipCm = hipCm;
     }
 }

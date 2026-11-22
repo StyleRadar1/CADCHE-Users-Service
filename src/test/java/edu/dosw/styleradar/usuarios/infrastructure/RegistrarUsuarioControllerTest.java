@@ -5,7 +5,6 @@ import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.PreferenciaEstiloJpaRepository;
-
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.TallaJpaRepository;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.BusquedaGuardadaJpaRepository;
 
@@ -77,6 +76,73 @@ class RegistrarUsuarioControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.email").value("laura@gmail.com"));
+
+        verify(registrarUsuarioUseCase).registrar(any());
+    }
+
+    @Test
+    void debeAceptarRegistroConMedidasCorporales() throws Exception {
+
+        UsuarioResponseDTO response = new UsuarioResponseDTO();
+        response.setId(2L);
+        response.setNombre("Laura Gómez");
+        response.setEmail("laura.medidas@gmail.com");
+        response.setFechaRegistro(Instant.now());
+
+        when(registrarUsuarioUseCase.registrar(any()))
+                .thenReturn(response);
+
+        String request = """
+                {
+                    "nombre": "Laura Gómez",
+                    "email": "laura.medidas@gmail.com",
+                    "telefono": "+57 300 123 4567",
+                    "password": "StyleRadar2026*",
+                    "aceptaHabeasData": true,
+                    "heightCm": 175.0,
+                    "chestCm": 96.0,
+                    "waistCm": 82.0,
+                    "hipCm": 98.0
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/usuarios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(2))
+                .andExpect(jsonPath("$.email").value("laura.medidas@gmail.com"));
+
+        verify(registrarUsuarioUseCase).registrar(any());
+    }
+
+    @Test
+    void debeAceptarRegistroSinMedidasCorporales() throws Exception {
+
+        UsuarioResponseDTO response = new UsuarioResponseDTO();
+        response.setId(3L);
+        response.setNombre("Laura Gómez");
+        response.setEmail("laura.sinmedidas@gmail.com");
+        response.setFechaRegistro(Instant.now());
+
+        when(registrarUsuarioUseCase.registrar(any()))
+                .thenReturn(response);
+
+        String request = """
+                {
+                    "nombre": "Laura Gómez",
+                    "email": "laura.sinmedidas@gmail.com",
+                    "telefono": "+57 300 123 4567",
+                    "password": "StyleRadar2026*",
+                    "aceptaHabeasData": true
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/usuarios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(3));
 
         verify(registrarUsuarioUseCase).registrar(any());
     }
@@ -168,3 +234,4 @@ class RegistrarUsuarioControllerTest {
         verify(registrarUsuarioUseCase, never()).registrar(any());
     }
 }
+

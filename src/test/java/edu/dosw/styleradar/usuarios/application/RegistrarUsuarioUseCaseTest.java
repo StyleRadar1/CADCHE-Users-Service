@@ -38,6 +38,11 @@ class RegistrarUsuarioUseCaseTest {
 
         RegistrarUsuarioRequestDTO request = crearRequest();
 
+        request.setHeightCm(175.0);
+        request.setChestCm(96.0);
+        request.setWaistCm(82.0);
+        request.setHipCm(98.0);
+
         when(usuarioRepository.existePorEmail("laura@gmail.com"))
                 .thenReturn(false);
 
@@ -59,7 +64,11 @@ class RegistrarUsuarioUseCaseTest {
                             null,
                             null,
                             usuario.getCorreoVerificado(),
-                            usuario.getBarrio()
+                            usuario.getBarrio(),
+                            usuario.getHeightCm(),
+                            usuario.getChestCm(),
+                            usuario.getWaistCm(),
+                            usuario.getHipCm()
                     );
                 });
 
@@ -82,12 +91,37 @@ class RegistrarUsuarioUseCaseTest {
             assertEquals(Rol.COMPRADOR, usuario.getRol());
             assertEquals(EstadoCuenta.ACTIVA, usuario.getEstado());
 
-            // U1: el correo debe iniciar sin verificar.
             assertEquals(Boolean.FALSE, usuario.getCorreoVerificado());
             assertEquals("Chapinero", usuario.getBarrio());
 
+            assertEquals(175.0, usuario.getHeightCm());
+            assertEquals(96.0, usuario.getChestCm());
+            assertEquals(82.0, usuario.getWaistCm());
+            assertEquals(98.0, usuario.getHipCm());
+
             return true;
         }));
+    }
+
+    @Test
+    void debeRegistrarUsuarioSinMedidasCorporales() {
+
+        RegistrarUsuarioRequestDTO request = crearRequest();
+
+        when(usuarioRepository.existePorEmail("laura@gmail.com"))
+                .thenReturn(false);
+
+        when(usuarioRepository.guardar(any(Usuario.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.registrar(request);
+
+        verify(usuarioRepository).guardar(argThat(usuario ->
+                usuario.getHeightCm() == null
+                        && usuario.getChestCm() == null
+                        && usuario.getWaistCm() == null
+                        && usuario.getHipCm() == null
+        ));
     }
 
     @Test
