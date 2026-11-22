@@ -5,7 +5,6 @@ import edu.dosw.styleradar.usuarios.application.dto.response.CatalogoItemRespons
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.RecomendacionesResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerFeedPersonalizadoUseCase;
-import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerRecomendacionesUseCase;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,6 @@ import static org.mockito.Mockito.when;
 class PersonalizacionControllerTest {
 
     private ObtenerFeedPersonalizadoUseCase obtenerFeedPersonalizadoUseCase;
-    private ObtenerRecomendacionesUseCase obtenerRecomendacionesUseCase;
     private PersonalizacionController controller;
 
     @BeforeEach
@@ -36,12 +34,8 @@ class PersonalizacionControllerTest {
         obtenerFeedPersonalizadoUseCase =
                 mock(ObtenerFeedPersonalizadoUseCase.class);
 
-        obtenerRecomendacionesUseCase =
-                mock(ObtenerRecomendacionesUseCase.class);
-
         controller = new PersonalizacionController(
-                obtenerFeedPersonalizadoUseCase,
-                obtenerRecomendacionesUseCase
+                obtenerFeedPersonalizadoUseCase
         );
 
         Jwt jwt = Jwt.withTokenValue("token-de-prueba")
@@ -106,23 +100,24 @@ class PersonalizacionControllerTest {
                         true
                 );
 
-        RecomendacionesResponseDTO respuestaEsperada =
-                new RecomendacionesResponseDTO(
-                        pagina,
-                        true,
-                        "No tienes preferencias de estilo ni tallas registradas. Actualiza tu perfil para recibir recomendaciones."
-                );
-
-        when(obtenerRecomendacionesUseCase.obtener(144L, 0, 20))
-                .thenReturn(respuestaEsperada);
+        when(obtenerFeedPersonalizadoUseCase.obtener(144L, 0, 20))
+                .thenReturn(pagina);
 
         ResponseEntity<RecomendacionesResponseDTO> respuesta =
                 controller.recomendaciones(request);
 
         assertEquals(200, respuesta.getStatusCode().value());
-        assertSame(respuestaEsperada, respuesta.getBody());
+        assertSame(pagina.getContent(), respuesta.getBody().getContent());
+        assertEquals(
+                false,
+                respuesta.getBody().isGeneralSinPreferencias()
+        );
+        assertEquals(
+                "Recommendations generated successfully",
+                respuesta.getBody().getMensaje()
+        );
 
-        verify(obtenerRecomendacionesUseCase)
+        verify(obtenerFeedPersonalizadoUseCase)
                 .obtener(144L, 0, 20);
     }
 }

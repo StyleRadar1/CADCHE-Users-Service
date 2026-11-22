@@ -28,15 +28,24 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private static final String VERIFICAR_CREDENCIALES =
+            "/api/v1/internal/users/verify-credentials";
+
+    private static final String VERIFICAR_CREDENCIALES_ES =
             "/api/v1/internal/usuarios/verificar-credenciales";
 
     private static final String VERIFICAR_CREDENCIALES_LEGACY =
             "/internal/api/v1/usuarios/verificar-credenciales";
 
     private static final String MARCAR_CORREO_VERIFICADO =
+            "/api/v1/internal/users/*/email-verification";
+
+    private static final String MARCAR_CORREO_VERIFICADO_ES =
             "/api/v1/internal/usuarios/*/correo-verificado";
 
     private static final String OBTENER_MEDIDAS =
+            "/api/v1/internal/users/*/measurements";
+
+    private static final String OBTENER_MEDIDAS_ES =
             "/api/v1/internal/usuarios/*/medidas";
 
     private static final Map<String, String> EQUIVALENCIAS_ROLES = Map.of(
@@ -93,7 +102,7 @@ public class SecurityConfig {
                     .map(role -> role.startsWith("ROLE_")
                             ? role.substring(5)
                             : role)
-                    .map(role -> EQUIVALENCIAS_ROLES.get(role))
+                    .map(EQUIVALENCIAS_ROLES::get)
                     .filter(role -> role != null)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
@@ -111,15 +120,21 @@ public class SecurityConfig {
         http
                 .securityMatcher(
                         VERIFICAR_CREDENCIALES,
+                        VERIFICAR_CREDENCIALES_ES,
                         VERIFICAR_CREDENCIALES_LEGACY,
                         MARCAR_CORREO_VERIFICADO,
-                        OBTENER_MEDIDAS
+                        MARCAR_CORREO_VERIFICADO_ES,
+                        OBTENER_MEDIDAS,
+                        OBTENER_MEDIDAS_ES
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
                         VERIFICAR_CREDENCIALES,
+                        VERIFICAR_CREDENCIALES_ES,
                         VERIFICAR_CREDENCIALES_LEGACY,
                         MARCAR_CORREO_VERIFICADO,
-                        OBTENER_MEDIDAS
+                        MARCAR_CORREO_VERIFICADO_ES,
+                        OBTENER_MEDIDAS,
+                        OBTENER_MEDIDAS_ES
                 ))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -158,8 +173,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/usuarios")
                         .permitAll()
-                        .requestMatchers("/api/v1/admin/usuarios/**")
-                        .hasRole("ADMIN_STYLERADAR")
+                        .requestMatchers(
+                                "/api/v1/admin/users/**",
+                                "/api/v1/admin/usuarios/**"
+                        ).hasRole("ADMIN_STYLERADAR")
                         .requestMatchers(
                                 "/api/v1/usuarios/me",
                                 "/api/v1/usuarios/me/**"

@@ -24,52 +24,134 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "Estados de cuentas", description = "Administración de estados de cuentas de usuarios (SR-RF-66). Requiere ROLE_ADMIN_STYLERADAR y cuenta activa")
+@Tag(
+        name = "User account status",
+        description = "Administración de estados de cuentas de usuarios (SR-RF-66). "
+                + "Requiere ROLE_ADMIN_STYLERADAR y cuenta activa"
+)
 @SecurityRequirement(name = "bearerAuth")
 @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Operación correcta"),
-        @ApiResponse(responseCode = "400", description = "Request inválido", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-        @ApiResponse(responseCode = "401", description = "JWT ausente, inválido o cuenta no activa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-        @ApiResponse(responseCode = "403", description = "Requiere ROLE_ADMIN_STYLERADAR", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Cuenta inexistente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-        @ApiResponse(responseCode = "409", description = "Conflicto concurrente; reintente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-        @ApiResponse(responseCode = "422", description = "Autocambio o pérdida del último administrador operativo", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-        @ApiResponse(responseCode = "500", description = "Error técnico", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+        @ApiResponse(
+                responseCode = "400",
+                description = "Request inválido",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "401",
+                description = "JWT ausente, inválido o cuenta no activa",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Requiere ROLE_ADMIN_STYLERADAR",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Cuenta inexistente",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Conflicto concurrente; reintente",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "422",
+                description = "Autocambio o pérdida del último administrador operativo",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "500",
+                description = "Error técnico",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDTO.class)
+                )
+        )
 })
 public interface GestionEstadoCuentaApi {
 
     @GetMapping
     @Operation(
-            summary = "Consultar cuentas de usuario (SR-RF-66)",
-            description = "ROLE_ADMIN_STYLERADAR. Filtros opcionales por estado, rol y q (nombre o correo). "
-                    + "ACTIVA incluye NULL histórico efectivo, sin migrarlo. page=0, size=20, entre 1 y 100; orden id ASC; paginación en BD. "
-                    + "La respuesta incluye barrio cuando está informado.")
+            summary = "Consultar usuarios",
+            description = "ROLE_ADMIN_STYLERADAR. Filtros opcionales por estado, rol y q "
+                    + "(nombre o correo). ACTIVA incluye NULL histórico efectivo, sin migrarlo. "
+                    + "page=0, size=20, entre 1 y 100; orden id ASC; paginación en BD. "
+                    + "La respuesta incluye barrio cuando está informado."
+    )
     ResponseEntity<PageResponseDTO<CuentaAdministrativaResponseDTO>> consultar(
-            @Valid @ParameterObject @ModelAttribute CuentasConsultaRequestDTO request);
+            @Valid @ParameterObject @ModelAttribute CuentasConsultaRequestDTO request
+    );
 
     @GetMapping("/{id}")
     @Operation(
-            summary = "Consultar cuenta y última decisión (SR-RF-66)",
-            description = "ROLE_ADMIN_STYLERADAR. Estado efectivo y última modificación, sin credenciales ni datos privados. "
-                    + "NULL histórico se muestra ACTIVA; metadatos nulos no representan una decisión.")
+            summary = "Consultar usuario y última decisión",
+            description = "ROLE_ADMIN_STYLERADAR. Estado efectivo y última modificación, "
+                    + "sin credenciales ni datos privados. NULL histórico se muestra ACTIVA; "
+                    + "metadatos nulos no representan una decisión."
+    )
     ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(
-            @Parameter(description = "Identificador de la cuenta a consultar", example = "12")
-            @PathVariable("id") Long id);
+            @Parameter(
+                    description = "Identificador de la cuenta a consultar",
+                    example = "12"
+            )
+            @PathVariable("id") Long id
+    );
 
-    @PatchMapping("/{id}/estado")
+    @PatchMapping({
+            "/{id}/status",
+            "/{id}/estado"
+    })
     @Operation(
-            summary = "Activar, inactivar o bloquear una cuenta (SR-RF-66)",
-            description = "ROLE_ADMIN_STYLERADAR. ACTIVA, INACTIVA, BLOQUEADA; todas las transiciones entre estados distintos. "
-                    + "BLOQUEADA exige motivo no vacío; máximo 1000 caracteres. Actor y fecha del servidor. "
-                    + "No permite autocambio, ni siquiera idempotente. Conserva otro administrador operativo.")
+            summary = "Activate, deactivate or block a user account",
+            description = "ROLE_ADMIN_STYLERADAR. ACTIVA, INACTIVA, BLOQUEADA; "
+                    + "todas las transiciones entre estados distintos. BLOQUEADA exige "
+                    + "motivo no vacío; máximo 1000 caracteres. Actor y fecha del servidor. "
+                    + "No permite autocambio, ni siquiera idempotente. "
+                    + "Conserva otro administrador operativo."
+    )
     ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
-            @Parameter(description = "Identificador de la cuenta a modificar", example = "12")
+            @Parameter(
+                    description = "Identificador de la cuenta a modificar",
+                    example = "12"
+            )
             @PathVariable("id") Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(examples = {
-                            @ExampleObject(name = "BLOQUEADA", value = "{\"estado\":\"BLOQUEADA\",\"motivo\":\"Incumplimiento de las condiciones\"}"),
-                            @ExampleObject(name = "INACTIVA", value = "{\"estado\":\"INACTIVA\"}"),
-                            @ExampleObject(name = "ACTIVA", value = "{\"estado\":\"ACTIVA\",\"motivo\":\"Revisión concluida\"}")
-                    }))
-            @Valid @RequestBody CambioEstadoCuentaRequestDTO request);
+                            @ExampleObject(
+                                    name = "BLOQUEADA",
+                                    value = "{\"estado\":\"BLOQUEADA\",\"motivo\":\"Incumplimiento de las condiciones\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "INACTIVA",
+                                    value = "{\"estado\":\"INACTIVA\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "ACTIVA",
+                                    value = "{\"estado\":\"ACTIVA\",\"motivo\":\"Revisión concluida\"}"
+                            )
+                    })
+            )
+            @Valid @RequestBody CambioEstadoCuentaRequestDTO request
+    );
 }

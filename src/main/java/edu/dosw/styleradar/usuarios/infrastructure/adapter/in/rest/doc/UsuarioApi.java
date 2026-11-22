@@ -28,12 +28,15 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "Usuarios", description = "Registro con Habeas Data, perfil, preferencias de estilo, tallas habituales por tipo de prenda y búsquedas guardadas del usuario autenticado (SR-RF-01, SR-RF-03, SR-RF-04, SR-RF-28)")
+@Tag(
+        name = "Users",
+        description = "User registration, profile, style preferences, usual sizes and saved searches"
+)
 public interface UsuarioApi {
 
     @Operation(
-            summary = "Registrar usuario comprador (SR-RF-01 / SR-RNF-02)",
-            description = "Público. Crea un nuevo usuario comprador en la plataforma con contraseña cifrada mediante BCrypt, validando correo único y registrando el consentimiento expreso de Habeas Data (Ley 1581).",
+            summary = "Register buyer",
+            description = "Public endpoint. Creates a buyer account with an encrypted BCrypt password, validates email uniqueness and records Habeas Data consent.",
             security = {},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
@@ -41,273 +44,393 @@ public interface UsuarioApi {
                             mediaType = "application/json",
                             schema = @Schema(implementation = RegistrarUsuarioRequestDTO.class),
                             examples = @ExampleObject(
-                                    name = "RegistrarUsuario",
-                                    value = "{\"nombre\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"telefono\":\"+57 300 123 4567\",\"password\":\"StyleRadar2026*\",\"aceptaHabeasData\":true}"))))
+                                    name = "RegisterUser",
+                                    value = "{\"nombre\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"telefono\":\"+57 300 123 4567\",\"password\":\"StyleRadar2026*\",\"aceptaHabeasData\":true}"
+                            )
+                    )
+            )
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "Usuario registrado exitosamente",
+                    description = "User registered successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UsuarioResponseDTO.class),
-                            examples = @ExampleObject(
-                                    name = "UsuarioCreado",
-                                    value = "{\"id\":12,\"nombre\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"telefono\":\"+57 300 123 4567\",\"fechaRegistro\":\"2026-11-03T01:30:00Z\",\"preferenciasEstilo\":[],\"tallasHabituales\":[],\"tallasPorTipoPrenda\":{}}"))),
+                            schema = @Schema(implementation = UsuarioResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Datos de entrada inválidos o falta de aceptación de Habeas Data",
+                    description = "Invalid input data or missing Habeas Data consent",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    name = "DatosInvalidos",
-                                    value = "{\"timestamp\":\"2026-11-03T01:30:00\",\"status\":400,\"error\":\"Bad Request\",\"message\":\"La solicitud contiene datos inválidos\",\"path\":\"/api/v1/usuarios\",\"validationErrors\":{\"email\":\"El formato del email es inválido\"}}"))),
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "422",
-                    description = "El email ya está en uso",
+                    description = "Email is already in use",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    name = "EmailDuplicado",
-                                    value = "{\"timestamp\":\"2026-11-03T01:30:00\",\"status\":422,\"error\":\"Unprocessable Entity\",\"message\":\"El correo electrónico ya se encuentra en uso\",\"path\":\"/api/v1/usuarios\",\"validationErrors\":{}}"))),
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
-    @PostMapping
-    ResponseEntity<UsuarioResponseDTO> registrar(@Valid @RequestBody RegistrarUsuarioRequestDTO request);
+    @PostMapping({"", "/"})
+    ResponseEntity<UsuarioResponseDTO> registrar(
+            @Valid @RequestBody RegistrarUsuarioRequestDTO request
+    );
 
     @Operation(
-            summary = "Consultar mi perfil",
-            description = "ROLE_COMPRADOR. Retorna el perfil del usuario autenticado junto con sus preferencias de estilo y tallas habituales por tipo de prenda.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            summary = "Get my profile",
+            description = "Returns the authenticated user's profile, including style preferences and usual sizes.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Perfil consultado exitosamente",
+                    description = "Profile retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UsuarioResponseDTO.class),
-                            examples = @ExampleObject(
-                                    name = "MiPerfil",
-                                    value = "{\"id\":12,\"nombre\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"telefono\":\"+57 300 123 4567\",\"fechaRegistro\":\"2026-11-03T01:30:00Z\",\"preferenciasEstilo\":[\"CASUAL\",\"URBANO\"],\"tallasHabituales\":[\"M\"],\"tallasPorTipoPrenda\":{\"SUPERIOR\":[\"M\"],\"INFERIOR\":[\"L\"],\"CALZADO\":[\"38\"]}}"))),
+                            schema = @Schema(implementation = UsuarioResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Access denied",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
     @GetMapping("/me")
     ResponseEntity<UsuarioResponseDTO> obtenerPerfil();
 
     @Operation(
-            summary = "Consultar usuario por ID",
-            description = "ROLE_ADMIN_STYLERADAR. Retorna el perfil de cualquier usuario registrado por su identificador.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            summary = "Get user by ID",
+            description = "Returns a user's profile by identifier. Access is restricted to StyleRadar administrators until self-ID authorization is implemented.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Usuario consultado exitosamente",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Usuario no encontrado",
+                    description = "User retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    name = "UsuarioNoEncontrado",
-                                    value = "{\"timestamp\":\"2026-11-03T01:30:00\",\"status\":404,\"error\":\"Not Found\",\"message\":\"Usuario no encontrado\",\"path\":\"/api/v1/usuarios/999\",\"validationErrors\":{}}"))),
+                            schema = @Schema(implementation = UsuarioResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
     @GetMapping("/{id}")
     ResponseEntity<UsuarioResponseDTO> obtenerPorId(
-            @Parameter(description = "Identificador único del usuario", example = "12")
-            @PathVariable("id") Long id);
+            @Parameter(
+                    description = "Unique user identifier",
+                    example = "12"
+            )
+            @PathVariable("id") Long id
+    );
 
     @Operation(
-            summary = "Configurar mis preferencias de estilo (SR-RF-03)",
-            description = "ROLE_COMPRADOR. Reemplaza las preferencias de estilo del usuario autenticado (CASUAL, FORMAL, DEPORTIVO, URBANO, VINTAGE).",
+            summary = "Update my style preferences",
+            description = "Buyer-only operation. Replaces the authenticated buyer's style preferences.",
             security = {@SecurityRequirement(name = "bearerAuth")},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ActualizarPreferenciasEstiloRequestDTO.class),
-                            examples = @ExampleObject(
-                                    name = "PreferenciasEstilo",
-                                    value = "{\"preferencias\":[\"CASUAL\",\"URBANO\",\"VINTAGE\"]}"))))
+                            schema = @Schema(implementation = ActualizarPreferenciasEstiloRequestDTO.class)
+                    )
+            )
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Preferencias de estilo actualizadas",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDTO.class))),
+                    description = "Style preferences updated",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UsuarioResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Datos de entrada inválidos",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Invalid input data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Only buyers can update style preferences",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
-    @PutMapping({"/me/preferencias-estilo", "/me/preferencias"})
+    @PutMapping({
+            "/me/style-preferences",
+            "/me/preferencias-estilo",
+            "/me/preferencias"
+    })
     ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
-            @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request);
+            @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request
+    );
 
     @Operation(
-            summary = "Configurar mis tallas habituales por tipo de prenda (SR-RF-04)",
-            description = "ROLE_COMPRADOR. Reemplaza las tallas habituales del usuario autenticado tanto en conjunto general (XS..XXL) como discriminadas por tipo de prenda (SUPERIOR, INFERIOR, VESTIDO, CALZADO numérico 35..45).",
+            summary = "Update my usual sizes",
+            description = "Buyer-only operation. Replaces the authenticated buyer's usual sizes by garment type.",
             security = {@SecurityRequirement(name = "bearerAuth")},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ActualizarTallasHabitualesRequestDTO.class),
-                            examples = @ExampleObject(
-                                    name = "TallasHabitualesPorTipoPrenda",
-                                    value = "{\"tallas\":[\"M\",\"L\"],\"tallasPorTipoPrenda\":{\"SUPERIOR\":[\"M\"],\"INFERIOR\":[\"L\"],\"CALZADO\":[\"40\"]}}"))))
+                            schema = @Schema(implementation = ActualizarTallasHabitualesRequestDTO.class)
+                    )
+            )
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Tallas habituales actualizadas",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDTO.class))),
+                    description = "Usual sizes updated",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UsuarioResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Datos de entrada inválidos",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Invalid input data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Only buyers can update usual sizes",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
-    @PutMapping("/me/tallas-habituales")
+    @PutMapping({
+            "/me/usual-sizes",
+            "/me/tallas-habituales"
+    })
     ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
-            @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request);
+            @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request
+    );
 
     @Operation(
-            summary = "Guardar búsqueda en mi perfil (SR-RF-28)",
-            description = "ROLE_COMPRADOR. Almacena texto, filtros y ubicación geográfica (latitud/longitud) utilizados en una búsqueda para consultarla posteriormente o usarla como base para el feed personalizado y alertas.",
+            summary = "Save a search",
+            description = "Buyer-only operation. Stores search text, filters and geographic location for later use.",
             security = {@SecurityRequirement(name = "bearerAuth")},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = GuardarBusquedaRequestDTO.class),
-                            examples = @ExampleObject(
-                                    name = "GuardarBusqueda",
-                                    value = "{\"nombre\":\"Chaquetas negras casuales\",\"query\":\"chaqueta denim\",\"tipo\":\"SUPERIOR\",\"color\":\"Negro\",\"talla\":\"M\",\"precioMin\":50000.0,\"precioMax\":180000.0,\"marca\":\"Levi's\",\"estilo\":\"CASUAL\",\"latitud\":4.6761,\"longitud\":-74.0482}"))))
+                            schema = @Schema(implementation = GuardarBusquedaRequestDTO.class)
+                    )
+            )
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "Búsqueda guardada exitosamente",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusquedaGuardadaResponseDTO.class))),
+                    description = "Search saved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BusquedaGuardadaResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Datos de entrada inválidos",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Invalid input data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Only buyers can save searches",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
-    @PostMapping("/me/busquedas-guardadas")
-    ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(@Valid @RequestBody GuardarBusquedaRequestDTO request);
+    @PostMapping({
+            "/me/saved-searches",
+            "/me/busquedas-guardadas"
+    })
+    ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
+            @Valid @RequestBody GuardarBusquedaRequestDTO request
+    );
 
     @Operation(
-            summary = "Consultar mis búsquedas guardadas (SR-RF-28)",
-            description = "ROLE_COMPRADOR. Lista todas las búsquedas guardadas en el perfil del comprador autenticado.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            summary = "Get my saved searches",
+            description = "Buyer-only operation. Lists saved searches belonging to the authenticated buyer.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Búsquedas guardadas consultadas",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusquedaGuardadaResponseDTO.class))),
+                    description = "Saved searches retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BusquedaGuardadaResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Only buyers can access saved searches",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
-    @GetMapping("/me/busquedas-guardadas")
+    @GetMapping({
+            "/me/saved-searches",
+            "/me/busquedas-guardadas"
+    })
     ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas();
 
     @Operation(
-            summary = "Eliminar mi búsqueda guardada (SR-RF-28)",
-            description = "ROLE_COMPRADOR. Elimina una búsqueda guardada que pertenezca al comprador autenticado.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+            summary = "Delete a saved search",
+            description = "Buyer-only operation. Deletes a saved search belonging to the authenticated buyer.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Búsqueda guardada eliminada"),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Saved search deleted"
+            ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "JWT ausente, inválido o expirado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Missing, invalid or expired JWT",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Rol sin permiso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+                    description = "Only buyers can delete saved searches",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Búsqueda no encontrada o ajena",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno del servidor",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+                    description = "Saved search not found or does not belong to the user",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
     })
-    @DeleteMapping("/me/busquedas-guardadas/{busquedaId}")
+    @DeleteMapping({
+            "/me/saved-searches/{busquedaId}",
+            "/me/busquedas-guardadas/{busquedaId}"
+    })
     ResponseEntity<Void> eliminarBusquedaGuardada(
-            @Parameter(description = "Identificador único de la búsqueda guardada", example = "5")
-            @PathVariable("busquedaId") Long busquedaId);
+            @Parameter(
+                    description = "Saved search identifier",
+                    example = "5"
+            )
+            @PathVariable("busquedaId") Long busquedaId
+    );
 }
