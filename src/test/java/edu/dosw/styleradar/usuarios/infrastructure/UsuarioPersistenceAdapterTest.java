@@ -58,9 +58,7 @@ class UsuarioPersistenceAdapterTest {
         assertEquals("Laura Gómez", guardado.getNombre());
         assertEquals("laura@gmail.com", guardado.getEmail());
         assertEquals(Boolean.TRUE, guardado.getAceptaHabeasData());
-
         assertEquals(Boolean.FALSE, guardado.getCorreoVerificado());
-
         assertNotEquals(password, guardado.getPasswordHash());
 
         assertTrue(passwordEncoder.matches(
@@ -73,6 +71,10 @@ class UsuarioPersistenceAdapterTest {
                 .orElseThrow();
 
         assertEquals(Boolean.FALSE, recuperado.getCorreoVerificado());
+        assertEquals(175.0, recuperado.getHeightCm());
+        assertEquals(96.0, recuperado.getChestCm());
+        assertEquals(82.0, recuperado.getWaistCm());
+        assertEquals(98.0, recuperado.getHipCm());
     }
 
     @Test
@@ -95,6 +97,35 @@ class UsuarioPersistenceAdapterTest {
                 .orElseThrow();
 
         assertEquals(Boolean.TRUE, recuperado.getCorreoVerificado());
+    }
+
+    @Test
+    void debeGuardarUsuarioSinMedidasCorporalesEnPostgreSQL() {
+
+        Usuario usuario = crearUsuario(
+                "Laura Pérez",
+                "laura.perez@gmail.com",
+                passwordEncoder.encode("Password123"),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        Usuario guardado = usuarioPersistenceAdapter.guardar(usuario);
+
+        assertNotNull(guardado.getId());
+
+        Usuario recuperado = usuarioPersistenceAdapter
+                .buscarPorEmail("laura.perez@gmail.com")
+                .orElseThrow();
+
+        assertNull(recuperado.getHeightCm());
+        assertNull(recuperado.getChestCm());
+        assertNull(recuperado.getWaistCm());
+        assertNull(recuperado.getHipCm());
     }
 
     @Test
@@ -126,32 +157,98 @@ class UsuarioPersistenceAdapterTest {
 
     @Test
     void debeFiltrarCuentasPorEstadoRolTextoYAplicarPaginacion() {
+
         usuarioPersistenceAdapter.guardar(crearUsuario(
-                "Laura Gómez", "laura.gomez@example.com", passwordEncoder.encode("Password123"),
-                false, "Chapinero"));
+                "Laura Gómez",
+                "laura.gomez@example.com",
+                passwordEncoder.encode("Password123"),
+                false,
+                "Chapinero"
+        ));
+
         usuarioPersistenceAdapter.guardar(crearUsuario(
-                "Laura Pérez", "laura.perez@example.com", passwordEncoder.encode("Password456"),
-                false, "Usaquén"));
-        Usuario administrador = new Usuario(null, "Laura Admin", "laura.admin@example.com",
-                null, passwordEncoder.encode("Password789"), true, Rol.ADMIN_STYLERADAR,
-                EstadoCuenta.ACTIVA, Instant.now(), "Centro");
+                "Laura Pérez",
+                "laura.perez@example.com",
+                passwordEncoder.encode("Password456"),
+                false,
+                "Usaquén"
+        ));
+
+        Usuario administrador = new Usuario(
+                null,
+                "Laura Admin",
+                "laura.admin@example.com",
+                null,
+                passwordEncoder.encode("Password789"),
+                true,
+                Rol.ADMIN_STYLERADAR,
+                EstadoCuenta.ACTIVA,
+                Instant.now(),
+                "Centro"
+        );
+
         usuarioPersistenceAdapter.guardar(administrador);
 
         var filtradas = usuarioPersistenceAdapter.buscarCuentas(
-                EstadoCuenta.ACTIVA, Rol.COMPRADOR, "GÓMEZ", 0, 10);
+                EstadoCuenta.ACTIVA, Rol.COMPRADOR, "GÓMEZ", 0, 10
+        );
 
         assertEquals(1, filtradas.size());
         assertEquals("laura.gomez@example.com", filtradas.get(0).getEmail());
         assertEquals("Chapinero", filtradas.get(0).getBarrio());
-        assertEquals(1L, usuarioPersistenceAdapter.contarCuentas(
-                EstadoCuenta.ACTIVA, Rol.COMPRADOR, "GÓMEZ"));
 
-        var primeraPagina = usuarioPersistenceAdapter.buscarCuentas(null, null, "laura", 0, 1);
-        var segundaPagina = usuarioPersistenceAdapter.buscarCuentas(null, null, "laura", 1, 1);
+        assertEquals(1L, usuarioPersistenceAdapter.contarCuentas(
+                EstadoCuenta.ACTIVA, Rol.COMPRADOR, "GÓMEZ"
+        ));
+
+        var primeraPagina = usuarioPersistenceAdapter.buscarCuentas(
+                null, null, "laura", 0, 1
+        );
+
+        var segundaPagina = usuarioPersistenceAdapter.buscarCuentas(
+                null, null, "laura", 1, 1
+        );
+
         assertEquals(1, primeraPagina.size());
         assertEquals(1, segundaPagina.size());
-        assertNotEquals(primeraPagina.get(0).getId(), segundaPagina.get(0).getId());
-        assertEquals(3L, usuarioPersistenceAdapter.contarCuentas(null, null, "laura"));
+        assertNotEquals(
+                primeraPagina.get(0).getId(),
+                segundaPagina.get(0).getId()
+        );
+
+        assertEquals(3L, usuarioPersistenceAdapter.contarCuentas(
+                null, null, "laura"
+        ));
+    }
+
+    @Test
+    void debeEliminarFisicamenteUnUsuarioExistente() {
+
+        Usuario usuario = crearUsuario(
+                "Usuario para eliminar",
+                "eliminar@gmail.com",
+                passwordEncoder.encode("Password123"),
+                false
+        );
+
+        Usuario guardado = usuarioPersistenceAdapter.guardar(usuario);
+        Long usuarioId = guardado.getId();
+
+        assertTrue(usuarioJpaRepository.existsById(usuarioId));
+
+        boolean eliminado = usuarioPersistenceAdapter.eliminarPorId(usuarioId);
+
+        assertTrue(eliminado);
+        assertFalse(usuarioJpaRepository.existsById(usuarioId));
+    }
+
+    @Test
+    void noDebeEliminarUnUsuarioInexistente() {
+
+        boolean eliminado = usuarioPersistenceAdapter.eliminarPorId(-1L);
+
+        assertFalse(eliminado);
+        assertEquals(0, usuarioJpaRepository.count());
     }
 
     private Usuario crearUsuario(
@@ -159,7 +256,18 @@ class UsuarioPersistenceAdapterTest {
             String email,
             String passwordHash,
             Boolean correoVerificado) {
-        return crearUsuario(nombre, email, passwordHash, correoVerificado, null);
+
+        return crearUsuario(
+                nombre,
+                email,
+                passwordHash,
+                correoVerificado,
+                null,
+                175.0,
+                96.0,
+                82.0,
+                98.0
+        );
     }
 
     private Usuario crearUsuario(
@@ -168,6 +276,30 @@ class UsuarioPersistenceAdapterTest {
             String passwordHash,
             Boolean correoVerificado,
             String barrio) {
+
+        return crearUsuario(
+                nombre,
+                email,
+                passwordHash,
+                correoVerificado,
+                barrio,
+                175.0,
+                96.0,
+                82.0,
+                98.0
+        );
+    }
+
+    private Usuario crearUsuario(
+            String nombre,
+            String email,
+            String passwordHash,
+            Boolean correoVerificado,
+            String barrio,
+            Double heightCm,
+            Double chestCm,
+            Double waistCm,
+            Double hipCm) {
 
         return new Usuario(
                 null,
@@ -183,8 +315,11 @@ class UsuarioPersistenceAdapterTest {
                 null,
                 null,
                 correoVerificado,
-                barrio
+                barrio,
+                heightCm,
+                chestCm,
+                waistCm,
+                hipCm
         );
     }
 }
-

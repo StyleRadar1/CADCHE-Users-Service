@@ -29,9 +29,14 @@
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
 
-    <!-- Excluir advertencias en el publisher de RabbitMQ -->
+    <!-- Excluir advertencias en los publishers de RabbitMQ -->
     <Match>
         <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.messaging.RabbitMQUsuarioEstadoEventPublisher" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match>
+        <Class name="edu.dosw.styleradar.usuarios.infrastructure.adapter.out.messaging.RabbitMQUsuarioCuentaEliminadaEventPublisher" />
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
 

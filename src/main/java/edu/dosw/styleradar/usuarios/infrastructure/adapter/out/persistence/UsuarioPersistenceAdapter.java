@@ -121,6 +121,20 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         return Optional.of(convertirADominio(actualizado));
     }
 
+    @Override
+    @Transactional
+    public boolean eliminarPorId(Long usuarioId) {
+
+        if (!usuarioJpaRepository.existsById(usuarioId)) {
+            return false;
+        }
+
+        usuarioJpaRepository.deleteById(usuarioId);
+        usuarioJpaRepository.flush();
+
+        return true;
+    }
+
     private UsuarioEntity convertirAEntity(Usuario usuario) {
         UsuarioEntity entity = new UsuarioEntity();
         entity.setId(usuario.getId());
@@ -138,6 +152,12 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         entity.setAdministradorCambioEstadoId(
                 usuario.getAdministradorCambioEstadoId());
         entity.setMotivoCambioEstado(usuario.getMotivoCambioEstado());
+
+        entity.setHeightCm(usuario.getHeightCm());
+        entity.setChestCm(usuario.getChestCm());
+        entity.setWaistCm(usuario.getWaistCm());
+        entity.setHipCm(usuario.getHipCm());
+
         return entity;
     }
 
@@ -156,7 +176,11 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
                 entity.getAdministradorCambioEstadoId(),
                 entity.getMotivoCambioEstado(),
                 entity.getCorreoVerificado(),
-                entity.getBarrio()
+                entity.getBarrio(),
+                entity.getHeightCm(),
+                entity.getChestCm(),
+                entity.getWaistCm(),
+                entity.getHipCm()
         );
     }
 }

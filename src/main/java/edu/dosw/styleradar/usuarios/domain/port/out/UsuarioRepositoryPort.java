@@ -32,4 +32,6 @@ public interface UsuarioRepositoryPort {
             String motivo);
 
     Optional<Usuario> marcarCorreoComoVerificado(Long usuarioId);
+
+    boolean eliminarPorId(Long usuarioId);
 }

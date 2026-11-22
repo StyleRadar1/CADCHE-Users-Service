@@ -35,6 +35,9 @@ public class SecurityConfig {
     private static final String MARCAR_CORREO_VERIFICADO =
             "/api/v1/internal/usuarios/*/correo-verificado";
 
+    private static final String OBTENER_MEDIDAS =
+            "/api/v1/internal/usuarios/*/medidas";
+
     @Value("${INTERNAL_AUTH_USERNAME}")
     private String username;
 
@@ -93,12 +96,14 @@ public class SecurityConfig {
                 .securityMatcher(
                         VERIFICAR_CREDENCIALES,
                         VERIFICAR_CREDENCIALES_LEGACY,
-                        MARCAR_CORREO_VERIFICADO
+                        MARCAR_CORREO_VERIFICADO,
+                        OBTENER_MEDIDAS
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
                         VERIFICAR_CREDENCIALES,
                         VERIFICAR_CREDENCIALES_LEGACY,
-                        MARCAR_CORREO_VERIFICADO
+                        MARCAR_CORREO_VERIFICADO,
+                        OBTENER_MEDIDAS
                 ))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

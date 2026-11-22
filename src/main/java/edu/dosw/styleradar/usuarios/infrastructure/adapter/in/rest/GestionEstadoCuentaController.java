@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -20,6 +21,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.port.in.CambiarEstadoCuentaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentaAdministrativaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentasAdministrativasUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.EliminarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.application.usecase.CuentaAdministrativaMapper;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.GestionEstadoCuentaApi;
@@ -32,14 +34,17 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
     private final CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase;
     private final ConsultarCuentasAdministrativasUseCase consultarCuentasUseCase;
     private final ConsultarCuentaAdministrativaUseCase consultarCuentaUseCase;
+    private final EliminarUsuarioUseCase eliminarUsuarioUseCase;
 
     public GestionEstadoCuentaController(
             CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase,
             ConsultarCuentasAdministrativasUseCase consultarCuentasUseCase,
-            ConsultarCuentaAdministrativaUseCase consultarCuentaUseCase) {
+            ConsultarCuentaAdministrativaUseCase consultarCuentaUseCase,
+            EliminarUsuarioUseCase eliminarUsuarioUseCase) {
         this.cambiarEstadoCuentaUseCase = cambiarEstadoCuentaUseCase;
         this.consultarCuentasUseCase = consultarCuentasUseCase;
         this.consultarCuentaUseCase = consultarCuentaUseCase;
+        this.eliminarUsuarioUseCase = eliminarUsuarioUseCase;
     }
 
     @InitBinder
@@ -88,4 +93,13 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
         return ResponseEntity.ok(CuentaAdministrativaMapper.aRespuesta(usuario));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable("id") Long id) {
+
+        eliminarUsuarioUseCase.ejecutar(id);
+
+        return ResponseEntity.noContent().build();
+    }
 }
+
