@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/internal/usuarios")
+@RequestMapping({
+        "/api/v1/internal/users",
+        "/api/v1/internal/usuarios"
+})
 public class InternalUsuarioController {
 
     private final ObtenerMedidasCorporalesUseCase obtenerMedidasCorporalesUseCase;
@@ -19,7 +22,10 @@ public class InternalUsuarioController {
         this.obtenerMedidasCorporalesUseCase = obtenerMedidasCorporalesUseCase;
     }
 
-    @GetMapping("/{userId}/medidas")
+    @GetMapping({
+            "/{userId}/measurements",
+            "/{userId}/medidas"
+    })
     public ResponseEntity<MedidasCorporalesResponseDTO> obtenerMedidas(
             @PathVariable("userId") Long userId) {
 

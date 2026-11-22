@@ -58,14 +58,17 @@ class ConsultarCuentasAdministrativasUseCaseImplTest {
 
     @Test
     void listaCompletaMarcaPaginaVaciaComoPrimeraYUltima() {
-        when(repository.buscarCuentas(null, null, null, 0, 20)).thenReturn(List.of());
-        when(repository.contarCuentas(null, null, null)).thenReturn(0L);
+        when(repository.buscarCuentas(null, null, "", 0, 20)).thenReturn(List.of());
+        when(repository.contarCuentas(null, null, "")).thenReturn(0L);
 
         var resultado = listar.ejecutar(null, null, "   ", 0, 20);
 
         assertEquals(0, resultado.getTotalPages());
         assertEquals(true, resultado.isFirst());
         assertEquals(true, resultado.isLast());
+
+        verify(repository).buscarCuentas(null, null, "", 0, 20);
+        verify(repository).contarCuentas(null, null, "");
     }
 
     @Test

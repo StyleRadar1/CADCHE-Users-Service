@@ -35,7 +35,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.UsuarioAp
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping({"/api/v1/users", "/api/v1/usuarios"})
 public class UsuarioController implements UsuarioApi {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
@@ -145,7 +145,10 @@ public class UsuarioController implements UsuarioApi {
                 .body(aRespuesta(guardada));
     }
 
-    @PutMapping("/me/busquedas-guardadas/{busquedaId}")
+    @PutMapping({
+            "/me/saved-searches/{busquedaId}",
+            "/me/busquedas-guardadas/{busquedaId}"
+    })
     public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
             @PathVariable("busquedaId") Long busquedaId,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
@@ -198,7 +201,10 @@ public class UsuarioController implements UsuarioApi {
         );
     }
 
-    @DeleteMapping("/me/busquedas-guardadas/{busquedaId}")
+    @DeleteMapping({
+            "/me/saved-searches/{busquedaId}",
+            "/me/busquedas-guardadas/{busquedaId}"
+    })
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
             @PathVariable("busquedaId") Long busquedaId) {
@@ -275,4 +281,3 @@ public class UsuarioController implements UsuarioApi {
         return Long.valueOf(jwt.getSubject());
     }
 }
-

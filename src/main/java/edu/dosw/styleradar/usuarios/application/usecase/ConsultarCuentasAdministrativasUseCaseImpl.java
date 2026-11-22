@@ -22,14 +22,18 @@ public class ConsultarCuentasAdministrativasUseCaseImpl
     @Override
     public PageResponseDTO<CuentaAdministrativaResponseDTO> ejecutar(
             EstadoCuenta estado, Rol rol, String q, int page, int size) {
-        String filtro = q == null || q.isBlank() ? null : q.strip();
+
+        String filtro = q == null || q.isBlank() ? "" : q.strip();
+
         List<CuentaAdministrativaResponseDTO> cuentas = usuarioRepository
                 .buscarCuentas(estado, rol, filtro, page, size)
                 .stream()
                 .map(CuentaAdministrativaMapper::aRespuesta)
                 .toList();
+
         long total = usuarioRepository.contarCuentas(estado, rol, filtro);
         int totalPages = (int) Math.ceil((double) total / size);
+
         return new PageResponseDTO<>(cuentas, page, size, total, totalPages,
                 page == 0, page >= totalPages - 1);
     }

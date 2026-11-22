@@ -18,17 +18,20 @@ import edu.dosw.styleradar.usuarios.application.dto.request.CambioEstadoCuentaRe
 import edu.dosw.styleradar.usuarios.application.dto.request.CuentasConsultaRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.CuentaAdministrativaResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
+import edu.dosw.styleradar.usuarios.application.usecase.CuentaAdministrativaMapper;
+import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.in.CambiarEstadoCuentaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentaAdministrativaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentasAdministrativasUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.EliminarUsuarioUseCase;
-import edu.dosw.styleradar.usuarios.application.usecase.CuentaAdministrativaMapper;
-import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.GestionEstadoCuentaApi;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/admin/usuarios")
+@RequestMapping({
+        "/api/v1/admin/users",
+        "/api/v1/admin/usuarios"
+})
 public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
     private final CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase;
@@ -41,6 +44,7 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
             ConsultarCuentasAdministrativasUseCase consultarCuentasUseCase,
             ConsultarCuentaAdministrativaUseCase consultarCuentaUseCase,
             EliminarUsuarioUseCase eliminarUsuarioUseCase) {
+
         this.cambiarEstadoCuentaUseCase = cambiarEstadoCuentaUseCase;
         this.consultarCuentasUseCase = consultarCuentasUseCase;
         this.consultarCuentaUseCase = consultarCuentaUseCase;
@@ -54,27 +58,44 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
                 new java.beans.PropertyEditorSupport() {
                     @Override
                     public void setAsText(String text) {
-                        setValue(edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.valueOf(text));
+                        setValue(
+                                edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.valueOf(text)
+                        );
                     }
-                });
+                }
+        );
     }
 
+    @GetMapping
     @Override
     public ResponseEntity<PageResponseDTO<CuentaAdministrativaResponseDTO>> consultar(
             @Valid @ModelAttribute CuentasConsultaRequestDTO request) {
-        return ResponseEntity.ok(consultarCuentasUseCase.ejecutar(
-                request.getEstado(), request.getRol(), request.getQ(),
-                request.getPage(), request.getSize()));
+
+        return ResponseEntity.ok(
+                consultarCuentasUseCase.ejecutar(
+                        request.getEstado(),
+                        request.getRol(),
+                        request.getQ(),
+                        request.getPage(),
+                        request.getSize()
+                )
+        );
     }
 
     @GetMapping("/{id}")
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> consultarUno(
             @PathVariable("id") Long id) {
-        return ResponseEntity.ok(consultarCuentaUseCase.ejecutar(id));
+
+        return ResponseEntity.ok(
+                consultarCuentaUseCase.ejecutar(id)
+        );
     }
 
-    @PatchMapping("/{id}/estado")
+    @PatchMapping({
+            "/{id}/status",
+            "/{id}/estado"
+    })
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
             @PathVariable("id") Long id,
@@ -89,9 +110,12 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
                 id,
                 request.getEstado(),
                 administradorId,
-                request.getMotivo());
+                request.getMotivo()
+        );
 
-        return ResponseEntity.ok(CuentaAdministrativaMapper.aRespuesta(usuario));
+        return ResponseEntity.ok(
+                CuentaAdministrativaMapper.aRespuesta(usuario)
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -102,4 +126,3 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
         return ResponseEntity.noContent().build();
     }
 }
-

@@ -189,6 +189,7 @@ class UsuarioPersistenceAdapterTest {
 
         usuarioPersistenceAdapter.guardar(administrador);
 
+        // Comprueba los filtros por estado, rol y texto.
         var filtradas = usuarioPersistenceAdapter.buscarCuentas(
                 EstadoCuenta.ACTIVA, Rol.COMPRADOR, "GÓMEZ", 0, 10
         );
@@ -201,6 +202,7 @@ class UsuarioPersistenceAdapterTest {
                 EstadoCuenta.ACTIVA, Rol.COMPRADOR, "GÓMEZ"
         ));
 
+        // Comprueba la paginación con búsqueda de texto.
         var primeraPagina = usuarioPersistenceAdapter.buscarCuentas(
                 null, null, "laura", 0, 1
         );
@@ -211,6 +213,7 @@ class UsuarioPersistenceAdapterTest {
 
         assertEquals(1, primeraPagina.size());
         assertEquals(1, segundaPagina.size());
+
         assertNotEquals(
                 primeraPagina.get(0).getId(),
                 segundaPagina.get(0).getId()
@@ -218,6 +221,18 @@ class UsuarioPersistenceAdapterTest {
 
         assertEquals(3L, usuarioPersistenceAdapter.contarCuentas(
                 null, null, "laura"
+        ));
+
+        // Comprueba la consulta sin filtro de texto.
+        var sinFiltroTexto = usuarioPersistenceAdapter.buscarCuentas(
+                null, null, "", 0, 10
+        );
+
+        assertEquals(3, sinFiltroTexto.size());
+
+        // Comprueba que el conteo coincida cuando el texto está vacío.
+        assertEquals(3L, usuarioPersistenceAdapter.contarCuentas(
+                null, null, ""
         ));
     }
 
