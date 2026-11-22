@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.application.usecase;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +70,9 @@ public class CambiarEstadoCuentaUseCaseImpl implements CambiarEstadoCuentaUseCas
                 .orElseThrow(() -> new UsuarioNoEncontradoException(usuarioId));
 
         UsuarioEstadoCambiadoEvent evento = new UsuarioEstadoCambiadoEvent(
+                UUID.randomUUID().toString(),
                 usuarioId,
+                usuario.getEmail(),
                 estadoAnterior,
                 nuevoEstado,
                 administradorId,
@@ -81,3 +84,4 @@ public class CambiarEstadoCuentaUseCaseImpl implements CambiarEstadoCuentaUseCas
         return usuarioActualizado;
     }
 }
+

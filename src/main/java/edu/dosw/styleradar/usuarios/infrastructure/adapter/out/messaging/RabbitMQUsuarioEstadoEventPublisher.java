@@ -10,7 +10,8 @@ public class RabbitMQUsuarioEstadoEventPublisher
         implements UsuarioEstadoEventPublisherPort {
 
     private static final String EXCHANGE = "styleradar.exchange";
-    private static final String ROUTING_KEY = "user.status.changed";
+    private static final String ROUTING_KEY =
+            "styleradar.usuarios.estado.cambiado";
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -23,3 +24,4 @@ public class RabbitMQUsuarioEstadoEventPublisher
         rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, evento);
     }
 }
+

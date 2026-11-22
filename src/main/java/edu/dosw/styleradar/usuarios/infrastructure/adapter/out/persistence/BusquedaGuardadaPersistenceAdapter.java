@@ -5,20 +5,26 @@ import edu.dosw.styleradar.usuarios.domain.port.out.BusquedaGuardadaRepositoryPo
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.BusquedaGuardadaEntity;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.BusquedaGuardadaJpaRepository;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class BusquedaGuardadaPersistenceAdapter implements BusquedaGuardadaRepositoryPort {
+public class BusquedaGuardadaPersistenceAdapter
+        implements BusquedaGuardadaRepositoryPort {
+
     private final BusquedaGuardadaJpaRepository repository;
 
-    public BusquedaGuardadaPersistenceAdapter(BusquedaGuardadaJpaRepository repository) {
+    public BusquedaGuardadaPersistenceAdapter(
+            BusquedaGuardadaJpaRepository repository) {
         this.repository = repository;
     }
 
     @Override
     public BusquedaGuardada guardar(BusquedaGuardada busqueda) {
         BusquedaGuardadaEntity entity = new BusquedaGuardadaEntity();
+
+        entity.setId(busqueda.id());
         entity.setUsuarioId(busqueda.usuarioId());
         entity.setNombre(busqueda.nombre());
         entity.setQuery(busqueda.query());
@@ -32,14 +38,27 @@ public class BusquedaGuardadaPersistenceAdapter implements BusquedaGuardadaRepos
         entity.setLatitud(busqueda.latitud());
         entity.setLongitud(busqueda.longitud());
         entity.setFechaCreacion(busqueda.fechaCreacion());
+
         return convertir(repository.save(entity));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<BusquedaGuardada> buscarPorUsuarioId(Long usuarioId) {
-        return repository.findAllByUsuarioIdOrderByFechaCreacionDesc(usuarioId).stream()
-                .map(this::convertir).toList();
+        return repository.findAllByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
+                .stream()
+                .map(this::convertir)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<BusquedaGuardada> buscarPorIdYUsuarioId(
+            Long busquedaId,
+            Long usuarioId) {
+
+        return repository.findByIdAndUsuarioId(busquedaId, usuarioId)
+                .map(this::convertir);
     }
 
     @Override
@@ -49,9 +68,21 @@ public class BusquedaGuardadaPersistenceAdapter implements BusquedaGuardadaRepos
     }
 
     private BusquedaGuardada convertir(BusquedaGuardadaEntity entity) {
-        return new BusquedaGuardada(entity.getId(), entity.getUsuarioId(), entity.getNombre(),
-                entity.getQuery(), entity.getTipo(), entity.getColor(), entity.getTalla(),
-                entity.getPrecioMin(), entity.getPrecioMax(), entity.getMarca(), entity.getEstilo(),
-                entity.getLatitud(), entity.getLongitud(), entity.getFechaCreacion());
+        return new BusquedaGuardada(
+                entity.getId(),
+                entity.getUsuarioId(),
+                entity.getNombre(),
+                entity.getQuery(),
+                entity.getTipo(),
+                entity.getColor(),
+                entity.getTalla(),
+                entity.getPrecioMin(),
+                entity.getPrecioMax(),
+                entity.getMarca(),
+                entity.getEstilo(),
+                entity.getLatitud(),
+                entity.getLongitud(),
+                entity.getFechaCreacion()
+        );
     }
 }
