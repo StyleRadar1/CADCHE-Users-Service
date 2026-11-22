@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.config;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,17 @@ public class SecurityConfig {
 
     private static final String OBTENER_MEDIDAS =
             "/api/v1/internal/usuarios/*/medidas";
+
+    private static final Map<String, String> EQUIVALENCIAS_ROLES = Map.of(
+            "BUYER", "ROLE_COMPRADOR",
+            "COMPRADOR", "ROLE_COMPRADOR",
+            "STORE_ADMIN", "ROLE_ADMIN_ALMACEN",
+            "ADMIN_ALMACEN", "ROLE_ADMIN_ALMACEN",
+            "FOUNDATION_REPRESENTATIVE", "ROLE_REPRESENTANTE_FUNDACION",
+            "REPRESENTANTE_FUNDACION", "ROLE_REPRESENTANTE_FUNDACION",
+            "STYLERADAR_ADMIN", "ROLE_ADMIN_STYLERADAR",
+            "ADMIN_STYLERADAR", "ROLE_ADMIN_STYLERADAR"
+    );
 
     @Value("${INTERNAL_AUTH_USERNAME}")
     private String username;
@@ -78,7 +90,11 @@ public class SecurityConfig {
             }
 
             return roles.stream()
-                    .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                    .map(role -> role.startsWith("ROLE_")
+                            ? role.substring(5)
+                            : role)
+                    .map(role -> EQUIVALENCIAS_ROLES.get(role))
+                    .filter(role -> role != null)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
         });
@@ -176,4 +192,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

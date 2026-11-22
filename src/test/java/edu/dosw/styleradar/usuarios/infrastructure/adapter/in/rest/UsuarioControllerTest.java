@@ -7,6 +7,7 @@ import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequ
 import edu.dosw.styleradar.usuarios.application.dto.response.BusquedaGuardadaResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
+import edu.dosw.styleradar.usuarios.domain.event.BusquedaSincronizadaEvent;
 import edu.dosw.styleradar.usuarios.domain.model.BusquedaGuardada;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
@@ -16,6 +17,7 @@ import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUse
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.BusquedaGuardadaRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.BusquedaSincronizadaEventPublisherPort;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,9 +32,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UsuarioControllerTest {
@@ -42,6 +46,7 @@ class UsuarioControllerTest {
     private ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
     private ObtenerUsuarioUseCase obtenerUsuarioUseCase;
     private BusquedaGuardadaRepositoryPort busquedasRepository;
+    private BusquedaSincronizadaEventPublisherPort busquedaEventPublisher;
 
     private UsuarioController controller;
 
@@ -49,23 +54,22 @@ class UsuarioControllerTest {
     void setUp() {
 
         registrarUsuarioUseCase = mock(RegistrarUsuarioUseCase.class);
-
         actualizarPreferenciasUseCase =
                 mock(ActualizarPreferenciasEstiloUseCase.class);
-
         actualizarTallasUseCase =
                 mock(ActualizarTallasHabitualesUseCase.class);
-
         obtenerUsuarioUseCase = mock(ObtenerUsuarioUseCase.class);
-
         busquedasRepository = mock(BusquedaGuardadaRepositoryPort.class);
+        busquedaEventPublisher =
+                mock(BusquedaSincronizadaEventPublisherPort.class);
 
         controller = new UsuarioController(
                 registrarUsuarioUseCase,
                 actualizarPreferenciasUseCase,
                 actualizarTallasUseCase,
                 obtenerUsuarioUseCase,
-                busquedasRepository
+                busquedasRepository,
+                busquedaEventPublisher
         );
 
         Jwt jwt = Jwt.withTokenValue("token-de-prueba")
@@ -97,6 +101,25 @@ class UsuarioControllerTest {
                         TipoPrenda.SUPERIOR, Set.of("M")
                 ))
                 .build();
+    }
+
+    private BusquedaGuardada crearBusqueda(Long id) {
+        return new BusquedaGuardada(
+                id,
+                144L,
+                "Chaquetas casuales",
+                "chaqueta",
+                TipoPrenda.SUPERIOR,
+                "Negro",
+                Talla.M,
+                null,
+                null,
+                null,
+                Estilo.CASUAL,
+                null,
+                null,
+                Instant.now()
+        );
     }
 
     @Test
@@ -277,22 +300,7 @@ class UsuarioControllerTest {
         request.setEstilo(Estilo.CASUAL);
 
         when(busquedasRepository.guardar(any()))
-                .thenReturn(new BusquedaGuardada(
-                        10L,
-                        144L,
-                        request.getNombre(),
-                        request.getQuery(),
-                        request.getTipo(),
-                        request.getColor(),
-                        request.getTalla(),
-                        request.getPrecioMin(),
-                        request.getPrecioMax(),
-                        request.getMarca(),
-                        request.getEstilo(),
-                        request.getLatitud(),
-                        request.getLongitud(),
-                        Instant.now()
-                ));
+                .thenReturn(crearBusqueda(10L));
 
         ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
                 controller.guardarBusqueda(request);
@@ -314,6 +322,78 @@ class UsuarioControllerTest {
         );
 
         assertNotNull(respuesta.getBody().getFechaCreacion());
+
+        verify(busquedaEventPublisher).publicar(any());
+    }
+
+    @Test
+    void debeActualizarBusquedaGuardadaYPublicarEvento() {
+
+        BusquedaGuardada anterior = crearBusqueda(5L);
+
+        GuardarBusquedaRequestDTO request =
+                new GuardarBusquedaRequestDTO();
+
+        request.setNombre("Chaquetas urbanas");
+        request.setQuery("chaqueta urbana");
+        request.setTipo(TipoPrenda.SUPERIOR);
+        request.setColor("Azul");
+        request.setTalla(Talla.M);
+        request.setEstilo(Estilo.URBANO);
+
+        BusquedaGuardada actualizada = new BusquedaGuardada(
+                5L,
+                144L,
+                "Chaquetas urbanas",
+                "chaqueta urbana",
+                TipoPrenda.SUPERIOR,
+                "Azul",
+                Talla.M,
+                null,
+                null,
+                null,
+                Estilo.URBANO,
+                null,
+                null,
+                anterior.fechaCreacion()
+        );
+
+        when(busquedasRepository.buscarPorIdYUsuarioId(5L, 144L))
+                .thenReturn(Optional.of(anterior));
+
+        when(busquedasRepository.guardar(any()))
+                .thenReturn(actualizada);
+
+        ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
+                controller.actualizarBusquedaGuardada(5L, request);
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+        assertEquals(5L, respuesta.getBody().getId());
+        assertEquals("Chaquetas urbanas", respuesta.getBody().getNombre());
+        assertEquals("chaqueta urbana", respuesta.getBody().getQuery());
+
+        verify(busquedasRepository).buscarPorIdYUsuarioId(5L, 144L);
+        verify(busquedasRepository).guardar(any());
+        verify(busquedaEventPublisher).publicar(any());
+    }
+
+    @Test
+    void debeRetornarNoEncontradoSiLaBusquedaNoPerteneceAlUsuario() {
+
+        GuardarBusquedaRequestDTO request =
+                new GuardarBusquedaRequestDTO();
+
+        when(busquedasRepository.buscarPorIdYUsuarioId(99L, 144L))
+                .thenReturn(Optional.empty());
+
+        ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
+                controller.actualizarBusquedaGuardada(99L, request);
+
+        assertEquals(HttpStatus.NOT_FOUND, respuesta.getStatusCode());
+
+        verify(busquedasRepository, never()).guardar(any());
+        verify(busquedaEventPublisher, never()).publicar(any());
     }
 
     @Test
@@ -335,6 +415,14 @@ class UsuarioControllerTest {
     @Test
     void debeEliminarBusquedaGuardada() {
 
+        BusquedaGuardada busqueda = crearBusqueda(5L);
+
+        when(busquedasRepository.buscarPorIdYUsuarioId(5L, 144L))
+                .thenReturn(Optional.of(busqueda));
+
+        when(busquedasRepository.eliminarPorIdYUsuarioId(5L, 144L))
+                .thenReturn(true);
+
         ResponseEntity<Void> respuesta =
                 controller.eliminarBusquedaGuardada(5L);
 
@@ -343,5 +431,7 @@ class UsuarioControllerTest {
 
         verify(busquedasRepository)
                 .eliminarPorIdYUsuarioId(5L, 144L);
+
+        verify(busquedaEventPublisher).publicar(any());
     }
 }
