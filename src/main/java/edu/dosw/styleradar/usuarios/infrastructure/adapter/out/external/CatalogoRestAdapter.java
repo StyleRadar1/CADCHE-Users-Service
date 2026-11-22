@@ -27,9 +27,14 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
 
     private final RestClient restClient;
 
+    private static final Set<String> TALLAS_ALFABETICAS = Set.of(
+            "XS", "S", "M", "L", "XL", "XXL"
+    );
+
     public CatalogoRestAdapter(
             RestClient.Builder restClientBuilder,
             @Value("${styleradar.catalogo.base-url}") String baseUrl) {
+
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
                 .build();
@@ -45,31 +50,90 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
 
         if (estilos != null) {
             estilos.stream()
+                    .filter(estilo -> estilo != null)
                     .map(Enum::name)
                     .sorted()
                     .forEach(estilo -> agregarResultados(
                             prendasPorId,
-                            consultar("texto", estilo),
+                            consultar("estilo", estilo),
+                            null,
                             null
                     ));
         }
 
-        if (tallasPorTipo != null) {
-            tallasPorTipo.values().stream()
-                    .filter(tallas -> tallas != null)
-                    .flatMap(Set::stream)
-                    .map(String::trim)
-                    .filter(talla -> !talla.isEmpty())
-                    .distinct()
-                    .sorted()
-                    .forEach(talla -> agregarResultados(
-                            prendasPorId,
-                            consultar("talla", talla),
-                            talla
-                    ));
-        }
+        Map<String, Set<TipoPrenda>> tiposPorTalla =
+                agruparTallasPorTipo(tallasPorTipo);
+
+        tiposPorTalla.forEach((talla, tipos) -> agregarResultados(
+                prendasPorId,
+                consultar("talla", talla),
+                talla,
+                tipos
+        ));
 
         return List.copyOf(prendasPorId.values());
+    }
+
+    private Map<String, Set<TipoPrenda>> agruparTallasPorTipo(
+            Map<TipoPrenda, Set<String>> tallasPorTipo) {
+
+        Map<String, Set<TipoPrenda>> tiposPorTalla =
+                new LinkedHashMap<>();
+
+        if (tallasPorTipo == null) {
+            return tiposPorTalla;
+        }
+
+        tallasPorTipo.forEach((tipo, tallas) -> {
+            if (tipo == null || tallas == null) {
+                return;
+            }
+
+            tallas.stream()
+                    .map(this::normalizarTalla)
+                    .filter(talla -> talla != null)
+                    .distinct()
+                    .sorted()
+                    .forEach(talla -> tiposPorTalla
+                            .computeIfAbsent(
+                                    talla,
+                                    clave -> new LinkedHashSet<>()
+                            )
+                            .add(tipo));
+        });
+
+        return tiposPorTalla;
+    }
+
+    private String normalizarTalla(String talla) {
+
+        if (talla == null || talla.isBlank()) {
+            return null;
+        }
+
+        String normalizada = talla.trim().toUpperCase(Locale.ROOT);
+
+        if (TALLAS_ALFABETICAS.contains(normalizada)) {
+            return normalizada;
+        }
+
+        if (normalizada.equals("UNICA")
+                || normalizada.equals("ÚNICA")) {
+            return "Única";
+        }
+
+        try {
+            int numero = Integer.parseInt(normalizada);
+
+            if (numero >= 26 && numero <= 45
+                    && normalizada.equals(String.valueOf(numero))) {
+                return normalizada;
+            }
+        } catch (NumberFormatException excepcion) {
+            return null;
+        }
+
+        return null;
     }
 
     private List<CatalogoPrendaApiDTO> consultar(
@@ -92,6 +156,7 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
             UriBuilder uriBuilder,
             String nombreParametro,
             String valorParametro) {
+
         return uriBuilder.path("/api/v1/prendas")
                 .queryParam(nombreParametro, valorParametro)
                 .build();
@@ -100,23 +165,40 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
     private void agregarResultados(
             Map<String, CatalogoItemResponseDTO> prendasPorId,
             List<CatalogoPrendaApiDTO> resultados,
-            String tallaConsultada) {
+            String tallaConsultada,
+            Set<TipoPrenda> tiposEsperados) {
 
         for (CatalogoPrendaApiDTO prenda : resultados) {
-            if (prenda.id() == null || !Boolean.TRUE.equals(prenda.disponible())) {
+
+            if (prenda.id() == null
+                    || !Boolean.TRUE.equals(prenda.disponible())) {
                 continue;
             }
 
-            CatalogoItemResponseDTO mapeada = mapear(prenda, tallaConsultada);
-            CatalogoItemResponseDTO existente = prendasPorId.get(prenda.id());
+            CatalogoItemResponseDTO mapeada =
+                    mapear(prenda, tallaConsultada);
+
+            if (tiposEsperados != null
+                    && !tiposEsperados.contains(mapeada.getTipo())) {
+                continue;
+            }
+
+            CatalogoItemResponseDTO existente =
+                    prendasPorId.get(prenda.id());
 
             if (existente == null) {
                 prendasPorId.put(prenda.id(), mapeada);
             } else if (tallaConsultada != null) {
+
                 Set<String> tallas = new LinkedHashSet<>(
-                        existente.getTallasDisponibles());
+                        existente.getTallasDisponibles()
+                );
+
                 tallas.add(tallaConsultada);
-                existente.setTallasDisponibles(new ArrayList<>(tallas));
+
+                existente.setTallasDisponibles(
+                        new ArrayList<>(tallas)
+                );
             }
         }
     }
@@ -151,23 +233,30 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
     }
 
     private Estilo mapearEstilo(String estilo) {
+
         if (estilo == null || estilo.isBlank()) {
             return null;
         }
 
         try {
-            return Estilo.valueOf(estilo.trim().toUpperCase(Locale.ROOT));
+            return Estilo.valueOf(
+                    estilo.trim().toUpperCase(Locale.ROOT)
+            );
         } catch (IllegalArgumentException excepcion) {
             return null;
         }
     }
 
     private TipoPrenda mapearTipo(String tipo) {
+
         if (tipo == null || tipo.isBlank()) {
             return null;
         }
 
-        String normalizado = Normalizer.normalize(tipo, Normalizer.Form.NFD)
+        String normalizado = Normalizer.normalize(
+                        tipo,
+                        Normalizer.Form.NFD
+                )
                 .replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT);
 
@@ -190,12 +279,16 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
         return null;
     }
 
-    private boolean contieneAlguno(String texto, String... palabras) {
+    private boolean contieneAlguno(
+            String texto,
+            String... palabras) {
+
         for (String palabra : palabras) {
             if (texto.contains(palabra)) {
                 return true;
             }
         }
+
         return false;
     }
 }
