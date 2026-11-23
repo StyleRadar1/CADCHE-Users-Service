@@ -27,27 +27,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String VERIFICAR_CREDENCIALES =
-            "/api/v1/internal/users/verify-credentials";
-
-    private static final String VERIFICAR_CREDENCIALES_ES =
-            "/api/v1/internal/usuarios/verificar-credenciales";
-
-    private static final String VERIFICAR_CREDENCIALES_LEGACY =
-            "/internal/api/v1/usuarios/verificar-credenciales";
-
-    private static final String MARCAR_CORREO_VERIFICADO =
-            "/api/v1/internal/users/*/email-verification";
-
-    private static final String MARCAR_CORREO_VERIFICADO_ES =
-            "/api/v1/internal/usuarios/*/correo-verificado";
-
-    private static final String OBTENER_MEDIDAS =
-            "/api/v1/internal/users/*/measurements";
-
-    private static final String OBTENER_MEDIDAS_ES =
-            "/api/v1/internal/usuarios/*/medidas";
-
     private static final Map<String, String> EQUIVALENCIAS_ROLES = Map.of(
             "BUYER", "ROLE_COMPRADOR",
             "COMPRADOR", "ROLE_COMPRADOR",
@@ -118,23 +97,9 @@ public class SecurityConfig {
             AuthenticationProvider authenticationProvider) throws Exception {
 
         http
-                .securityMatcher(
-                        VERIFICAR_CREDENCIALES,
-                        VERIFICAR_CREDENCIALES_ES,
-                        VERIFICAR_CREDENCIALES_LEGACY,
-                        MARCAR_CORREO_VERIFICADO,
-                        MARCAR_CORREO_VERIFICADO_ES,
-                        OBTENER_MEDIDAS,
-                        OBTENER_MEDIDAS_ES
-                )
+                .securityMatcher("/api/v1/internal/**")
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        VERIFICAR_CREDENCIALES,
-                        VERIFICAR_CREDENCIALES_ES,
-                        VERIFICAR_CREDENCIALES_LEGACY,
-                        MARCAR_CORREO_VERIFICADO,
-                        MARCAR_CORREO_VERIFICADO_ES,
-                        OBTENER_MEDIDAS,
-                        OBTENER_MEDIDAS_ES
+                        "/api/v1/internal/**"
                 ))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -171,20 +136,38 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/actuator/health"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios")
-                        .permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/users",
+                                "/api/v1/users/",
+                                "/api/v1/usuarios",
+                                "/api/v1/usuarios/"
+                        ).permitAll()
+
                         .requestMatchers(
                                 "/api/v1/admin/users/**",
                                 "/api/v1/admin/usuarios/**"
                         ).hasRole("ADMIN_STYLERADAR")
+
                         .requestMatchers(
+                                "/api/v1/users/me",
+                                "/api/v1/users/me/**",
                                 "/api/v1/usuarios/me",
                                 "/api/v1/usuarios/me/**"
                         ).hasRole("COMPRADOR")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/*")
-                        .hasRole("ADMIN_STYLERADAR")
-                        .requestMatchers("/api/v1/usuarios/**")
-                        .authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/users/*",
+                                "/api/v1/usuarios/*"
+                        ).hasRole("ADMIN_STYLERADAR")
+
+                        .requestMatchers(
+                                "/api/v1/users/**",
+                                "/api/v1/usuarios/**"
+                        ).authenticated()
+
                         .anyRequest().denyAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

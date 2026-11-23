@@ -71,10 +71,7 @@ public interface PersonalizacionApi {
                     )
             )
     })
-    @GetMapping({
-            "/feed",
-            "/feed"
-    })
+    @GetMapping("/feed")
     ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
             @Valid @ParameterObject @ModelAttribute PersonalizacionRequestDTO request
     );
