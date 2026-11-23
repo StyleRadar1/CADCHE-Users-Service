@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
 
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.model.*;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
@@ -198,6 +199,46 @@ class UsuarioPersistenceAdapterUnitTest {
         assertTrue(resultado.isPresent());
         assertEquals("GOOGLE", resultado.get().getProvider());
         assertEquals("google-sub-1", resultado.get().getProviderId());
+    }
+
+    @Test
+    void debeVincularIdentidadGoogleAUsuarioSinProveedor() {
+        UsuarioEntity entity = crearEntity();
+        entity.setProvider(null);
+        entity.setProviderId(null);
+        when(repository.vincularGoogleSiNoTieneIdentidad(1L, "google-sub-1"))
+                .thenAnswer(invocation -> {
+                    entity.setProvider("GOOGLE");
+                    entity.setProviderId(invocation.getArgument(1));
+                    return 1;
+                });
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+
+        Optional<Usuario> resultado = adapter.vincularIdentidadGoogle(1L, "google-sub-1");
+
+        assertTrue(resultado.isPresent());
+        assertEquals("GOOGLE", resultado.get().getProvider());
+        assertEquals("google-sub-1", resultado.get().getProviderId());
+        verify(repository).vincularGoogleSiNoTieneIdentidad(1L, "google-sub-1");
+    }
+
+    @Test
+    void devuelveVacioAlVincularIdentidadSiElUsuarioNoExiste() {
+        when(repository.vincularGoogleSiNoTieneIdentidad(99L, "google-sub-1"))
+                .thenReturn(0);
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertTrue(adapter.vincularIdentidadGoogle(99L, "google-sub-1").isEmpty());
+    }
+
+    @Test
+    void convierteConflictoDeUnicidadAlVincularIdentidadGoogle() {
+        when(repository.vincularGoogleSiNoTieneIdentidad(1L, "google-sub-1"))
+                .thenThrow(new DataIntegrityViolationException("Identidad duplicada"));
+
+        assertThrows(IdentidadExternaConflictivaException.class,
+                () -> adapter.vincularIdentidadGoogle(1L, "google-sub-1"));
+        verify(repository, never()).findById(1L);
     }
 
     @Test

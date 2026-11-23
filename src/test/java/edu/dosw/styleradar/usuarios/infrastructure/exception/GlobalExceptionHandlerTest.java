@@ -5,6 +5,7 @@ import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoExce
 import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,21 @@ class GlobalExceptionHandlerTest {
         assertEquals(409, response.getBody().getStatus());
         assertTrue(response.getBody().getMessage().contains("test@email.com"));
         assertEquals("/api/v1/usuarios", response.getBody().getPath());
+    }
+
+    @Test
+    void debeManejarIdentidadExternaConflictiva() {
+        IdentidadExternaConflictivaException exception =
+                new IdentidadExternaConflictivaException("Identidad Google conflictiva");
+
+        ResponseEntity<ErrorResponseDTO> response =
+                handler.handleIdentidadExternaConflictiva(exception, request);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals(409, response.getBody().getStatus());
+        assertEquals("Identidad Google conflictiva", response.getBody().getMessage());
+        assertEquals("/api/v1/usuarios", response.getBody().getPath());
+        assertTrue(response.getBody().getValidationErrors().isEmpty());
     }
 
     @Test
