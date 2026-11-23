@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +33,7 @@ public class PersonalizacionController implements PersonalizacionApi {
     }
 
     @Override
+    @GetMapping({"/{id}/feed", "/me/feed"})
     public ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
             @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
             @Valid @ModelAttribute PersonalizacionRequestDTO request) {
@@ -59,6 +61,13 @@ public class PersonalizacionController implements PersonalizacionApi {
     }
 
     @Override
+    @GetMapping({
+            "/{id}/recommendations",
+            "/me/recommendations",
+            "/me/recomendaciones",
+            "/recommendations",
+            "/recomendaciones"
+    })
     public ResponseEntity<RecomendacionesResponseDTO> recomendaciones(
             @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
             @Valid @ModelAttribute PersonalizacionRequestDTO request) {

@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -88,6 +89,12 @@ public class UsuarioController implements UsuarioApi {
     }
 
     @Override
+    @PutMapping({
+            "/{id}/style-preferences",
+            "/me/style-preferences",
+            "/me/preferencias-estilo",
+            "/me/preferencias"
+    })
     public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
             @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request) {
@@ -109,6 +116,11 @@ public class UsuarioController implements UsuarioApi {
     }
 
     @Override
+    @PutMapping({
+            "/{id}/sizes",
+            "/me/usual-sizes",
+            "/me/tallas-habituales"
+    })
     public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
             @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request) {
@@ -130,6 +142,11 @@ public class UsuarioController implements UsuarioApi {
     }
 
     @Override
+    @PostMapping({
+            "/{id}/saved-searches",
+            "/me/saved-searches",
+            "/me/busquedas-guardadas"
+    })
     public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
             @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
@@ -219,6 +236,11 @@ public class UsuarioController implements UsuarioApi {
     }
 
     @Override
+    @GetMapping({
+            "/{id}/saved-searches",
+            "/me/saved-searches",
+            "/me/busquedas-guardadas"
+    })
     public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas(
             @PathVariable(value = "id", required = false) Long id) {
 
