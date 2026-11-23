@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -34,28 +35,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidation(
             MethodArgumentNotValidException exception, HttpServletRequest request) {
-
-        Map<String, String> validationErrors = new LinkedHashMap<>();
-
-        exception.getBindingResult().getFieldErrors().forEach(error ->
-                validationErrors.putIfAbsent(
-                        nombreCampoApi(exception.getBindingResult().getTarget(), error.getField()),
-                        error.getDefaultMessage()));
-
-        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
-                "La solicitud contiene datos inválidos",
-                request.getRequestURI(), validationErrors);
+        return handleValidationErrors(exception.getBindingResult(), request);
     }
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ErrorResponseDTO> handleBindingValidation(
             BindException exception, HttpServletRequest request) {
+        return handleValidationErrors(exception.getBindingResult(), request);
+    }
 
+    private ResponseEntity<ErrorResponseDTO> handleValidationErrors(
+            BindingResult bindingResult, HttpServletRequest request) {
         Map<String, String> validationErrors = new LinkedHashMap<>();
 
-        exception.getBindingResult().getFieldErrors().forEach(error ->
+        bindingResult.getFieldErrors().forEach(error ->
                 validationErrors.putIfAbsent(
-                        nombreCampoApi(exception.getBindingResult().getTarget(), error.getField()),
+                        nombreCampoApi(bindingResult.getTarget(), error.getField()),
                         error.getDefaultMessage()));
 
         return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
