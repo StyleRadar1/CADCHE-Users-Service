@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -88,9 +89,11 @@ public class UsuarioController implements UsuarioApi {
 
     @Override
     public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
+            @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
 
         actualizarPreferenciasUseCase.actualizar(
                 usuarioId,
@@ -100,11 +103,18 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
+    public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
+            ActualizarPreferenciasEstiloRequestDTO request) {
+        return actualizarPreferenciasEstilo(null, request);
+    }
+
     @Override
     public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
+            @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
 
         actualizarTallasUseCase.actualizar(
                 usuarioId,
@@ -114,11 +124,18 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
+    public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
+            ActualizarTallasHabitualesRequestDTO request) {
+        return actualizarTallasHabituales(null, request);
+    }
+
     @Override
     public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
+            @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
 
         BusquedaGuardada busqueda = new BusquedaGuardada(
                 null,
@@ -145,15 +162,23 @@ public class UsuarioController implements UsuarioApi {
                 .body(aRespuesta(guardada));
     }
 
+    public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
+            GuardarBusquedaRequestDTO request) {
+        return guardarBusqueda(null, request);
+    }
+
     @PutMapping({
+            "/{id}/saved-searches/{busquedaId}",
             "/me/saved-searches/{busquedaId}",
             "/me/busquedas-guardadas/{busquedaId}"
     })
     public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
+            @PathVariable(value = "id", required = false) Long id,
             @PathVariable("busquedaId") Long busquedaId,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
 
         Optional<BusquedaGuardada> encontrada =
                 busquedasRepository.buscarPorIdYUsuarioId(busquedaId, usuarioId);
@@ -188,10 +213,17 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(aRespuesta(guardada));
     }
 
+    public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
+            Long busquedaId, GuardarBusquedaRequestDTO request) {
+        return actualizarBusquedaGuardada(null, busquedaId, request);
+    }
+
     @Override
-    public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas() {
+    public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas(
+            @PathVariable(value = "id", required = false) Long id) {
 
         Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
 
         return ResponseEntity.ok(
                 busquedasRepository.buscarPorUsuarioId(usuarioId)
@@ -201,15 +233,22 @@ public class UsuarioController implements UsuarioApi {
         );
     }
 
+    public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas() {
+        return obtenerBusquedasGuardadas(null);
+    }
+
     @DeleteMapping({
+            "/{id}/saved-searches/{busquedaId}",
             "/me/saved-searches/{busquedaId}",
             "/me/busquedas-guardadas/{busquedaId}"
     })
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
+            @PathVariable(value = "id", required = false) Long id,
             @PathVariable("busquedaId") Long busquedaId) {
 
         Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
 
         Optional<BusquedaGuardada> encontrada =
                 busquedasRepository.buscarPorIdYUsuarioId(busquedaId, usuarioId);
@@ -228,6 +267,10 @@ public class UsuarioController implements UsuarioApi {
         }
 
         return ResponseEntity.noContent().build();
+    }
+
+    public ResponseEntity<Void> eliminarBusquedaGuardada(Long busquedaId) {
+        return eliminarBusquedaGuardada(null, busquedaId);
     }
 
     private void publicarEventoBusqueda(
@@ -279,5 +322,11 @@ public class UsuarioController implements UsuarioApi {
         Jwt jwt = (Jwt) authentication.getPrincipal();
 
         return Long.valueOf(jwt.getSubject());
+    }
+
+    private void validarUsuarioSolicitado(Long idSolicitado, Long idAutenticado) {
+        if (idSolicitado != null && !idSolicitado.equals(idAutenticado)) {
+            throw new AccessDeniedException("Solo puede consultar su propio perfil");
+        }
     }
 }

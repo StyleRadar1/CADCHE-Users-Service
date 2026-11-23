@@ -2,6 +2,7 @@ package edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -18,8 +19,8 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping({
-        "/api/v1/users/me",
-        "/api/v1/usuarios/me"
+        "/api/v1/users",
+        "/api/v1/usuarios"
 })
 public class PersonalizacionController implements PersonalizacionApi {
 
@@ -32,6 +33,7 @@ public class PersonalizacionController implements PersonalizacionApi {
 
     @Override
     public ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
+            @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
             @Valid @ModelAttribute PersonalizacionRequestDTO request) {
 
         Authentication authentication =
@@ -39,6 +41,7 @@ public class PersonalizacionController implements PersonalizacionApi {
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
         Long usuarioId = Long.valueOf(jwt.getSubject());
+        validarUsuarioSolicitado(id, usuarioId);
 
         PageResponseDTO<CatalogoItemResponseDTO> respuesta =
                 obtenerFeedPersonalizadoUseCase.obtener(
@@ -50,8 +53,14 @@ public class PersonalizacionController implements PersonalizacionApi {
         return ResponseEntity.ok(respuesta);
     }
 
+    public ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
+            PersonalizacionRequestDTO request) {
+        return feed(null, request);
+    }
+
     @Override
     public ResponseEntity<RecomendacionesResponseDTO> recomendaciones(
+            @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
             @Valid @ModelAttribute PersonalizacionRequestDTO request) {
 
         Authentication authentication =
@@ -59,6 +68,7 @@ public class PersonalizacionController implements PersonalizacionApi {
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
         Long usuarioId = Long.valueOf(jwt.getSubject());
+        validarUsuarioSolicitado(id, usuarioId);
 
         PageResponseDTO<CatalogoItemResponseDTO> pagina =
                 obtenerFeedPersonalizadoUseCase.obtener(
@@ -74,5 +84,16 @@ public class PersonalizacionController implements PersonalizacionApi {
                         "Recommendations generated successfully"
                 )
         );
+    }
+
+    public ResponseEntity<RecomendacionesResponseDTO> recomendaciones(
+            PersonalizacionRequestDTO request) {
+        return recomendaciones(null, request);
+    }
+
+    private void validarUsuarioSolicitado(Long idSolicitado, Long idAutenticado) {
+        if (idSolicitado != null && !idSolicitado.equals(idAutenticado)) {
+            throw new AccessDeniedException("Solo puede consultar sus propias recomendaciones");
+        }
     }
 }

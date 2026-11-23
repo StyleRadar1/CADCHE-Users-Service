@@ -234,11 +234,13 @@ public interface UsuarioApi {
             )
     })
     @PutMapping({
+            "/{id}/style-preferences",
             "/me/style-preferences",
             "/me/preferencias-estilo",
             "/me/preferencias"
     })
     ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
+            @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request
     );
 
@@ -289,10 +291,12 @@ public interface UsuarioApi {
             )
     })
     @PutMapping({
+            "/{id}/sizes",
             "/me/usual-sizes",
             "/me/tallas-habituales"
     })
     ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
+            @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request
     );
 
@@ -343,10 +347,12 @@ public interface UsuarioApi {
             )
     })
     @PostMapping({
+            "/{id}/saved-searches",
             "/me/saved-searches",
             "/me/busquedas-guardadas"
     })
     ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
+            @PathVariable(value = "id", required = false) Long id,
             @Valid @RequestBody GuardarBusquedaRequestDTO request
     );
 
@@ -382,10 +388,13 @@ public interface UsuarioApi {
             )
     })
     @GetMapping({
+            "/{id}/saved-searches",
             "/me/saved-searches",
             "/me/busquedas-guardadas"
     })
-    ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas();
+    ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas(
+            @PathVariable(value = "id", required = false) Long id
+    );
 
     @Operation(
             summary = "Delete a saved search",
@@ -423,10 +432,12 @@ public interface UsuarioApi {
             )
     })
     @DeleteMapping({
+            "/{id}/saved-searches/{busquedaId}",
             "/me/saved-searches/{busquedaId}",
             "/me/busquedas-guardadas/{busquedaId}"
     })
     ResponseEntity<Void> eliminarBusquedaGuardada(
+            @PathVariable(value = "id", required = false) Long id,
             @Parameter(
                     description = "Saved search identifier",
                     example = "5"

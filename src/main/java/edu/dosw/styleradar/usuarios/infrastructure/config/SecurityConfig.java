@@ -173,7 +173,17 @@ public class SecurityConfig {
                                 "/api/v1/users/me",
                                 "/api/v1/users/me/**",
                                 "/api/v1/usuarios/me",
-                                "/api/v1/usuarios/me/**"
+                                "/api/v1/usuarios/me/**",
+                                "/api/v1/users/*/style-preferences",
+                                "/api/v1/users/*/sizes",
+                                "/api/v1/users/*/feed",
+                                "/api/v1/users/*/recommendations",
+                                "/api/v1/users/*/saved-searches/**",
+                                "/api/v1/usuarios/*/style-preferences",
+                                "/api/v1/usuarios/*/sizes",
+                                "/api/v1/usuarios/*/feed",
+                                "/api/v1/usuarios/*/recommendations",
+                                "/api/v1/usuarios/*/saved-searches/**"
                         ).hasRole("COMPRADOR")
 
                         .requestMatchers(

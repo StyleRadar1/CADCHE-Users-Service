@@ -18,6 +18,9 @@ public class ErrorResponseDTO {
     @Schema(description = "Código de estado HTTP", example = "400")
     int status;
 
+    @Schema(description = "Stable machine-readable error code", example = "VALIDATION_ERROR")
+    String code;
+
     @Schema(description = "Nombre estándar del estado HTTP", example = "Bad Request")
     String error;
 

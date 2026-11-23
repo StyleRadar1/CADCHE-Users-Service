@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
         exception.getBindingResult().getFieldErrors().forEach(error ->
                 validationErrors.putIfAbsent(error.getField(), error.getDefaultMessage()));
 
-        return buildResponse(HttpStatus.BAD_REQUEST,
+        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
                 "La solicitud contiene datos inválidos",
                 request.getRequestURI(), validationErrors);
     }
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
         exception.getBindingResult().getFieldErrors().forEach(error ->
                 validationErrors.putIfAbsent(error.getField(), error.getDefaultMessage()));
 
-        return buildResponse(HttpStatus.BAD_REQUEST,
+        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
                 "La solicitud contiene datos inválidos",
                 request.getRequestURI(), validationErrors);
     }
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleInvalidHttpRequest(
             Exception exception, HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.BAD_REQUEST,
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST",
                 "La solicitud contiene parámetros inválidos",
                 request.getRequestURI(), Map.of());
     }
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
             HttpRequestMethodNotSupportedException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED,
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED",
                 "El método HTTP no está permitido para esta ruta",
                 request.getRequestURI(), Map.of());
     }
@@ -85,7 +85,7 @@ public class GlobalExceptionHandler {
             EmailYaRegistradoException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.CONFLICT,
+        return buildResponse(HttpStatus.CONFLICT, "EMAIL_ALREADY_REGISTERED",
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
             IdentidadExternaConflictivaException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.CONFLICT,
+        return buildResponse(HttpStatus.CONFLICT, "EXTERNAL_IDENTITY_CONFLICT",
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
             CuentaNoActivaException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.FORBIDDEN,
+        return buildResponse(HttpStatus.FORBIDDEN, "ACCOUNT_NOT_ACTIVE",
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
@@ -115,7 +115,7 @@ public class GlobalExceptionHandler {
             CambioEstadoNoPermitidoException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.FORBIDDEN,
+        return buildResponse(HttpStatus.FORBIDDEN, "ACCOUNT_STATE_CHANGE_FORBIDDEN",
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
@@ -125,7 +125,7 @@ public class GlobalExceptionHandler {
             UsuarioNoEncontradoException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.NOT_FOUND,
+        return buildResponse(HttpStatus.NOT_FOUND, "USER_NOT_FOUND",
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
@@ -139,6 +139,7 @@ public class GlobalExceptionHandler {
 
         return buildResponse(
                 HttpStatus.SERVICE_UNAVAILABLE,
+                "CATALOG_UNAVAILABLE",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()
@@ -152,13 +153,14 @@ public class GlobalExceptionHandler {
         log.error("Error no controlado al procesar la ruta {}",
                 request.getRequestURI(), exception);
 
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR",
                 "Ocurrió un error interno. Intente nuevamente más tarde.",
                 request.getRequestURI(), Map.of());
     }
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(
             HttpStatus status,
+            String code,
             String message,
             String path,
             Map<String, String> validationErrors) {
@@ -166,6 +168,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
                 .status(status.value())
+                .code(code)
                 .error(status.getReasonPhrase())
                 .message(message)
                 .path(path)

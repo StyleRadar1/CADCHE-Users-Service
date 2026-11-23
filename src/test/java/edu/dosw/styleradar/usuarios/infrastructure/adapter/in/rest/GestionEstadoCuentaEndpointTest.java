@@ -72,8 +72,10 @@ class GestionEstadoCuentaEndpointTest {
                         .param("size", "20")
                         .header("Authorization", "Bearer " + token("ADMIN_STYLERADAR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].nombre").value("Laura Gómez"))
-                .andExpect(jsonPath("$.content[0].barrio").value("Chapinero"))
+                .andExpect(jsonPath("$.content[0].name").value("Laura Gómez"))
+                .andExpect(jsonPath("$.content[0].neighborhood").value("Chapinero"))
+                .andExpect(jsonPath("$.content[0].roles[0]").value("BUYER"))
+                .andExpect(jsonPath("$.content[0].status").value("ACTIVE"))
                 .andExpect(jsonPath("$.totalElements").value(1));
     }
 
@@ -95,8 +97,10 @@ class GestionEstadoCuentaEndpointTest {
         mockMvc.perform(get("/api/v1/admin/usuarios/12")
                         .header("Authorization", "Bearer " + token("ADMIN_STYLERADAR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Laura Gómez"))
-                .andExpect(jsonPath("$.barrio").value("Chapinero"));
+                .andExpect(jsonPath("$.name").value("Laura Gómez"))
+                .andExpect(jsonPath("$.neighborhood").value("Chapinero"))
+                .andExpect(jsonPath("$.roles[0]").value("BUYER"))
+                .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
     @Test

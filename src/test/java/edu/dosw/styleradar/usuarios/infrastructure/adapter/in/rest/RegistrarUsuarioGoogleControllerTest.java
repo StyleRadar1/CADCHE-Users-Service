@@ -81,9 +81,9 @@ class RegistrarUsuarioGoogleControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(12))
                 .andExpect(jsonPath("$.email").value("usuario@gmail.com"))
-                .andExpect(jsonPath("$.rol").value("COMPRADOR"))
-                .andExpect(jsonPath("$.estado").value("ACTIVA"))
-                .andExpect(jsonPath("$.correoVerificado").value(true))
+                .andExpect(jsonPath("$.role").value("BUYER"))
+                .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.emailVerified").value(true))
                 .andExpect(jsonPath("$", org.hamcrest.Matchers.aMapWithSize(5)))
                 .andExpect(jsonPath("$.provider").doesNotExist());
 
@@ -117,9 +117,10 @@ class RegistrarUsuarioGoogleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado").value(estado.name()))
-                .andExpect(jsonPath("$.rol").value("ADMIN_ALMACEN"))
-                .andExpect(jsonPath("$.correoVerificado").value(false));
+                .andExpect(jsonPath("$.status").value(
+                        estado == EstadoCuenta.INACTIVA ? "INACTIVE" : "BLOCKED"))
+                .andExpect(jsonPath("$.role").value("STORE_ADMIN"))
+                .andExpect(jsonPath("$.emailVerified").value(false));
     }
 
     @Test

@@ -66,6 +66,8 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         response.setId(guardado.getId());
         response.setNombre(guardado.getNombre());
         response.setEmail(guardado.getEmail());
+        response.setRol(guardado.getRol());
+        response.setEstado(guardado.getEstado());
         response.setTelefono(guardado.getTelefono());
         response.setBarrio(guardado.getBarrio());
         response.setCorreoVerificado(guardado.getCorreoVerificado());

@@ -1,6 +1,8 @@
 package edu.dosw.styleradar.usuarios.application.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +27,8 @@ public class RegistrarUsuarioRequestDTO {
     @Schema(description = "Nombre completo",
             example = "Laura Gómez",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("name")
+    @JsonAlias("nombre")
     private String nombre;
 
     @NotBlank(message = "El email es obligatorio")
@@ -32,16 +36,21 @@ public class RegistrarUsuarioRequestDTO {
     @Schema(description = "Correo electrónico",
             example = "laura.gomez@styleradar.com",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("email")
     private String email;
 
     @Pattern(regexp = "^[+0-9\\-\\s()]{7,20}$",
             message = "El formato del teléfono es inválido")
     @Schema(description = "Número telefónico opcional",
             example = "+57 300 123 4567")
+    @JsonProperty("phone")
+    @JsonAlias("telefono")
     private String telefono;
 
     @Size(max = 100, message = "El barrio no puede superar 100 caracteres")
     @Schema(description = "Barrio de residencia", example = "Chapinero")
+    @JsonProperty("neighborhood")
+    @JsonAlias("barrio")
     private String barrio;
 
     @NotBlank(message = "La contraseña es obligatoria")
@@ -57,6 +66,8 @@ public class RegistrarUsuarioRequestDTO {
     @Schema(description = "Consentimiento expreso de tratamiento de datos personales",
             example = "true",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("acceptsDataProcessing")
+    @JsonAlias("aceptaHabeasData")
     private Boolean aceptaHabeasData;
 
     @Schema(description = "Estatura en centímetros", example = "175.0")

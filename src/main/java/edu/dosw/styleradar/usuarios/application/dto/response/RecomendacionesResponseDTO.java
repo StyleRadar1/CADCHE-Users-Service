@@ -1,6 +1,8 @@
 package edu.dosw.styleradar.usuarios.application.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -11,9 +13,13 @@ public class RecomendacionesResponseDTO
         extends PageResponseDTO<CatalogoItemResponseDTO> {
 
     @Schema(description = "Indica si el usuario no tiene preferencias ni tallas configuradas")
+    @JsonProperty("generalWithoutPreferences")
+    @JsonAlias("generalSinPreferencias")
     private final boolean generalSinPreferencias;
 
     @Schema(description = "Mensaje informativo sobre las recomendaciones")
+    @JsonProperty("message")
+    @JsonAlias("mensaje")
     private final String mensaje;
 
     public RecomendacionesResponseDTO(
