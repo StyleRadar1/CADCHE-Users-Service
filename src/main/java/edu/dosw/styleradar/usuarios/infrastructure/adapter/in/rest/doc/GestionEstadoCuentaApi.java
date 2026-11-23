@@ -94,7 +94,7 @@ public interface GestionEstadoCuentaApi {
     @GetMapping
     @Operation(
             summary = "Consultar usuarios",
-            description = "ROLE_ADMIN_STYLERADAR. Filtros opcionales por estado, rol y q "
+            description = "ROLE_ADMIN_STYLERADAR. Optional filters status, role and q "
                     + "(nombre o correo). ACTIVA incluye NULL histórico efectivo, sin migrarlo. "
                     + "page=0, size=20, entre 1 y 100; orden id ASC; paginación en BD. "
                     + "La respuesta incluye barrio cuando está informado."
@@ -106,7 +106,7 @@ public interface GestionEstadoCuentaApi {
     @GetMapping("/{id}")
     @Operation(
             summary = "Consultar usuario y última decisión",
-            description = "ROLE_ADMIN_STYLERADAR. Estado efectivo y última modificación, "
+            description = "ROLE_ADMIN_STYLERADAR. Effective accountStatus and last change, "
                     + "sin credenciales ni datos privados. NULL histórico se muestra ACTIVA; "
                     + "metadatos nulos no representan una decisión."
     )
@@ -124,9 +124,9 @@ public interface GestionEstadoCuentaApi {
     })
     @Operation(
             summary = "Activate, deactivate or block a user account",
-            description = "ROLE_ADMIN_STYLERADAR. ACTIVA, INACTIVA, BLOQUEADA; "
-                    + "todas las transiciones entre estados distintos. BLOQUEADA exige "
-                    + "motivo no vacío; máximo 1000 caracteres. Actor y fecha del servidor. "
+            description = "ROLE_ADMIN_STYLERADAR. ACTIVE, INACTIVE, BLOCKED; "
+                    + "all transitions between distinct states. BLOCKED requires "
+                    + "a non-empty reason; maximum 1000 characters. Actor and timestamp are server generated. "
                     + "No permite autocambio, ni siquiera idempotente. "
                     + "Conserva otro administrador operativo."
     )
@@ -139,16 +139,16 @@ public interface GestionEstadoCuentaApi {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(examples = {
                             @ExampleObject(
-                                    name = "BLOQUEADA",
-                                    value = "{\"estado\":\"BLOQUEADA\",\"motivo\":\"Incumplimiento de las condiciones\"}"
+                                    name = "BLOCKED",
+                                    value = "{\"status\":\"BLOCKED\",\"reason\":\"Incumplimiento de las condiciones\"}"
                             ),
                             @ExampleObject(
-                                    name = "INACTIVA",
-                                    value = "{\"estado\":\"INACTIVA\"}"
+                                    name = "INACTIVE",
+                                    value = "{\"status\":\"INACTIVE\"}"
                             ),
                             @ExampleObject(
-                                    name = "ACTIVA",
-                                    value = "{\"estado\":\"ACTIVA\",\"motivo\":\"Revisión concluida\"}"
+                                    name = "ACTIVE",
+                                    value = "{\"status\":\"ACTIVE\",\"reason\":\"Revisión concluida\"}"
                             )
                     })
             )

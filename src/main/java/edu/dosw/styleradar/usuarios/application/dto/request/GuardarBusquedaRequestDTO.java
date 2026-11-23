@@ -31,10 +31,10 @@ public class GuardarBusquedaRequestDTO {
     private String nombre;
 
     @Schema(description = "Texto libre de búsqueda", example = "chaqueta denim")
-    @JsonProperty("searchText") @JsonAlias("query")
+    @JsonProperty("query") @JsonAlias("searchText")
     private String query;
 
-    @Schema(description = "Tipo o categoría de prenda filtrada", example = "SUPERIOR")
+    @Schema(description = "Filtered garment type", example = "TOP")
     @JsonProperty("garmentType") @JsonAlias("tipo")
     private TipoPrenda tipo;
 
@@ -56,9 +56,11 @@ public class GuardarBusquedaRequestDTO {
     private Double precioMax;
 
     @Schema(description = "Marca filtrada en la búsqueda", example = "Levi's")
+    @JsonProperty("brand") @JsonAlias("marca")
     private String marca;
 
     @Schema(description = "Estilo filtrado en la búsqueda", example = "CASUAL")
+    @JsonProperty("style") @JsonAlias("estilo")
     private Estilo estilo;
 
     @DecimalMin(value = "-90.0", message = "latitud debe estar entre -90 y 90")

@@ -13,11 +13,33 @@ import lombok.Data;
 @Schema(description = "Filtros y paginación para la consulta administrativa de cuentas de usuario (SR-RF-66)")
 public class CuentasConsultaRequestDTO {
 
-    @Schema(description = "Filtro opcional por estado efectivo de la cuenta", example = "ACTIVA")
-    private EstadoCuenta estado;
+    @Schema(description = "Optional effective account status filter",
+            example = "ACTIVE",
+            allowableValues = {"ACTIVE", "INACTIVE", "BLOCKED"})
+    private EstadoCuenta status;
 
-    @Schema(description = "Filtro opcional por rol", example = "COMPRADOR")
-    private Rol rol;
+    @Schema(description = "Optional account role filter",
+            example = "BUYER",
+            allowableValues = {"BUYER", "STORE_ADMIN", "FOUNDATION_REPRESENTATIVE", "STYLERADAR_ADMIN"})
+    private Rol role;
+
+    @Schema(hidden = true)
+    public EstadoCuenta getEstado() {
+        return status;
+    }
+
+    public void setEstado(EstadoCuenta estado) {
+        this.status = estado;
+    }
+
+    @Schema(hidden = true)
+    public Rol getRol() {
+        return role;
+    }
+
+    public void setRol(Rol rol) {
+        this.role = rol;
+    }
 
     @Size(max = 100)
     @Schema(description = "Búsqueda parcial por nombre o correo", example = "laura@styleradar.com")

@@ -2,6 +2,8 @@ package edu.dosw.styleradar.usuarios.application.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
@@ -14,11 +16,15 @@ import lombok.Data;
 public class CambioEstadoCuentaRequestDTO {
 
     @NotNull
-    @Schema(description = "Nuevo estado operativo de la cuenta", example = "BLOQUEADA", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("status")
+    @JsonAlias("estado")
+    @Schema(description = "Nuevo estado operativo de la cuenta", example = "BLOCKED", requiredMode = Schema.RequiredMode.REQUIRED)
     private EstadoCuenta estado;
 
     @Size(max = 1000)
-    @Schema(description = "Motivo de la decisión administrativa; obligatorio cuando el estado es BLOQUEADA (máximo 1000 caracteres)", example = "Incumplimiento reiterado de los términos de uso")
+    @JsonProperty("reason")
+    @JsonAlias("motivo")
+    @Schema(description = "Motivo de la decisión administrativa; obligatorio cuando el estado es BLOCKED (máximo 1000 caracteres)", example = "Incumplimiento reiterado de los términos de uso")
     private String motivo;
 
     @JsonIgnore

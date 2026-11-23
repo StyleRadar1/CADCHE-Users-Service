@@ -30,10 +30,10 @@ public class BusquedaGuardadaResponseDTO {
     private String nombre;
 
     @Schema(description = "Texto libre utilizado en la búsqueda", example = "chaqueta denim")
-    @JsonProperty("searchText") @JsonAlias("query")
+    @JsonProperty("query") @JsonAlias("searchText")
     private String query;
 
-    @Schema(description = "Tipo de prenda filtrado", example = "SUPERIOR")
+    @Schema(description = "Filtered garment type", example = "TOP")
     @JsonProperty("garmentType") @JsonAlias("tipo")
     @JsonSerialize(using = ApiEnumSerializer.class)
     private TipoPrenda tipo;
@@ -54,9 +54,11 @@ public class BusquedaGuardadaResponseDTO {
     private Double precioMax;
 
     @Schema(description = "Marca filtrada", example = "Levi's")
+    @JsonProperty("brand") @JsonAlias("marca")
     private String marca;
 
     @Schema(description = "Estilo filtrado", example = "CASUAL")
+    @JsonProperty("style") @JsonAlias("estilo")
     @JsonSerialize(using = ApiEnumSerializer.class)
     private Estilo estilo;
 

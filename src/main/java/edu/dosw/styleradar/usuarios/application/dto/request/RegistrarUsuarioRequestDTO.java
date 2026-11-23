@@ -66,8 +66,8 @@ public class RegistrarUsuarioRequestDTO {
     @Schema(description = "Consentimiento expreso de tratamiento de datos personales",
             example = "true",
             requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonProperty("acceptsDataProcessing")
-    @JsonAlias("aceptaHabeasData")
+    @JsonProperty("dataPolicyAccepted")
+    @JsonAlias({"acceptsDataProcessing", "aceptaHabeasData"})
     private Boolean aceptaHabeasData;
 
     @Schema(description = "Estatura en centímetros", example = "175.0")

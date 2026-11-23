@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.exception;
 
 import java.time.LocalDateTime;
+import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -36,7 +38,9 @@ public class GlobalExceptionHandler {
         Map<String, String> validationErrors = new LinkedHashMap<>();
 
         exception.getBindingResult().getFieldErrors().forEach(error ->
-                validationErrors.putIfAbsent(error.getField(), error.getDefaultMessage()));
+                validationErrors.putIfAbsent(
+                        nombreCampoApi(exception.getBindingResult().getTarget(), error.getField()),
+                        error.getDefaultMessage()));
 
         return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
                 "La solicitud contiene datos inválidos",
@@ -50,7 +54,9 @@ public class GlobalExceptionHandler {
         Map<String, String> validationErrors = new LinkedHashMap<>();
 
         exception.getBindingResult().getFieldErrors().forEach(error ->
-                validationErrors.putIfAbsent(error.getField(), error.getDefaultMessage()));
+                validationErrors.putIfAbsent(
+                        nombreCampoApi(exception.getBindingResult().getTarget(), error.getField()),
+                        error.getDefaultMessage()));
 
         return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
                 "La solicitud contiene datos inválidos",
@@ -176,6 +182,30 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    private String nombreCampoApi(Object target, String nombreCampoJava) {
+        if (target == null) {
+            return nombreCampoJava;
+        }
+
+        String[] partes = nombreCampoJava.split("\\.");
+        Class<?> tipoActual = target.getClass();
+
+        for (int index = 0; index < partes.length; index++) {
+            try {
+                Field field = tipoActual.getDeclaredField(partes[index]);
+                JsonProperty jsonProperty = field.getAnnotation(JsonProperty.class);
+                if (jsonProperty != null && !jsonProperty.value().isBlank()) {
+                    partes[index] = jsonProperty.value();
+                }
+                tipoActual = field.getType();
+            } catch (NoSuchFieldException exception) {
+                break;
+            }
+        }
+
+        return String.join(".", partes);
     }
 }
 
