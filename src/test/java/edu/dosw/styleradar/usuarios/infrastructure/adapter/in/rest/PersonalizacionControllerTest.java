@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -81,6 +82,28 @@ class PersonalizacionControllerTest {
 
         verify(obtenerFeedPersonalizadoUseCase)
                 .obtener(144L, 0, 20);
+    }
+
+    @Test
+    void aceptaElIdDelUsuarioAutenticadoEnLaRutaNueva() {
+        PersonalizacionRequestDTO request = new PersonalizacionRequestDTO();
+        PageResponseDTO<CatalogoItemResponseDTO> expected =
+                new PageResponseDTO<>(Collections.emptyList(), 0, 20, 0, 0, true, true);
+        when(obtenerFeedPersonalizadoUseCase.obtener(144L, 0, 20))
+                .thenReturn(expected);
+
+        ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> response =
+                controller.feed(144L, request);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertSame(expected, response.getBody());
+        verify(obtenerFeedPersonalizadoUseCase).obtener(144L, 0, 20);
+    }
+
+    @Test
+    void rechazaUnIdDeRutaDistintoAlUsuarioAutenticado() {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> controller.recomendaciones(999L, new PersonalizacionRequestDTO()));
     }
 
     @Test

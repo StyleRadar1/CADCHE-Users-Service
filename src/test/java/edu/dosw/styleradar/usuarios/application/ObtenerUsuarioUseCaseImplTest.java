@@ -117,6 +117,24 @@ class ObtenerUsuarioUseCaseImplTest {
     }
 
     @Test
+    void ignoraUnaTallaAlfabeticaPersistidaConFormatoDesconocido() {
+        Usuario usuario = new Usuario(
+                144L, "Laura Gomez", "laura@gmail.com", "3001234567", "hash",
+                true, Rol.COMPRADOR, EstadoCuenta.ACTIVA, Instant.now());
+        when(usuarioRepository.buscarPorId(144L)).thenReturn(Optional.of(usuario));
+        when(preferenciasRepository.buscarPorUsuarioId(144L)).thenReturn(Set.of());
+        when(tallasRepository.buscarPorUsuarioId(144L)).thenReturn(Map.of(
+                edu.dosw.styleradar.usuarios.domain.model.TipoPrenda.SUPERIOR,
+                Set.of("INVALID_SIZE")));
+
+        UsuarioResponseDTO response = useCase.obtener(144L);
+
+        assertTrue(response.getTallasHabituales().isEmpty());
+        assertEquals(Set.of("INVALID_SIZE"), response.getTallasPorTipoPrenda()
+                .get(edu.dosw.styleradar.usuarios.domain.model.TipoPrenda.SUPERIOR));
+    }
+
+    @Test
     void debeLanzarExcepcionCuandoUsuarioNoExiste() {
 
         when(usuarioRepository.buscarPorId(999L))

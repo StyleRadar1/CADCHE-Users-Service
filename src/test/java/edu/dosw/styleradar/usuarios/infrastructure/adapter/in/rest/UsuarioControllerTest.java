@@ -239,7 +239,7 @@ class UsuarioControllerTest {
                 .thenReturn(esperado);
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
-                controller.actualizarPreferenciasEstilo(request);
+                controller.actualizarPreferenciasEstilo(144L, request);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertEquals(144L, respuesta.getBody().getId());
@@ -248,6 +248,16 @@ class UsuarioControllerTest {
                 .actualizar(144L, request.getPreferencias());
 
         verify(obtenerUsuarioUseCase).obtener(144L);
+    }
+
+    @Test
+    void rechazaActualizarPreferenciasParaOtroUsuarioDeLaRuta() {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> controller.actualizarPreferenciasEstilo(
+                        145L, new ActualizarPreferenciasEstiloRequestDTO()));
+
+        verifyNoInteractions(actualizarPreferenciasUseCase);
+        verifyNoInteractions(obtenerUsuarioUseCase);
     }
 
     @Test
