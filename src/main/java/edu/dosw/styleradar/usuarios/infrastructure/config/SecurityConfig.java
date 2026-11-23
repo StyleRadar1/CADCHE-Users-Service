@@ -45,7 +45,9 @@ public class SecurityConfig {
     private String password;
 
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+    public UserDetailsService userDetailsService(
+            PasswordEncoder passwordEncoder) {
+
         return new InMemoryUserDetailsManager(
                 User.withUsername(username)
                         .password(passwordEncoder.encode(password))
@@ -59,7 +61,9 @@ public class SecurityConfig {
             UserDetailsService userDetailsService,
             PasswordEncoder passwordEncoder) {
 
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
+
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
 
@@ -68,9 +72,12 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+
+        JwtAuthenticationConverter converter =
+                new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+
             List<String> roles = jwt.getClaimAsStringList("roles");
 
             if (roles == null) {
@@ -90,6 +97,7 @@ public class SecurityConfig {
         return converter;
     }
 
+    // SEGURIDAD PARA COMUNICACIONES INTERNAS
     @Bean
     @Order(1)
     public SecurityFilterChain internalSecurityFilterChain(
@@ -97,12 +105,18 @@ public class SecurityConfig {
             AuthenticationProvider authenticationProvider) throws Exception {
 
         http
-                .securityMatcher("/api/v1/internal/**")
+                .securityMatcher(
+                        "/api/v1/internal/**",
+                        "/internal/api/v1/usuarios/verificar-credenciales"
+                )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        "/api/v1/internal/**"
+                        "/api/v1/internal/**",
+                        "/internal/api/v1/usuarios/verificar-credenciales"
                 ))
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        ))
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().hasRole("SERVICE")
@@ -112,11 +126,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // SEGURIDAD PARA LA API PUBLICA
     @Bean
     @Order(2)
     public SecurityFilterChain apiSecurityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+            JwtAuthenticationConverter jwtAuthenticationConverter)
+            throws Exception {
 
         http
                 .securityMatcher(
@@ -128,8 +144,11 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        ))
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -172,13 +191,16 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter)
+                                .jwtAuthenticationConverter(
+                                        jwtAuthenticationConverter
+                                )
                         )
                 );
 
         return http.build();
     }
 
+    // BLOQUEO DE CUALQUIER RUTA NO CONTEMPLADA
     @Bean
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(
@@ -192,3 +214,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
