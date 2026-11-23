@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.exception;
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
+import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarPreferenciasEstiloRequestDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoException;
 import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
@@ -196,5 +197,21 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Email inválido",
                 response.getBody().getValidationErrors().get("email"));
+    }
+
+    @Test
+    void convierteElNombreDeCampoDeValidacionAlContratoJson() {
+        ActualizarPreferenciasEstiloRequestDTO target =
+                new ActualizarPreferenciasEstiloRequestDTO();
+        BeanPropertyBindingResult bindingResult =
+                new BeanPropertyBindingResult(target, "preferences");
+        bindingResult.addError(new FieldError(
+                "preferences", "preferencias", "Debe seleccionar un estilo"));
+
+        ResponseEntity<ErrorResponseDTO> response = handler.handleBindingValidation(
+                new BindException(bindingResult), request);
+
+        assertEquals("Debe seleccionar un estilo",
+                response.getBody().getValidationErrors().get("styles"));
     }
 }

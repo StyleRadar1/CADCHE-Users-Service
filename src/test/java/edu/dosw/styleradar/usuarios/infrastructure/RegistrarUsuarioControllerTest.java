@@ -66,7 +66,7 @@ class RegistrarUsuarioControllerTest {
                     "email": "laura@gmail.com",
                     "telefono": "+57 300 123 4567",
                     "password": "StyleRadar2026*",
-                    "aceptaHabeasData": true
+                    "dataPolicyAccepted": true
                 }
                 """;
 
@@ -98,7 +98,7 @@ class RegistrarUsuarioControllerTest {
                     "email": "laura.medidas@gmail.com",
                     "telefono": "+57 300 123 4567",
                     "password": "StyleRadar2026*",
-                    "aceptaHabeasData": true,
+                    "dataPolicyAccepted": true,
                     "heightCm": 175.0,
                     "chestCm": 96.0,
                     "waistCm": 82.0,
@@ -134,7 +134,7 @@ class RegistrarUsuarioControllerTest {
                     "email": "laura.sinmedidas@gmail.com",
                     "telefono": "+57 300 123 4567",
                     "password": "StyleRadar2026*",
-                    "aceptaHabeasData": true
+                    "dataPolicyAccepted": true
                 }
                 """;
 
@@ -159,7 +159,7 @@ class RegistrarUsuarioControllerTest {
                     "email": "laura@gmail.com",
                     "telefono": "+57 300 123 4567",
                     "password": "StyleRadar2026*",
-                    "aceptaHabeasData": true
+                    "dataPolicyAccepted": true
                 }
                 """;
 
@@ -181,7 +181,7 @@ class RegistrarUsuarioControllerTest {
                     "email": "correo-invalido",
                     "telefono": "+57 300 123 4567",
                     "password": "StyleRadar2026*",
-                    "aceptaHabeasData": true
+                    "dataPolicyAccepted": true
                 }
                 """;
 
@@ -202,7 +202,7 @@ class RegistrarUsuarioControllerTest {
                     "email": "laura@gmail.com",
                     "telefono": "+57 300 123 4567",
                     "password": "StyleRadar2026*",
-                    "aceptaHabeasData": false
+                    "dataPolicyAccepted": false
                 }
                 """;
 

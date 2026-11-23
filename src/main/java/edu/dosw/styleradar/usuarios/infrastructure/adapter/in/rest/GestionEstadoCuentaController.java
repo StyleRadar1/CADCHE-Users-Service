@@ -20,6 +20,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.CuentaAdministrativ
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.application.usecase.CuentaAdministrativaMapper;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
+import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.port.in.CambiarEstadoCuentaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentaAdministrativaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentasAdministrativasUseCase;
@@ -59,8 +60,17 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
                     @Override
                     public void setAsText(String text) {
                         setValue(
-                                edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.valueOf(text)
+                                edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta.fromContract(text)
                         );
+                    }
+                }
+        );
+        binder.registerCustomEditor(
+                Rol.class,
+                new java.beans.PropertyEditorSupport() {
+                    @Override
+                    public void setAsText(String text) {
+                        setValue(Rol.fromContract(text));
                     }
                 }
         );

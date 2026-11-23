@@ -45,7 +45,7 @@ public interface UsuarioApi {
                             schema = @Schema(implementation = RegistrarUsuarioRequestDTO.class),
                             examples = @ExampleObject(
                                     name = "RegisterUser",
-                                    value = "{\"nombre\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"telefono\":\"+57 300 123 4567\",\"password\":\"StyleRadar2026*\",\"aceptaHabeasData\":true}"
+                                    value = "{\"name\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"phone\":\"+57 300 123 4567\",\"password\":\"StyleRadar2026*\",\"dataPolicyAccepted\":true}"
                             )
                     )
             )

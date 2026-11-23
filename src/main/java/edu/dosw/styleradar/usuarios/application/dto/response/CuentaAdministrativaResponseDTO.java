@@ -25,23 +25,23 @@ public record CuentaAdministrativaResponseDTO(
         @Schema(description = "Barrio de residencia", example = "Chapinero")
         @JsonProperty("neighborhood") @JsonAlias("barrio") String barrio,
 
-        @Schema(description = "Roles asignados a la cuenta", example = "[\"COMPRADOR\"]")
+        @Schema(description = "Roles assigned to the account", example = "[\"BUYER\"]")
         @JsonProperty("roles") @JsonSerialize(contentUsing = ApiEnumSerializer.class) Set<Rol> roles,
 
-        @Schema(description = "Estado operativo efectivo de la cuenta", example = "ACTIVA")
-        @JsonProperty("status") @JsonAlias("estadoCuenta") @JsonSerialize(using = ApiEnumSerializer.class) EstadoCuenta estadoCuenta,
+        @Schema(description = "Effective account status", example = "ACTIVE")
+        @JsonProperty("accountStatus") @JsonAlias({"status", "estadoCuenta"}) @JsonSerialize(using = ApiEnumSerializer.class) EstadoCuenta estadoCuenta,
 
         @Schema(description = "Fecha y hora UTC de registro original", example = "2026-10-15T10:00:00Z")
         @JsonProperty("registeredAt") @JsonAlias("fechaRegistro") Instant fechaRegistro,
 
         @Schema(description = "Fecha y hora UTC de la última decisión administrativa sobre el estado", example = "2026-11-02T18:30:00Z")
-        Instant fechaCambioEstado,
+        @JsonProperty("statusChangedAt") @JsonAlias("fechaCambioEstado") Instant fechaCambioEstado,
 
         @Schema(description = "Identificador del administrador que ejecutó el último cambio de estado", example = "1")
-        Long administradorCambioEstadoId,
+        @JsonProperty("statusChangedBy") @JsonAlias("administradorCambioEstadoId") Long administradorCambioEstadoId,
 
         @Schema(description = "Motivo registrado en el último cambio de estado", example = "Revisión concluida")
-        String motivoCambioEstado
+        @JsonProperty("statusChangeReason") @JsonAlias("motivoCambioEstado") String motivoCambioEstado
 ) {
 }
 

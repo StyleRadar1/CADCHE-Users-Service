@@ -2,6 +2,7 @@ package edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +13,9 @@ import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentaAdministrativaUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ConsultarCuentasAdministrativasUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.CambiarEstadoCuentaUseCase;
+import edu.dosw.styleradar.usuarios.domain.model.Usuario;
+import org.springframework.http.MediaType;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.BusquedaGuardadaJpaRepository;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.PreferenciaEstiloJpaRepository;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.TallaJpaRepository;
@@ -47,6 +51,8 @@ class GestionEstadoCuentaEndpointTest {
     @MockBean
     private ConsultarCuentaAdministrativaUseCase detalleUseCase;
     @MockBean
+    private CambiarEstadoCuentaUseCase cambiarEstadoUseCase;
+    @MockBean
     private UsuarioJpaRepository usuarioJpaRepository;
     @MockBean
     private PreferenciaEstiloJpaRepository preferenciaEstiloJpaRepository;
@@ -64,9 +70,9 @@ class GestionEstadoCuentaEndpointTest {
         when(listarUseCase.ejecutar(EstadoCuenta.ACTIVA, Rol.COMPRADOR, "laura", 0, 20))
                 .thenReturn(new PageResponseDTO<>(List.of(cuenta), 0, 20, 1L, 1, true, true));
 
-        mockMvc.perform(get("/api/v1/admin/usuarios")
-                        .param("estado", "ACTIVA")
-                        .param("rol", "COMPRADOR")
+        mockMvc.perform(get("/api/v1/admin/users")
+                        .param("status", "ACTIVE")
+                        .param("role", "BUYER")
                         .param("q", "laura")
                         .param("page", "0")
                         .param("size", "20")
@@ -75,13 +81,13 @@ class GestionEstadoCuentaEndpointTest {
                 .andExpect(jsonPath("$.content[0].name").value("Laura Gómez"))
                 .andExpect(jsonPath("$.content[0].neighborhood").value("Chapinero"))
                 .andExpect(jsonPath("$.content[0].roles[0]").value("BUYER"))
-                .andExpect(jsonPath("$.content[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.content[0].accountStatus").value("ACTIVE"))
                 .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
     void usuarioSinRolAdminRecibe403() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/usuarios")
+        mockMvc.perform(get("/api/v1/admin/users")
                         .header("Authorization", "Bearer " + token("COMPRADOR")))
                 .andExpect(status().isForbidden());
     }
@@ -94,13 +100,37 @@ class GestionEstadoCuentaEndpointTest {
                 null, null, null);
         when(detalleUseCase.ejecutar(12L)).thenReturn(cuenta);
 
-        mockMvc.perform(get("/api/v1/admin/usuarios/12")
+        mockMvc.perform(get("/api/v1/admin/users/12")
                         .header("Authorization", "Bearer " + token("ADMIN_STYLERADAR")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Laura Gómez"))
                 .andExpect(jsonPath("$.neighborhood").value("Chapinero"))
                 .andExpect(jsonPath("$.roles[0]").value("BUYER"))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.accountStatus").value("ACTIVE"));
+    }
+
+    @Test
+    void adminPuedeCambiarEstadoConElContratoEnIngles() throws Exception {
+        Instant changedAt = Instant.parse("2026-11-10T11:00:00Z");
+        String reason = "Account review completed";
+        when(cambiarEstadoUseCase.ejecutar(12L, EstadoCuenta.BLOQUEADA, 900L, reason))
+                .thenReturn(new Usuario(
+                        12L, "Laura Gómez", "laura@example.com", "3001234567", "hash",
+                        true, Rol.COMPRADOR, EstadoCuenta.BLOQUEADA,
+                        Instant.parse("2026-11-10T10:00:00Z"), changedAt, 900L, reason));
+
+        mockMvc.perform(patch("/api/v1/admin/users/12/status")
+                        .header("Authorization", "Bearer " + token("ADMIN_STYLERADAR"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"BLOCKED\",\"reason\":\"" + reason + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountStatus").value("BLOCKED"))
+                .andExpect(jsonPath("$.statusChangedAt").value("2026-11-10T11:00:00Z"))
+                .andExpect(jsonPath("$.statusChangedBy").value(900))
+                .andExpect(jsonPath("$.statusChangeReason").value(reason));
+
+        org.mockito.Mockito.verify(cambiarEstadoUseCase)
+                .ejecutar(12L, EstadoCuenta.BLOQUEADA, 900L, reason);
     }
 
     @Test

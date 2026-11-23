@@ -22,11 +22,11 @@ public class ActualizarPreferenciasEstiloRequestDTO {
     @NotEmpty(message = "Debe seleccionar al menos un estilo")
     @Schema(
             description = "Estilos preferidos del comprador",
-            example = "[\"CASUAL\", \"URBANO\"]",
+            example = "[\"CASUAL\", \"URBAN\"]",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @JsonProperty("stylePreferences")
-    @JsonAlias({"preferencias", "preferenciasEstilo"})
+    @JsonProperty("styles")
+    @JsonAlias({"stylePreferences", "preferencias", "preferenciasEstilo"})
     private Set<Estilo> preferencias;
 }
 

@@ -3,7 +3,7 @@ package edu.dosw.styleradar.usuarios.application.dto.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.dosw.styleradar.usuarios.domain.model.Estilo;
+import edu.dosw.styleradar.usuarios.application.dto.BusquedaFiltrosDTO;
 import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,17 +12,15 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@SuperBuilder
 @Schema(description = "Criterios de búsqueda (texto, filtros y ubicación) para almacenar en el perfil del comprador (SR-RF-05 / SR-RF-28)")
-public class GuardarBusquedaRequestDTO {
+public class GuardarBusquedaRequestDTO extends BusquedaFiltrosDTO {
 
     @NotBlank(message = "El nombre de la búsqueda guardada es obligatorio")
     @Size(min = 1, max = 100, message = "El nombre debe tener entre 1 y 100 caracteres")
@@ -30,11 +28,7 @@ public class GuardarBusquedaRequestDTO {
     @JsonProperty("name") @JsonAlias("nombre")
     private String nombre;
 
-    @Schema(description = "Texto libre de búsqueda", example = "chaqueta denim")
-    @JsonProperty("searchText") @JsonAlias("query")
-    private String query;
-
-    @Schema(description = "Tipo o categoría de prenda filtrada", example = "SUPERIOR")
+    @Schema(description = "Filtered garment type", example = "TOP")
     @JsonProperty("garmentType") @JsonAlias("tipo")
     private TipoPrenda tipo;
 
@@ -54,12 +48,6 @@ public class GuardarBusquedaRequestDTO {
     @Schema(description = "Precio máximo del rango en COP", example = "180000.0")
     @JsonProperty("maxPrice") @JsonAlias("precioMax")
     private Double precioMax;
-
-    @Schema(description = "Marca filtrada en la búsqueda", example = "Levi's")
-    private String marca;
-
-    @Schema(description = "Estilo filtrado en la búsqueda", example = "CASUAL")
-    private Estilo estilo;
 
     @DecimalMin(value = "-90.0", message = "latitud debe estar entre -90 y 90")
     @DecimalMax(value = "90.0", message = "latitud debe estar entre -90 y 90")

@@ -28,10 +28,11 @@ public class CatalogoItemResponseDTO {
     private String itemId;
 
     @Schema(description = "Identificador de la prenda base", example = "45")
+    @JsonProperty("garmentId") @JsonAlias("prendaId")
     private Long prendaId;
 
     @Schema(description = "NIT del almacén aliado propietario", example = "900123456-1")
-    @JsonProperty("storeTaxId") @JsonAlias("almacenNit")
+    @JsonProperty("storeNit") @JsonAlias({"storeTaxId", "almacenNit"})
     private String almacenNit;
 
     @Schema(description = "Identificador del almacén propietario", example = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d")
@@ -46,18 +47,20 @@ public class CatalogoItemResponseDTO {
     @JsonProperty("description") @JsonAlias("descripcion")
     private String descripcion;
 
-    @Schema(description = "Tipo o categoría de la prenda", example = "SUPERIOR")
+    @Schema(description = "Garment type or category", example = "TOP")
     @JsonProperty("garmentType") @JsonAlias("tipo")
     @JsonSerialize(using = ApiEnumSerializer.class)
     private TipoPrenda tipo;
 
     @Schema(description = "Marca de la prenda", example = "Levi's")
+    @JsonProperty("brand") @JsonAlias("marca")
     private String marca;
 
     @Schema(description = "Color principal de la prenda", example = "Negro")
     private String color;
 
-    @Schema(description = "Estilo principal de la prenda", example = "URBANO")
+    @Schema(description = "Main style of the garment", example = "URBAN")
+    @JsonProperty("style") @JsonAlias("estilo")
     @JsonSerialize(using = ApiEnumSerializer.class)
     private Estilo estilo;
 
