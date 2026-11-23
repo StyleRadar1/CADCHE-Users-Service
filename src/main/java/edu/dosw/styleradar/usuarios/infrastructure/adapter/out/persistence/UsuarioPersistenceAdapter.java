@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
 
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
@@ -52,6 +53,24 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioJpaRepository.findByEmail(email)
                 .map(this::convertirADominio);
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorProveedorYId(String provider, String providerId) {
+        return usuarioJpaRepository.findByProviderAndProviderId(provider, providerId)
+                .map(this::convertirADominio);
+    }
+
+    @Override
+    @Transactional
+    public Optional<Usuario> vincularIdentidadGoogle(Long usuarioId, String providerId) {
+        try {
+            usuarioJpaRepository.vincularGoogleSiNoTieneIdentidad(usuarioId, providerId);
+        } catch (DataIntegrityViolationException exception) {
+            throw new IdentidadExternaConflictivaException(
+                    "La identidad de Google ya está asociada a otra cuenta");
+        }
+        return usuarioJpaRepository.findById(usuarioId).map(this::convertirADominio);
     }
 
     @Override
@@ -145,6 +164,8 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         entity.setPasswordHash(usuario.getPasswordHash());
         entity.setAceptaHabeasData(usuario.getAceptaHabeasData());
         entity.setCorreoVerificado(usuario.getCorreoVerificado());
+        entity.setProvider(usuario.getProvider());
+        entity.setProviderId(usuario.getProviderId());
         entity.setRol(usuario.getRol());
         entity.setEstado(usuario.getEstado());
         entity.setFechaRegistro(usuario.getFechaRegistro());
@@ -180,7 +201,9 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
                 entity.getHeightCm(),
                 entity.getChestCm(),
                 entity.getWaistCm(),
-                entity.getHipCm()
+                entity.getHipCm(),
+                entity.getProvider(),
+                entity.getProviderId()
         );
     }
 }

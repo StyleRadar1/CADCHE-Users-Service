@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
 
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.model.*;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
@@ -60,6 +61,8 @@ class UsuarioPersistenceAdapterUnitTest {
         entity.setPasswordHash("hash");
         entity.setAceptaHabeasData(true);
         entity.setCorreoVerificado(false);
+        entity.setProvider("GOOGLE");
+        entity.setProviderId("google-sub-1");
         entity.setRol(Rol.COMPRADOR);
         entity.setEstado(EstadoCuenta.ACTIVA);
         entity.setFechaRegistro(Instant.now());
@@ -95,6 +98,30 @@ class UsuarioPersistenceAdapterUnitTest {
         // Comprueba que el valor false se guarda y se recupera.
         assertEquals(Boolean.FALSE, captor.getValue().getCorreoVerificado());
         assertEquals(Boolean.FALSE, resultado.getCorreoVerificado());
+    }
+
+    @Test
+    void debeGuardarIdentidadExterna() {
+        Usuario tradicional = crearUsuario();
+        Usuario conGoogle = new Usuario(tradicional.getId(), tradicional.getNombre(),
+                tradicional.getEmail(), tradicional.getTelefono(), tradicional.getPasswordHash(),
+                tradicional.getAceptaHabeasData(), tradicional.getRol(), tradicional.getEstado(),
+                tradicional.getFechaRegistro(), tradicional.getFechaCambioEstado(),
+                tradicional.getAdministradorCambioEstadoId(), tradicional.getMotivoCambioEstado(),
+                tradicional.getCorreoVerificado(), tradicional.getBarrio(), tradicional.getHeightCm(),
+                tradicional.getChestCm(), tradicional.getWaistCm(), tradicional.getHipCm(),
+                "GOOGLE", "google-sub-1");
+        when(repository.saveAndFlush(any(UsuarioEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Usuario resultado = adapter.guardar(conGoogle);
+
+        ArgumentCaptor<UsuarioEntity> captor = ArgumentCaptor.forClass(UsuarioEntity.class);
+        verify(repository).saveAndFlush(captor.capture());
+        assertEquals("GOOGLE", captor.getValue().getProvider());
+        assertEquals("google-sub-1", captor.getValue().getProviderId());
+        assertEquals("GOOGLE", resultado.getProvider());
+        assertEquals("google-sub-1", resultado.getProviderId());
     }
 
     @Test
@@ -160,6 +187,58 @@ class UsuarioPersistenceAdapterUnitTest {
                 .thenReturn(Optional.empty());
 
         assertTrue(adapter.buscarPorEmail("otro@gmail.com").isEmpty());
+    }
+
+    @Test
+    void debeBuscarUsuarioPorIdentidadExterna() {
+        when(repository.findByProviderAndProviderId("GOOGLE", "google-sub-1"))
+                .thenReturn(Optional.of(crearEntity()));
+
+        Optional<Usuario> resultado = adapter.buscarPorProveedorYId("GOOGLE", "google-sub-1");
+
+        assertTrue(resultado.isPresent());
+        assertEquals("GOOGLE", resultado.get().getProvider());
+        assertEquals("google-sub-1", resultado.get().getProviderId());
+    }
+
+    @Test
+    void debeVincularIdentidadGoogleAUsuarioSinProveedor() {
+        UsuarioEntity entity = crearEntity();
+        entity.setProvider(null);
+        entity.setProviderId(null);
+        when(repository.vincularGoogleSiNoTieneIdentidad(1L, "google-sub-1"))
+                .thenAnswer(invocation -> {
+                    entity.setProvider("GOOGLE");
+                    entity.setProviderId(invocation.getArgument(1));
+                    return 1;
+                });
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+
+        Optional<Usuario> resultado = adapter.vincularIdentidadGoogle(1L, "google-sub-1");
+
+        assertTrue(resultado.isPresent());
+        assertEquals("GOOGLE", resultado.get().getProvider());
+        assertEquals("google-sub-1", resultado.get().getProviderId());
+        verify(repository).vincularGoogleSiNoTieneIdentidad(1L, "google-sub-1");
+    }
+
+    @Test
+    void devuelveVacioAlVincularIdentidadSiElUsuarioNoExiste() {
+        when(repository.vincularGoogleSiNoTieneIdentidad(99L, "google-sub-1"))
+                .thenReturn(0);
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertTrue(adapter.vincularIdentidadGoogle(99L, "google-sub-1").isEmpty());
+    }
+
+    @Test
+    void convierteConflictoDeUnicidadAlVincularIdentidadGoogle() {
+        when(repository.vincularGoogleSiNoTieneIdentidad(1L, "google-sub-1"))
+                .thenThrow(new DataIntegrityViolationException("Identidad duplicada"));
+
+        assertThrows(IdentidadExternaConflictivaException.class,
+                () -> adapter.vincularIdentidadGoogle(1L, "google-sub-1"));
+        verify(repository, never()).findById(1L);
     }
 
     @Test
