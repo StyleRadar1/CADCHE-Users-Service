@@ -35,6 +35,12 @@ public class UsuarioEntity {
     @Column(name = "correo_verificado", nullable = false)
     private Boolean correoVerificado;
 
+    @Column(length = 30)
+    private String provider;
+
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private Rol rol;
@@ -132,6 +138,22 @@ public class UsuarioEntity {
 
     public void setCorreoVerificado(Boolean correoVerificado) {
         this.correoVerificado = correoVerificado;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public Rol getRol() {

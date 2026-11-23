@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
@@ -16,6 +17,15 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
     boolean existsByEmail(String email);
 
     Optional<UsuarioEntity> findByEmail(String email);
+
+    Optional<UsuarioEntity> findByProviderAndProviderId(String provider, String providerId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE UsuarioEntity u SET u.provider = 'GOOGLE', u.providerId = :providerId "
+            + "WHERE u.id = :usuarioId AND u.provider IS NULL AND u.providerId IS NULL")
+    int vincularGoogleSiNoTieneIdentidad(
+            @Param("usuarioId") Long usuarioId,
+            @Param("providerId") String providerId);
 
     long countByRolAndEstado(Rol rol, EstadoCuenta estado);
 

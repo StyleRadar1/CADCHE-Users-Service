@@ -17,6 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
@@ -82,6 +83,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EmailYaRegistradoException.class)
     public ResponseEntity<ErrorResponseDTO> handleEmailDuplicado(
             EmailYaRegistradoException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(HttpStatus.CONFLICT,
+                exception.getMessage(),
+                request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(IdentidadExternaConflictivaException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIdentidadExternaConflictiva(
+            IdentidadExternaConflictivaException exception,
             HttpServletRequest request) {
 
         return buildResponse(HttpStatus.CONFLICT,

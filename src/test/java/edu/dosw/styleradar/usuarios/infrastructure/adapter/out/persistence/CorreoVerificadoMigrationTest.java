@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
@@ -48,6 +49,7 @@ class CorreoVerificadoMigrationTest {
                 .migrate();
 
         assertCorreoVerificado("anterior@example.com", true);
+        assertIdentidadExternaNula("anterior@example.com");
 
         try (Connection connection = connection();
                 Statement statement = connection.createStatement()) {
@@ -60,6 +62,27 @@ class CorreoVerificadoMigrationTest {
         }
 
         assertCorreoVerificado("nueva@example.com", false);
+
+        try (Connection connection = connection();
+                PreparedStatement statement = connection.prepareStatement("""
+                        INSERT INTO usuarios (nombre, email, password_hash, acepta_habeas_data,
+                                              rol, estado, fecha_registro, provider, provider_id)
+                        VALUES ('Cuenta Google', 'google@example.com', 'hash', FALSE,
+                                'COMPRADOR', 'ACTIVA', NOW(), 'GOOGLE', 'google-sub-1')
+                        """)) {
+            assertEquals(1, statement.executeUpdate());
+        }
+
+        try (Connection connection = connection();
+                PreparedStatement statement = connection.prepareStatement("""
+                        INSERT INTO usuarios (nombre, email, password_hash, acepta_habeas_data,
+                                              rol, estado, fecha_registro, provider, provider_id)
+                        VALUES ('Duplicado Google', 'google-duplicado@example.com', 'hash', FALSE,
+                                'COMPRADOR', 'ACTIVA', NOW(), 'GOOGLE', 'google-sub-1')
+                        """)) {
+            org.junit.jupiter.api.Assertions.assertThrows(
+                    java.sql.SQLException.class, statement::executeUpdate);
+        }
     }
 
     private Connection connection() throws Exception {
@@ -75,6 +98,19 @@ class CorreoVerificadoMigrationTest {
             try (ResultSet result = statement.executeQuery()) {
                 assertTrue(result.next());
                 assertEquals(expected, result.getBoolean("correo_verificado"));
+            }
+        }
+    }
+
+    private void assertIdentidadExternaNula(String email) throws Exception {
+        try (Connection connection = connection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "SELECT provider, provider_id FROM usuarios WHERE email = ?")) {
+            statement.setString(1, email);
+            try (ResultSet result = statement.executeQuery()) {
+                assertTrue(result.next());
+                assertNull(result.getString("provider"));
+                assertNull(result.getString("provider_id"));
             }
         }
     }

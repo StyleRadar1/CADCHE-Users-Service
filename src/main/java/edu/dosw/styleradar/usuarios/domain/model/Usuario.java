@@ -18,6 +18,8 @@ public class Usuario {
     private Instant fechaCambioEstado;
     private Long administradorCambioEstadoId;
     private String motivoCambioEstado;
+    private String provider;
+    private String providerId;
 
     private Double heightCm;
     private Double chestCm;
@@ -87,6 +89,20 @@ public class Usuario {
             Long administradorCambioEstadoId, String motivoCambioEstado,
             Boolean correoVerificado, String barrio,
             Double heightCm, Double chestCm, Double waistCm, Double hipCm) {
+        this(id, nombre, email, telefono, passwordHash, aceptaHabeasData, rol,
+                estado, fechaRegistro, fechaCambioEstado, administradorCambioEstadoId,
+                motivoCambioEstado, correoVerificado, barrio, heightCm, chestCm,
+                waistCm, hipCm, null, null);
+    }
+
+    public Usuario(
+            Long id, String nombre, String email, String telefono,
+            String passwordHash, Boolean aceptaHabeasData, Rol rol,
+            EstadoCuenta estado, Instant fechaRegistro, Instant fechaCambioEstado,
+            Long administradorCambioEstadoId, String motivoCambioEstado,
+            Boolean correoVerificado, String barrio,
+            Double heightCm, Double chestCm, Double waistCm, Double hipCm,
+            String provider, String providerId) {
 
         this.id = id;
         this.nombre = nombre;
@@ -106,6 +122,8 @@ public class Usuario {
         this.chestCm = chestCm;
         this.waistCm = waistCm;
         this.hipCm = hipCm;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public void cambiarEstado(EstadoCuenta nuevoEstado) {
@@ -174,6 +192,14 @@ public class Usuario {
 
     public String getMotivoCambioEstado() {
         return motivoCambioEstado;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
     }
 
     public Double getHeightCm() {

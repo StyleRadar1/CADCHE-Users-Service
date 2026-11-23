@@ -18,6 +18,10 @@ public interface UsuarioRepositoryPort {
 
     Optional<Usuario> buscarPorEmail(String email);
 
+    Optional<Usuario> buscarPorProveedorYId(String provider, String providerId);
+
+    Optional<Usuario> vincularIdentidadGoogle(Long usuarioId, String providerId);
+
     List<Usuario> buscarCuentas(EstadoCuenta estado, Rol rol, String q, int page, int size);
 
     long contarCuentas(EstadoCuenta estado, Rol rol, String q);

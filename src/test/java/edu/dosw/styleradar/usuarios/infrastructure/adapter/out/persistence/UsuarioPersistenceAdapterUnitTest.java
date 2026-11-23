@@ -60,6 +60,8 @@ class UsuarioPersistenceAdapterUnitTest {
         entity.setPasswordHash("hash");
         entity.setAceptaHabeasData(true);
         entity.setCorreoVerificado(false);
+        entity.setProvider("GOOGLE");
+        entity.setProviderId("google-sub-1");
         entity.setRol(Rol.COMPRADOR);
         entity.setEstado(EstadoCuenta.ACTIVA);
         entity.setFechaRegistro(Instant.now());
@@ -95,6 +97,30 @@ class UsuarioPersistenceAdapterUnitTest {
         // Comprueba que el valor false se guarda y se recupera.
         assertEquals(Boolean.FALSE, captor.getValue().getCorreoVerificado());
         assertEquals(Boolean.FALSE, resultado.getCorreoVerificado());
+    }
+
+    @Test
+    void debeGuardarIdentidadExterna() {
+        Usuario tradicional = crearUsuario();
+        Usuario conGoogle = new Usuario(tradicional.getId(), tradicional.getNombre(),
+                tradicional.getEmail(), tradicional.getTelefono(), tradicional.getPasswordHash(),
+                tradicional.getAceptaHabeasData(), tradicional.getRol(), tradicional.getEstado(),
+                tradicional.getFechaRegistro(), tradicional.getFechaCambioEstado(),
+                tradicional.getAdministradorCambioEstadoId(), tradicional.getMotivoCambioEstado(),
+                tradicional.getCorreoVerificado(), tradicional.getBarrio(), tradicional.getHeightCm(),
+                tradicional.getChestCm(), tradicional.getWaistCm(), tradicional.getHipCm(),
+                "GOOGLE", "google-sub-1");
+        when(repository.saveAndFlush(any(UsuarioEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Usuario resultado = adapter.guardar(conGoogle);
+
+        ArgumentCaptor<UsuarioEntity> captor = ArgumentCaptor.forClass(UsuarioEntity.class);
+        verify(repository).saveAndFlush(captor.capture());
+        assertEquals("GOOGLE", captor.getValue().getProvider());
+        assertEquals("google-sub-1", captor.getValue().getProviderId());
+        assertEquals("GOOGLE", resultado.getProvider());
+        assertEquals("google-sub-1", resultado.getProviderId());
     }
 
     @Test
@@ -160,6 +186,18 @@ class UsuarioPersistenceAdapterUnitTest {
                 .thenReturn(Optional.empty());
 
         assertTrue(adapter.buscarPorEmail("otro@gmail.com").isEmpty());
+    }
+
+    @Test
+    void debeBuscarUsuarioPorIdentidadExterna() {
+        when(repository.findByProviderAndProviderId("GOOGLE", "google-sub-1"))
+                .thenReturn(Optional.of(crearEntity()));
+
+        Optional<Usuario> resultado = adapter.buscarPorProveedorYId("GOOGLE", "google-sub-1");
+
+        assertTrue(resultado.isPresent());
+        assertEquals("GOOGLE", resultado.get().getProvider());
+        assertEquals("google-sub-1", resultado.get().getProviderId());
     }
 
     @Test
