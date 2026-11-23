@@ -72,4 +72,17 @@ class SecurityConfigTest {
                 .getAuthorities()
                 .isEmpty());
     }
+
+    @Test
+    void noAsignaAutoridadesCuandoElTokenNoTieneClaimDeRoles() {
+        Jwt jwt = Jwt.withTokenValue("token-de-prueba")
+                .header("alg", "HS256")
+                .subject("144")
+                .build();
+
+        Authentication authentication = converter.convert(jwt);
+
+        assertNotNull(authentication);
+        assertTrue(authentication.getAuthorities().isEmpty());
+    }
 }

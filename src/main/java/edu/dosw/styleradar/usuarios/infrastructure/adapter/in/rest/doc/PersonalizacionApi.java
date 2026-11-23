@@ -71,8 +71,9 @@ public interface PersonalizacionApi {
                     )
             )
     })
-    @GetMapping("/feed")
+    @GetMapping({"/{id}/feed", "/me/feed"})
     ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
+            @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
             @Valid @ParameterObject @ModelAttribute PersonalizacionRequestDTO request
     );
 
@@ -120,10 +121,14 @@ public interface PersonalizacionApi {
             )
     })
     @GetMapping({
+            "/{id}/recommendations",
+            "/me/recommendations",
+            "/me/recomendaciones",
             "/recommendations",
             "/recomendaciones"
     })
     ResponseEntity<RecomendacionesResponseDTO> recomendaciones(
+            @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
             @Valid @ParameterObject @ModelAttribute PersonalizacionRequestDTO request
     );
 }

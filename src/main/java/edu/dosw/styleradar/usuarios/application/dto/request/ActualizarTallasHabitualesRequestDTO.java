@@ -3,6 +3,10 @@ package edu.dosw.styleradar.usuarios.application.dto.request;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import edu.dosw.styleradar.usuarios.application.dto.serialization.TipoPrendaKeyDeserializer;
 import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +25,8 @@ import lombok.NoArgsConstructor;
 public class ActualizarTallasHabitualesRequestDTO {
 
     @Schema(description = "Tallas alfabéticas habituales", example = "[\"M\",\"L\"]")
+    @JsonProperty("usualSizes")
+    @JsonAlias("tallas")
     private Set<Talla> tallas;
 
     @NotNull(message = "Las tallas por tipo de prenda son obligatorias")
@@ -29,6 +35,9 @@ public class ActualizarTallasHabitualesRequestDTO {
             example = "{\"SUPERIOR\":[\"M\"],\"INFERIOR\":[\"32\"],\"CALZADO\":[\"40\"]}",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @JsonProperty("sizesByGarmentType")
+    @JsonAlias("tallasPorTipoPrenda")
+    @JsonDeserialize(keyUsing = TipoPrendaKeyDeserializer.class)
     private Map<TipoPrenda, Set<String>> tallasPorTipoPrenda;
 
     @AssertTrue(message = "Una o más tallas no corresponden al tipo de prenda")

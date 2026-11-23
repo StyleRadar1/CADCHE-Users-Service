@@ -64,6 +64,8 @@ public class ObtenerUsuarioUseCaseImpl implements ObtenerUsuarioUseCase {
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .email(usuario.getEmail())
+                .rol(usuario.getRol())
+                .estado(usuario.getEstado())
                 .telefono(usuario.getTelefono())
                 .barrio(usuario.getBarrio())
                 .correoVerificado(usuario.getCorreoVerificado())

@@ -141,6 +141,18 @@
     </dependencies>
 
     <build>
+        <resources>
+            <!--
+                Los placeholders ${...} de application*.yml son resueltos por Spring
+                al iniciar. No usamos delimitadores Maven @...@ en estos recursos;
+                filtrarlos en cada build intenta sobrescribir los YAML de target,
+                que en algunos entornos Windows quedan como solo lectura.
+            -->
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <plugins>
 
             <plugin>

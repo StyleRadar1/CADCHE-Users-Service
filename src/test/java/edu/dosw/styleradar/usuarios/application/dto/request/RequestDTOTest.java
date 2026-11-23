@@ -71,6 +71,9 @@ class RequestDTOTest {
         dto.setTallasPorTipoPrenda(null);
 
         assertFalse(validator.validate(dto).isEmpty());
+
+        dto.setTallasPorTipoPrenda(Map.of(TipoPrenda.SUPERIOR, Set.of()));
+        assertFalse(validator.validate(dto).isEmpty());
     }
 
     @Test
@@ -157,6 +160,20 @@ class RequestDTOTest {
         dto.setLatitud(100.0);
 
         assertFalse(validator.validate(dto).isEmpty());
+
+        dto.setQuery(null);
+        dto.setColor(null);
+        dto.setMarca(null);
+        assertTrue(dto.isQueryValido());
+        assertTrue(dto.isColorValido());
+        assertTrue(dto.isMarcaValida());
+
+        dto.setQuery(" ");
+        dto.setColor(" ");
+        dto.setMarca(" ");
+        assertFalse(dto.isQueryValido());
+        assertFalse(dto.isColorValido());
+        assertFalse(dto.isMarcaValida());
     }
 
     @Test
