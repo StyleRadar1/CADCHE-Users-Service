@@ -1,0 +1,291 @@
+name: CI - Usuarios
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - develop
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, Tests y Analisis Estatico
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: styleradar_usuarios
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d styleradar_usuarios"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Compilar y ejecutar pruebas
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/styleradar_usuarios
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: mvn -B clean verify
+
+      - name: Analisis estatico con SpotBugs
+        run: >
+          mvn -B
+          com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:check
+          -Dspotbugs.excludeFilterFile=spotbugs-exclude.xml
+
+      - name: Guardar reporte JaCoCo
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reporte-jacoco
+          path: target/site/jacoco/
+          if-no-files-found: warn
+
+      - name: Guardar JAR validado para Docker
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ms-usuarios-jar
+          path: target/*.jar
+          if-no-files-found: error
+
+      - name: Preparar archivos de analisis SonarQube
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sonar-input
+          path: target/
+          if-no-files-found: error
+
+  sonar:
+    name: Analisis de codigo con SonarQube Cloud
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Descargar clases y reporte de pruebas
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: sonar-input
+          path: target
+
+      - name: Analisis de codigo con SonarQube Cloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          mvn -B
+          org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar
+          -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service
+
+  publish-image:
+    name: Construir y publicar imagen
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    needs: build
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository)
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Descargar JAR validado
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ms-usuarios-jar
+          path: .
+
+      - name: Preparar JAR para Docker
+        run: cp ms-usuarios-*.jar app.jar
+
+      - name: Autenticarse en Azure
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Iniciar sesion en Azure Container Registry
+        run: az acr login --name styleradarusersacr
+
+      - name: Construir y publicar imagen Docker
+        env:
+          ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
+        run: |
+          docker build -f Dockerfile.runtime \
+            -t "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" \
+            .
+
+          docker push "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA"
+
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/develop" ]]; then
+            docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:qa"
+            docker push "$ACR_LOGIN_SERVER/ms-usuarios:qa"
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:prod"
+            docker push "$ACR_LOGIN_SERVER/ms-usuarios:prod"
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" && "$GITHUB_BASE_REF" == "develop" ]]; then
+            docker tag "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" "$ACR_LOGIN_SERVER/ms-usuarios:qa"
+            docker push "$ACR_LOGIN_SERVER/ms-usuarios:qa"
+          fi
+
+  deploy-qa:
+    name: Desplegar en Azure App Service QA
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    needs: publish-image
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository)
+
+    steps:
+      - name: Autenticarse en Azure
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Desplegar imagen en QA
+        env:
+          ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
+        run: |
+          az webapp config container set \
+            --name styleradar-qa-app \
+            --resource-group styleradar-qa-rg \
+            --docker-custom-image-name "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" \
+            --docker-registry-server-url "https://$ACR_LOGIN_SERVER"
+
+          az webapp config appsettings set \
+            --name styleradar-qa-app \
+            --resource-group styleradar-qa-rg \
+            --settings \
+              WEBSITES_PORT=8120 \
+              FLYWAY_ENABLED=true \
+              SPRING_PROFILES_ACTIVE=qa
+
+          az webapp restart \
+            --name styleradar-qa-app \
+            --resource-group styleradar-qa-rg
+
+  deploy-prod:
+    name: Desplegar en Azure App Service PROD
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    needs: publish-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Validar configuración PROD
+        env:
+          PROD_DATABASE_VERIFIED: ${{ vars.PROD_DATABASE_VERIFIED }}
+        run: |
+          if [[ "$PROD_DATABASE_VERIFIED" != "true" ]]; then
+            echo "No se despliega PROD hasta verificar PostgreSQL y establecer PROD_DATABASE_VERIFIED=true."
+            exit 1
+          fi
+
+      - name: Autenticarse en Azure
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        with:
+          client-id: ${{ secrets.PROD_AZURE_CLIENT_ID || secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.PROD_AZURE_TENANT_ID || secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.PROD_AZURE_SUBSCRIPTION_ID || secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verificar App Service y configuración de base de datos
+        env:
+          PROD_WEBAPP_NAME: ${{ vars.PROD_AZURE_WEBAPP_NAME || 'styleradar-prod-app' }}
+          PROD_RESOURCE_GROUP: ${{ vars.PROD_AZURE_RESOURCE_GROUP || 'styleradar-prod-rg' }}
+        run: |
+          az webapp show --name "$PROD_WEBAPP_NAME" --resource-group "$PROD_RESOURCE_GROUP" --query name --output tsv
+
+          missing=0
+          for key in DB_URL DB_USERNAME DB_PASSWORD INTERNAL_AUTH_USERNAME INTERNAL_AUTH_PASSWORD; do
+            configured=$(az webapp config appsettings list \
+              --name "$PROD_WEBAPP_NAME" \
+              --resource-group "$PROD_RESOURCE_GROUP" \
+              --query "[?name=='${key}' && value!=''] | length(@)" \
+              --output tsv)
+
+            if [[ "$configured" != "1" ]]; then
+              echo "Falta el App Setting requerido: $key"
+              missing=1
+            fi
+          done
+
+          jwt_configured=$(az webapp config appsettings list \
+            --name "$PROD_WEBAPP_NAME" \
+            --resource-group "$PROD_RESOURCE_GROUP" \
+            --query "[?((name=='JWT_SECRET_BASE64' || name=='JWT_SECRET') && value!='')] | length(@)" \
+            --output tsv)
+
+          if [[ "$jwt_configured" != "1" ]]; then
+            echo "Falta JWT_SECRET_BASE64 (o el nombre heredado JWT_SECRET) en los App Settings PROD."
+            missing=1
+          fi
+
+          if [[ "$missing" == "1" ]]; then
+            echo "Configura primero las variables de PostgreSQL y seguridad en App Service PROD."
+            exit 1
+          fi
+
+      - name: Desplegar imagen en PROD
+        env:
+          ACR_LOGIN_SERVER: styleradarusersacr.azurecr.io
+          PROD_WEBAPP_NAME: ${{ vars.PROD_AZURE_WEBAPP_NAME || 'styleradar-prod-app' }}
+          PROD_RESOURCE_GROUP: ${{ vars.PROD_AZURE_RESOURCE_GROUP || 'styleradar-prod-rg' }}
+        run: |
+          az webapp config container set \
+            --name "$PROD_WEBAPP_NAME" \
+            --resource-group "$PROD_RESOURCE_GROUP" \
+            --docker-custom-image-name "$ACR_LOGIN_SERVER/ms-usuarios:$GITHUB_SHA" \
+            --docker-registry-server-url "https://$ACR_LOGIN_SERVER"
+
+          az webapp config appsettings set \
+            --name "$PROD_WEBAPP_NAME" \
+            --resource-group "$PROD_RESOURCE_GROUP" \
+            --settings WEBSITES_PORT=8120 FLYWAY_ENABLED=true
+
+          az webapp restart \
+            --name "$PROD_WEBAPP_NAME" \
+            --resource-group "$PROD_RESOURCE_GROUP"

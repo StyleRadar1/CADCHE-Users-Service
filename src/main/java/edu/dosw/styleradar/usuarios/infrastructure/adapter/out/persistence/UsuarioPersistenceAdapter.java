@@ -1,0 +1,225 @@
+package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
+
+import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
+import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
+import edu.dosw.styleradar.usuarios.domain.model.Rol;
+import edu.dosw.styleradar.usuarios.domain.model.Usuario;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
+import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.UsuarioJpaRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
+@Component
+public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
+
+    private final UsuarioJpaRepository usuarioJpaRepository;
+
+    public UsuarioPersistenceAdapter(UsuarioJpaRepository usuarioJpaRepository) {
+        this.usuarioJpaRepository = usuarioJpaRepository;
+    }
+
+    @Override
+    public boolean existePorEmail(String email) {
+        return usuarioJpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Usuario guardar(Usuario usuario) {
+        UsuarioEntity entity = convertirAEntity(usuario);
+
+        try {
+            UsuarioEntity guardado = usuarioJpaRepository.saveAndFlush(entity);
+            return convertirADominio(guardado);
+        } catch (DataIntegrityViolationException exception) {
+            throw new EmailYaRegistradoException(usuario.getEmail());
+        }
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorId(Long id) {
+        return usuarioJpaRepository.findById(id)
+                .map(this::convertirADominio);
+    }
+
+    @Override
+    @Transactional
+    public Optional<Usuario> actualizarDatosPersonales(
+            Long usuarioId, String nombre, String telefono, String barrio) {
+        return usuarioJpaRepository.findById(usuarioId).map(entity -> {
+            entity.setNombre(nombre);
+            if (telefono != null) {
+                entity.setTelefono(telefono);
+            }
+            if (barrio != null) {
+                entity.setBarrio(barrio);
+            }
+            return convertirADominio(usuarioJpaRepository.saveAndFlush(entity));
+        });
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioJpaRepository.findByEmail(email)
+                .map(this::convertirADominio);
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorProveedorYId(String provider, String providerId) {
+        return usuarioJpaRepository.findByProviderAndProviderId(provider, providerId)
+                .map(this::convertirADominio);
+    }
+
+    @Override
+    @Transactional
+    public Optional<Usuario> vincularIdentidadGoogle(Long usuarioId, String providerId) {
+        try {
+            usuarioJpaRepository.vincularGoogleSiNoTieneIdentidad(usuarioId, providerId);
+        } catch (DataIntegrityViolationException exception) {
+            throw new IdentidadExternaConflictivaException(
+                    "La identidad de Google ya está asociada a otra cuenta");
+        }
+        return usuarioJpaRepository.findById(usuarioId).map(this::convertirADominio);
+    }
+
+    @Override
+    public List<Usuario> buscarCuentas(
+            EstadoCuenta estado, Rol rol, String q, int page, int size) {
+        var pageable = PageRequest.of(page, size);
+        var resultados = usuarioJpaRepository.buscarCuentas(estado, rol, q, pageable);
+        return resultados.map(this::convertirADominio).getContent();
+    }
+
+    @Override
+    public long contarCuentas(EstadoCuenta estado, Rol rol, String q) {
+        return usuarioJpaRepository.contarCuentas(estado, rol, q);
+    }
+
+    @Override
+    public long contarAdministradoresActivos() {
+        return usuarioJpaRepository.countByRolAndEstado(
+                Rol.ADMIN_STYLERADAR,
+                EstadoCuenta.ACTIVA);
+    }
+
+    @Override
+    @Transactional
+    public Optional<Usuario> cambiarEstado(
+            Long usuarioId,
+            EstadoCuenta nuevoEstado,
+            Instant fechaCambio,
+            Long administradorId,
+            String motivo) {
+
+        Optional<UsuarioEntity> resultado =
+                usuarioJpaRepository.findById(usuarioId);
+
+        if (resultado.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UsuarioEntity entity = resultado.get();
+        entity.setEstado(nuevoEstado);
+        entity.setFechaCambioEstado(fechaCambio);
+        entity.setAdministradorCambioEstadoId(administradorId);
+        entity.setMotivoCambioEstado(motivo);
+
+        UsuarioEntity actualizado = usuarioJpaRepository.saveAndFlush(entity);
+
+        return Optional.of(convertirADominio(actualizado));
+    }
+
+    @Override
+    @Transactional
+    public Optional<Usuario> marcarCorreoComoVerificado(Long usuarioId) {
+
+        Optional<UsuarioEntity> resultado =
+                usuarioJpaRepository.findById(usuarioId);
+
+        if (resultado.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UsuarioEntity entity = resultado.get();
+        entity.setCorreoVerificado(true);
+
+        UsuarioEntity actualizado =
+                usuarioJpaRepository.saveAndFlush(entity);
+
+        return Optional.of(convertirADominio(actualizado));
+    }
+
+    @Override
+    @Transactional
+    public boolean eliminarPorId(Long usuarioId) {
+
+        if (!usuarioJpaRepository.existsById(usuarioId)) {
+            return false;
+        }
+
+        usuarioJpaRepository.deleteById(usuarioId);
+        usuarioJpaRepository.flush();
+
+        return true;
+    }
+
+    private UsuarioEntity convertirAEntity(Usuario usuario) {
+        UsuarioEntity entity = new UsuarioEntity();
+        entity.setId(usuario.getId());
+        entity.setNombre(usuario.getNombre());
+        entity.setEmail(usuario.getEmail());
+        entity.setTelefono(usuario.getTelefono());
+        entity.setBarrio(usuario.getBarrio());
+        entity.setPasswordHash(usuario.getPasswordHash());
+        entity.setAceptaHabeasData(usuario.getAceptaHabeasData());
+        entity.setCorreoVerificado(usuario.getCorreoVerificado());
+        entity.setProvider(usuario.getProvider());
+        entity.setProviderId(usuario.getProviderId());
+        entity.setRol(usuario.getRol());
+        entity.setEstado(usuario.getEstado());
+        entity.setFechaRegistro(usuario.getFechaRegistro());
+        entity.setFechaCambioEstado(usuario.getFechaCambioEstado());
+        entity.setAdministradorCambioEstadoId(
+                usuario.getAdministradorCambioEstadoId());
+        entity.setMotivoCambioEstado(usuario.getMotivoCambioEstado());
+
+        entity.setHeightCm(usuario.getHeightCm());
+        entity.setChestCm(usuario.getChestCm());
+        entity.setWaistCm(usuario.getWaistCm());
+        entity.setHipCm(usuario.getHipCm());
+
+        return entity;
+    }
+
+    private Usuario convertirADominio(UsuarioEntity entity) {
+        return new Usuario(
+                entity.getId(),
+                entity.getNombre(),
+                entity.getEmail(),
+                entity.getTelefono(),
+                entity.getPasswordHash(),
+                entity.getAceptaHabeasData(),
+                entity.getRol(),
+                entity.getEstado(),
+                entity.getFechaRegistro(),
+                entity.getFechaCambioEstado(),
+                entity.getAdministradorCambioEstadoId(),
+                entity.getMotivoCambioEstado(),
+                entity.getCorreoVerificado(),
+                entity.getBarrio(),
+                entity.getHeightCm(),
+                entity.getChestCm(),
+                entity.getWaistCm(),
+                entity.getHipCm(),
+                entity.getProvider(),
+                entity.getProviderId()
+        );
+    }
+}

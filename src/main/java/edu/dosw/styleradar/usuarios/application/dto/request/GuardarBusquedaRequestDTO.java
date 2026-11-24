@@ -1,0 +1,91 @@
+package edu.dosw.styleradar.usuarios.application.dto.request;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.dosw.styleradar.usuarios.application.dto.BusquedaFiltrosDTO;
+import edu.dosw.styleradar.usuarios.domain.model.Talla;
+import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@NoArgsConstructor
+@SuperBuilder
+@Schema(description = "Criterios de búsqueda (texto, filtros y ubicación) para almacenar en el perfil del comprador (SR-RF-05 / SR-RF-28)")
+public class GuardarBusquedaRequestDTO extends BusquedaFiltrosDTO {
+
+    @NotBlank(message = "El nombre de la búsqueda guardada es obligatorio")
+    @Size(min = 1, max = 100, message = "El nombre debe tener entre 1 y 100 caracteres")
+    @Schema(description = "Nombre descriptivo asignado por el usuario a la búsqueda", example = "Chaquetas negras casuales", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("name") @JsonAlias("nombre")
+    private String nombre;
+
+    @Schema(description = "Filtered garment type", example = "TOP")
+    @JsonProperty("garmentType") @JsonAlias("tipo")
+    private TipoPrenda tipo;
+
+    @Schema(description = "Color filtrado en la búsqueda", example = "Negro")
+    private String color;
+
+    @Schema(description = "Talla filtrada en la búsqueda", example = "M")
+    @JsonProperty("size") @JsonAlias("talla")
+    private Talla talla;
+
+    @DecimalMin(value = "0.0", inclusive = true, message = "precioMin debe ser mayor o igual a 0")
+    @Schema(description = "Precio mínimo del rango en COP", example = "50000.0")
+    @JsonProperty("minPrice") @JsonAlias("precioMin")
+    private Double precioMin;
+
+    @DecimalMin(value = "0.0", inclusive = true, message = "precioMax debe ser mayor o igual a 0")
+    @Schema(description = "Precio máximo del rango en COP", example = "180000.0")
+    @JsonProperty("maxPrice") @JsonAlias("precioMax")
+    private Double precioMax;
+
+    @DecimalMin(value = "-90.0", message = "latitud debe estar entre -90 y 90")
+    @DecimalMax(value = "90.0", message = "latitud debe estar entre -90 y 90")
+    @Schema(description = "Latitud de la ubicación utilizada en la búsqueda (SR-RF-28)", example = "4.6761")
+    @JsonProperty("latitude") @JsonAlias("latitud")
+    private Double latitud;
+
+    @DecimalMin(value = "-180.0", message = "longitud debe estar entre -180 y 180")
+    @DecimalMax(value = "180.0", message = "longitud debe estar entre -180 y 180")
+    @Schema(description = "Longitud de la ubicación utilizada en la búsqueda (SR-RF-28)", example = "-74.0482")
+    @JsonProperty("longitude") @JsonAlias("longitud")
+    private Double longitud;
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "query no puede estar vacío")
+    public boolean isQueryValido() {
+        return query == null || !query.isBlank();
+    }
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "color no puede estar vacío")
+    public boolean isColorValido() {
+        return color == null || !color.isBlank();
+    }
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "marca no puede estar vacía")
+    public boolean isMarcaValida() {
+        return marca == null || !marca.isBlank();
+    }
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @AssertTrue(message = "precioMin no puede ser mayor que precioMax")
+    public boolean isRangoPrecioValido() {
+        return precioMin == null || precioMax == null || precioMin <= precioMax;
+    }
+}
