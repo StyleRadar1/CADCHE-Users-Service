@@ -135,7 +135,7 @@ class GestionEstadoCuentaControllerTest {
     }
 
     @Test
-    void eliminarRetorna204CuandoLaCuentaSeElimina() {
+    void eliminarRetorna204YEjecutaElCasoDeUso() {
         var response = controller.eliminar(8L);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
@@ -143,12 +143,11 @@ class GestionEstadoCuentaControllerTest {
     }
 
     @Test
-    void eliminarPropagaLaExcepcionCuandoLaCuentaNoExiste() {
+    void eliminarPropaga404CuandoLaCuentaNoExiste() {
         org.mockito.Mockito.doThrow(new UsuarioNoEncontradoException(8L))
                 .when(eliminarUsuarioUseCase).ejecutar(8L);
 
-        assertThrows(
-                UsuarioNoEncontradoException.class,
+        assertThrows(UsuarioNoEncontradoException.class,
                 () -> controller.eliminar(8L));
     }
 

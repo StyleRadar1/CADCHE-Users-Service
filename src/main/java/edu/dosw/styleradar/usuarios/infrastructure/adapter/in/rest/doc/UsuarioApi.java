@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarPreferenciasEstiloRequestDTO;
+import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarDatosUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarTallasHabitualesRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.GuardarBusquedaRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
@@ -143,6 +144,41 @@ public interface UsuarioApi {
                     example = "12"
             )
             @PathVariable("id") Long id
+    );
+
+    @Operation(
+            summary = "Update personal details",
+            description = "Buyer-only operation. The id must match the JWT subject. "
+                    + "name is required; phone and neighborhood are optional and omitted values are preserved. "
+                    + "Returns the full profile, matching GET /api/v1/users/{id}.",
+            security = {@SecurityRequirement(name = "bearerAuth")},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ActualizarDatosUsuarioRequestDTO.class),
+                            examples = @ExampleObject(
+                                    name = "UpdatePersonalDetails",
+                                    value = "{\"name\":\"Laura Gómez\",\"phone\":\"+573001234567\",\"neighborhood\":\"Chapinero\"}"
+                            )
+                    )
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Personal details updated",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UsuarioResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data; validationErrors contains field-level errors",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Missing, invalid or expired JWT"),
+            @ApiResponse(responseCode = "403", description = "Only the authenticated buyer can update their profile"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @PutMapping("/{id}")
+    ResponseEntity<UsuarioResponseDTO> actualizarDatosPersonales(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody ActualizarDatosUsuarioRequestDTO request
     );
 
     @Operation(

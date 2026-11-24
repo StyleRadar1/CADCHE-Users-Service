@@ -166,6 +166,11 @@ public class SecurityConfig {
                         ).hasRole("ADMIN_STYLERADAR")
 
                         .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/v1/users/*"
+                        ).hasRole("COMPRADOR")
+
+                        .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/v1/users/*"
                         ).authenticated()

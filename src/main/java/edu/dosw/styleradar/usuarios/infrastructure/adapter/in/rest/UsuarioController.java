@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarPreferenciasEstiloRequestDTO;
+import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarDatosUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarTallasHabitualesRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.GuardarBusquedaRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
@@ -28,6 +29,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.event.BusquedaSincronizadaEvent;
 import edu.dosw.styleradar.usuarios.domain.model.BusquedaGuardada;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarDatosUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
@@ -41,6 +43,7 @@ import jakarta.validation.Valid;
 public class UsuarioController implements UsuarioApi {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
+    private final ActualizarDatosUsuarioUseCase actualizarDatosUsuarioUseCase;
     private final ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
     private final ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
     private final ObtenerUsuarioUseCase obtenerUsuarioUseCase;
@@ -49,6 +52,7 @@ public class UsuarioController implements UsuarioApi {
 
     public UsuarioController(
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
+            ActualizarDatosUsuarioUseCase actualizarDatosUsuarioUseCase,
             ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase,
             ActualizarTallasHabitualesUseCase actualizarTallasUseCase,
             ObtenerUsuarioUseCase obtenerUsuarioUseCase,
@@ -56,6 +60,7 @@ public class UsuarioController implements UsuarioApi {
             BusquedaSincronizadaEventPublisherPort busquedaEventPublisher) {
 
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
+        this.actualizarDatosUsuarioUseCase = actualizarDatosUsuarioUseCase;
         this.actualizarPreferenciasUseCase = actualizarPreferenciasUseCase;
         this.actualizarTallasUseCase = actualizarTallasUseCase;
         this.obtenerUsuarioUseCase = obtenerUsuarioUseCase;
@@ -79,6 +84,22 @@ public class UsuarioController implements UsuarioApi {
 
         validarConsultaUsuario(id);
         return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> actualizarDatosPersonales(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody ActualizarDatosUsuarioRequestDTO request) {
+
+        Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(id, usuarioId);
+        actualizarDatosUsuarioUseCase.actualizar(
+                usuarioId,
+                request.name(),
+                request.phone(),
+                request.neighborhood()
+        );
+        return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
     @Override

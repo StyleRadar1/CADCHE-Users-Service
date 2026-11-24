@@ -2,6 +2,7 @@ package edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -150,5 +151,27 @@ public interface GestionEstadoCuentaApi {
                     })
             )
             @Valid @RequestBody CambioEstadoCuentaRequestDTO request
+    );
+
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Delete a user account (SR-RF-115)",
+            description = "ROLE_ADMIN_STYLERADAR. Permanently deletes the user account. "
+                    + "The front end must ask for confirmation before calling this endpoint."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "User account deleted"),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User account not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class)
+                    )
+            )
+    })
+    ResponseEntity<Void> eliminar(
+            @Parameter(description = "User account identifier", example = "12")
+            @PathVariable("id") Long id
     );
 }

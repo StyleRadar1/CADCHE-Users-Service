@@ -50,6 +50,22 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     }
 
     @Override
+    @Transactional
+    public Optional<Usuario> actualizarDatosPersonales(
+            Long usuarioId, String nombre, String telefono, String barrio) {
+        return usuarioJpaRepository.findById(usuarioId).map(entity -> {
+            entity.setNombre(nombre);
+            if (telefono != null) {
+                entity.setTelefono(telefono);
+            }
+            if (barrio != null) {
+                entity.setBarrio(barrio);
+            }
+            return convertirADominio(usuarioJpaRepository.saveAndFlush(entity));
+        });
+    }
+
+    @Override
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioJpaRepository.findByEmail(email)
                 .map(this::convertirADominio);

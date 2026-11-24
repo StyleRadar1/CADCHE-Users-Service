@@ -226,6 +226,28 @@ class RequestDTOTest {
     }
 
     @Test
+    void debeValidarDatosPersonalesYPermitirOmitirTelefonoOBarrio() {
+        ActualizarDatosUsuarioRequestDTO valido =
+                new ActualizarDatosUsuarioRequestDTO("Laura Gómez", null, null);
+        assertTrue(validator.validate(valido).isEmpty());
+
+        ActualizarDatosUsuarioRequestDTO nombreVacio =
+                new ActualizarDatosUsuarioRequestDTO(" ", null, null);
+        assertTrue(validator.validate(nombreVacio).stream()
+                .anyMatch(error -> "name".equals(error.getPropertyPath().toString())));
+
+        ActualizarDatosUsuarioRequestDTO telefonoInvalido =
+                new ActualizarDatosUsuarioRequestDTO("Laura Gómez", "teléfono", null);
+        assertTrue(validator.validate(telefonoInvalido).stream()
+                .anyMatch(error -> "phone".equals(error.getPropertyPath().toString())));
+
+        ActualizarDatosUsuarioRequestDTO barrioLargo =
+                new ActualizarDatosUsuarioRequestDTO("Laura Gómez", null, "x".repeat(101));
+        assertTrue(validator.validate(barrioLargo).stream()
+                .anyMatch(error -> "neighborhood".equals(error.getPropertyPath().toString())));
+    }
+
+    @Test
     void debeValidarCredenciales() {
         VerificarCredencialesRequestDTO dto =
                 new VerificarCredencialesRequestDTO(
