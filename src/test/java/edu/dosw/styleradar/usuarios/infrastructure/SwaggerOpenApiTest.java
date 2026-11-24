@@ -15,6 +15,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repos
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository.BusquedaGuardadaJpaRepository;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -46,7 +47,15 @@ class SwaggerOpenApiTest {
     @Test
     void debeExponerEspecificacionOpenApiYEndpointsDeUsuarios() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths['/api/v1/internal/users/verify-credentials'].post")
+                        .exists())
+                .andExpect(jsonPath("$.paths['/api/v1/internal/users/{id}/email-verification'].patch")
+                        .exists())
+                .andExpect(jsonPath("$.paths['/internal/api/v1/usuarios/verificar-credenciales']")
+                        .doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/internal/usuarios/{id}/correo-verificado']")
+                        .doesNotExist());
     }
 
     @Test

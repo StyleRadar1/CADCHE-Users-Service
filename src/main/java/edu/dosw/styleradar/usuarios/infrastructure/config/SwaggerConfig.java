@@ -19,6 +19,11 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class SwaggerConfig {
 
+    private static final Set<String> INTERNAL_FALLBACK_PATHS = Set.of(
+            "/internal/api/v1/usuarios/verificar-credenciales",
+            "/api/v1/internal/usuarios/{id}/correo-verificado"
+    );
+
     @Bean
     OpenAPI usersServiceOpenAPI() {
         return new OpenAPI()
@@ -67,6 +72,7 @@ public class SwaggerConfig {
                         ? List.of()
                         : List.of(new SecurityRequirement().addList(scheme)));
             }));
+            INTERNAL_FALLBACK_PATHS.forEach(api.getPaths()::remove);
         };
     }
 }
