@@ -16,7 +16,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   build:
@@ -116,6 +115,9 @@ jobs:
   publish-image:
     name: Construir y publicar imagen
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs: build
     if: >-
       (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')) ||
@@ -168,6 +170,8 @@ jobs:
   deploy-qa:
     name: Desplegar en Azure App Service QA
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs: publish-image
     if: >-
       (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
@@ -206,6 +210,8 @@ jobs:
   deploy-prod:
     name: Desplegar en Azure App Service PROD
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs: publish-image
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
