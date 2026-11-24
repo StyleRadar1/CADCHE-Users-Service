@@ -21,21 +21,18 @@ La documentación de la API de `ms-usuarios` utiliza OpenAPI 3.0 y permite consu
 
 | Método | Endpoint | Descripción | Rol requerido |
 |---|---|---|---|
-| `POST` | `/api/v1/usuarios` | Registro de perfil de usuario comprador (`SR-RF-01`, `SR-RNF-02`). | Público |
-| `GET` | `/api/v1/usuarios/me` | Consulta del perfil completo del usuario autenticado (`SR-RF-01`). | `COMPRADOR` |
-| `GET` | `/api/v1/usuarios/{id}` | Consulta de perfil por identificador (`SR-RF-66`). | `ADMIN_STYLERADAR` |
-| `PUT` | `/api/v1/usuarios/me/preferencias` | Actualización de preferencias de estilo (`SR-RF-03`). | `COMPRADOR` |
-| `PUT` | `/api/v1/usuarios/me/preferencias-estilo` | Alias de compatibilidad para preferencias de estilo. | `COMPRADOR` |
-| `PUT` | `/api/v1/usuarios/me/tallas` | Configuración de tallas habituales (`SR-RF-04`). | `COMPRADOR` |
-| `PUT` | `/api/v1/usuarios/me/tallas-habituales` | Alias de compatibilidad para actualización de tallas. | `COMPRADOR` |
-| `GET` | `/api/v1/usuarios/me/feed` | Feed paginado de prendas sugeridas (`SR-RF-05`). | `COMPRADOR` |
-| `GET` | `/api/v1/usuarios/me/recomendaciones` | Recomendaciones personalizadas (`SR-RF-06`). | `COMPRADOR` |
-| `POST` | `/api/v1/usuarios/me/busquedas-guardadas` | Registro de filtros y coordenadas de búsquedas frecuentes (`SR-RF-28`). | `COMPRADOR` |
-| `GET` | `/api/v1/usuarios/me/busquedas-guardadas` | Consulta de búsquedas guardadas. | `COMPRADOR` |
-| `DELETE` | `/api/v1/usuarios/me/busquedas-guardadas/{busquedaId}` | Eliminación de una búsqueda guardada. | `COMPRADOR` |
-| `GET` | `/api/v1/admin/usuarios` | Listado paginado y filtrable de usuarios (`SR-RF-66`). | `ADMIN_STYLERADAR` |
-| `GET` | `/api/v1/admin/usuarios/{id}` | Consulta administrativa del detalle de una cuenta. | `ADMIN_STYLERADAR` |
-| `PATCH` | `/api/v1/admin/usuarios/{id}/estado` | Cambio de estado de cuenta con motivo (`SR-RF-66`). | `ADMIN_STYLERADAR` |
+| `POST` | `/api/v1/users` | Registro de perfil de usuario comprador (`SR-RF-01`, `SR-RNF-02`). | Público |
+| `GET` | `/api/v1/users/{id}` | Consulta del perfil propio por ID; un administrador puede consultar cualquier cuenta (`SR-RF-01`, `SR-RF-66`). | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `PUT` | `/api/v1/users/{id}/style-preferences` | Actualización de preferencias de estilo (`SR-RF-03`). El ID debe corresponder al usuario autenticado. | `COMPRADOR` |
+| `PUT` | `/api/v1/users/{id}/sizes` | Configuración de tallas habituales (`SR-RF-04`). El ID debe corresponder al usuario autenticado. | `COMPRADOR` |
+| `GET` | `/api/v1/users/{id}/feed` | Feed paginado de prendas sugeridas (`SR-RF-05`). | `COMPRADOR` |
+| `GET` | `/api/v1/users/{id}/recommendations` | Recomendaciones personalizadas (`SR-RF-06`). | `COMPRADOR` |
+| `POST` | `/api/v1/users/{id}/saved-searches` | Registro de filtros y coordenadas de búsquedas frecuentes (`SR-RF-28`). | `COMPRADOR` |
+| `GET` | `/api/v1/users/{id}/saved-searches` | Consulta de búsquedas guardadas. | `COMPRADOR` |
+| `DELETE` | `/api/v1/users/{id}/saved-searches/{busquedaId}` | Eliminación de una búsqueda guardada. | `COMPRADOR` |
+| `GET` | `/api/v1/admin/users` | Listado paginado y filtrable de usuarios (`SR-RF-66`). | `ADMIN_STYLERADAR` |
+| `GET` | `/api/v1/admin/users/{id}` | Consulta administrativa del detalle de una cuenta. | `ADMIN_STYLERADAR` |
+| `PATCH` | `/api/v1/admin/users/{id}/status` | Cambio de estado de cuenta con motivo (`SR-RF-66`). | `ADMIN_STYLERADAR` |
 | `GET` | `/actuator/health` | Consulta del estado operativo del microservicio. | Público |
 
 ## 4.3. C

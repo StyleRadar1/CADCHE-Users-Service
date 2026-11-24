@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({
-        "/api/v1/internal/users",
-        "/api/v1/internal/usuarios"
-})
+@RequestMapping("/api/v1/internal/usuarios")
 public class MarcarCorreoVerificadoController {
 
     private final MarcarCorreoVerificadoUseCase marcarCorreoVerificadoUseCase;
@@ -21,10 +18,7 @@ public class MarcarCorreoVerificadoController {
         this.marcarCorreoVerificadoUseCase = marcarCorreoVerificadoUseCase;
     }
 
-    @PatchMapping({
-            "/{id}/email-verification",
-            "/{id}/correo-verificado"
-    })
+    @PatchMapping("/{id}/correo-verificado")
     public ResponseEntity<Void> marcarCorreoVerificado(
             @PathVariable("id") Long id) {
 

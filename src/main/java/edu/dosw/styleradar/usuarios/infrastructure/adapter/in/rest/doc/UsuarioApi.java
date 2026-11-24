@@ -84,56 +84,14 @@ public interface UsuarioApi {
                     )
             )
     })
-    @PostMapping({"", "/"})
+    @PostMapping
     ResponseEntity<UsuarioResponseDTO> registrar(
             @Valid @RequestBody RegistrarUsuarioRequestDTO request
     );
 
     @Operation(
-            summary = "Get my profile",
-            description = "Returns the authenticated user's profile, including style preferences and usual sizes.",
-            security = {@SecurityRequirement(name = "bearerAuth")}
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Profile retrieved successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UsuarioResponseDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Missing, invalid or expired JWT",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class)
-                    )
-            )
-    })
-    @GetMapping("/me")
-    ResponseEntity<UsuarioResponseDTO> obtenerPerfil();
-
-    @Operation(
-            summary = "Get user by ID",
-            description = "Returns a user's profile by identifier. Access is restricted to StyleRadar administrators until self-ID authorization is implemented.",
+            summary = "Get user profile by ID",
+            description = "Returns the authenticated user's profile when id matches the JWT subject. StyleRadar administrators may query any user.",
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @ApiResponses({
@@ -233,14 +191,9 @@ public interface UsuarioApi {
                     )
             )
     })
-    @PutMapping({
-            "/{id}/style-preferences",
-            "/me/style-preferences",
-            "/me/preferencias-estilo",
-            "/me/preferencias"
-    })
+    @PutMapping("/{id}/style-preferences")
     ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request
     );
 
@@ -290,13 +243,9 @@ public interface UsuarioApi {
                     )
             )
     })
-    @PutMapping({
-            "/{id}/sizes",
-            "/me/usual-sizes",
-            "/me/tallas-habituales"
-    })
+    @PutMapping("/{id}/sizes")
     ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request
     );
 
@@ -346,13 +295,9 @@ public interface UsuarioApi {
                     )
             )
     })
-    @PostMapping({
-            "/{id}/saved-searches",
-            "/me/saved-searches",
-            "/me/busquedas-guardadas"
-    })
+    @PostMapping("/{id}/saved-searches")
     ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody GuardarBusquedaRequestDTO request
     );
 
@@ -387,13 +332,9 @@ public interface UsuarioApi {
                     )
             )
     })
-    @GetMapping({
-            "/{id}/saved-searches",
-            "/me/saved-searches",
-            "/me/busquedas-guardadas"
-    })
+    @GetMapping("/{id}/saved-searches")
     ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas(
-            @PathVariable(value = "id", required = false) Long id
+            @PathVariable("id") Long id
     );
 
     @Operation(
@@ -431,13 +372,9 @@ public interface UsuarioApi {
                     )
             )
     })
-    @DeleteMapping({
-            "/{id}/saved-searches/{busquedaId}",
-            "/me/saved-searches/{busquedaId}",
-            "/me/busquedas-guardadas/{busquedaId}"
-    })
+    @DeleteMapping("/{id}/saved-searches/{busquedaId}")
     ResponseEntity<Void> eliminarBusquedaGuardada(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Parameter(
                     description = "Saved search identifier",
                     example = "5"

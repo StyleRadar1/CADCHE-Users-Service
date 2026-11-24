@@ -19,10 +19,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.Personali
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping({
-        "/api/v1/users",
-        "/api/v1/usuarios"
-})
+@RequestMapping("/api/v1/users")
 public class PersonalizacionController implements PersonalizacionApi {
 
     private final ObtenerFeedPersonalizadoUseCase obtenerFeedPersonalizadoUseCase;
@@ -33,9 +30,9 @@ public class PersonalizacionController implements PersonalizacionApi {
     }
 
     @Override
-    @GetMapping({"/{id}/feed", "/me/feed"})
+    @GetMapping("/{id}/feed")
     public ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
-            @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
+            @org.springframework.web.bind.annotation.PathVariable("id") Long id,
             @Valid @ModelAttribute PersonalizacionRequestDTO request) {
 
         Authentication authentication =
@@ -55,21 +52,10 @@ public class PersonalizacionController implements PersonalizacionApi {
         return ResponseEntity.ok(respuesta);
     }
 
-    public ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> feed(
-            PersonalizacionRequestDTO request) {
-        return feed(null, request);
-    }
-
     @Override
-    @GetMapping({
-            "/{id}/recommendations",
-            "/me/recommendations",
-            "/me/recomendaciones",
-            "/recommendations",
-            "/recomendaciones"
-    })
+    @GetMapping("/{id}/recommendations")
     public ResponseEntity<RecomendacionesResponseDTO> recomendaciones(
-            @org.springframework.web.bind.annotation.PathVariable(value = "id", required = false) Long id,
+            @org.springframework.web.bind.annotation.PathVariable("id") Long id,
             @Valid @ModelAttribute PersonalizacionRequestDTO request) {
 
         Authentication authentication =
@@ -95,13 +81,8 @@ public class PersonalizacionController implements PersonalizacionApi {
         );
     }
 
-    public ResponseEntity<RecomendacionesResponseDTO> recomendaciones(
-            PersonalizacionRequestDTO request) {
-        return recomendaciones(null, request);
-    }
-
     private void validarUsuarioSolicitado(Long idSolicitado, Long idAutenticado) {
-        if (idSolicitado != null && !idSolicitado.equals(idAutenticado)) {
+        if (!idSolicitado.equals(idAutenticado)) {
             throw new AccessDeniedException("Solo puede consultar sus propias recomendaciones");
         }
     }

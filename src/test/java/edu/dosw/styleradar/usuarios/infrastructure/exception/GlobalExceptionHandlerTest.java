@@ -36,7 +36,7 @@ class GlobalExceptionHandlerTest {
     void setUp() {
         handler = new GlobalExceptionHandler();
         request = mock(HttpServletRequest.class);
-        when(request.getRequestURI()).thenReturn("/api/v1/usuarios");
+        when(request.getRequestURI()).thenReturn("/api/v1/users");
     }
 
     @Test
@@ -50,7 +50,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals(409, response.getBody().getStatus());
         assertTrue(response.getBody().getMessage().contains("test@email.com"));
-        assertEquals("/api/v1/usuarios", response.getBody().getPath());
+        assertEquals("/api/v1/users", response.getBody().getPath());
     }
 
     @Test
@@ -64,7 +64,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals(409, response.getBody().getStatus());
         assertEquals("Identidad Google conflictiva", response.getBody().getMessage());
-        assertEquals("/api/v1/usuarios", response.getBody().getPath());
+        assertEquals("/api/v1/users", response.getBody().getPath());
         assertTrue(response.getBody().getValidationErrors().isEmpty());
     }
 

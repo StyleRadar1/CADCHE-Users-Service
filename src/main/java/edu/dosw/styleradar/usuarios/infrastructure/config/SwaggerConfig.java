@@ -53,7 +53,7 @@ public class SwaggerConfig {
 
     @Bean
     OpenApiCustomizer usersAuthenticationDocumentation() {
-        Set<String> publicPosts = Set.of("/api/v1/usuarios");
+        Set<String> publicPosts = Set.of("/api/v1/users");
         return api -> {
             if (api.getPaths() == null) {
                 return;
@@ -61,6 +61,7 @@ public class SwaggerConfig {
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
                 boolean publicRoute = method == PathItem.HttpMethod.POST && publicPosts.contains(path);
                 String scheme = path.startsWith("/api/v1/internal/")
+                        || path.startsWith("/internal/api/v1/")
                         ? "serviceBasicAuth" : "bearerAuth";
                 operation.setSecurity(publicRoute
                         ? List.of()
