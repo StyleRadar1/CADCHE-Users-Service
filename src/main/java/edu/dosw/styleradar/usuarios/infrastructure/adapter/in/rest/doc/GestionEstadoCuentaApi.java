@@ -118,10 +118,7 @@ public interface GestionEstadoCuentaApi {
             @PathVariable("id") Long id
     );
 
-    @PatchMapping({
-            "/{id}/status",
-            "/{id}/estado"
-    })
+    @PatchMapping("/{id}/status")
     @Operation(
             summary = "Activate, deactivate or block a user account",
             description = "ROLE_ADMIN_STYLERADAR. ACTIVE, INACTIVE, BLOCKED; "

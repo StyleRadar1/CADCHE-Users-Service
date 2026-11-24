@@ -158,43 +158,24 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/api/v1/users",
-                                "/api/v1/users/",
-                                "/api/v1/usuarios",
-                                "/api/v1/usuarios/"
+                                "/api/v1/users"
                         ).permitAll()
 
                         .requestMatchers(
-                                "/api/v1/admin/users/**",
-                                "/api/v1/admin/usuarios/**"
+                                "/api/v1/admin/users/**"
                         ).hasRole("ADMIN_STYLERADAR")
-
-                        .requestMatchers(
-                                "/api/v1/users/me",
-                                "/api/v1/users/me/**",
-                                "/api/v1/usuarios/me",
-                                "/api/v1/usuarios/me/**",
-                                "/api/v1/users/*/style-preferences",
-                                "/api/v1/users/*/sizes",
-                                "/api/v1/users/*/feed",
-                                "/api/v1/users/*/recommendations",
-                                "/api/v1/users/*/saved-searches/**",
-                                "/api/v1/usuarios/*/style-preferences",
-                                "/api/v1/usuarios/*/sizes",
-                                "/api/v1/usuarios/*/feed",
-                                "/api/v1/usuarios/*/recommendations",
-                                "/api/v1/usuarios/*/saved-searches/**"
-                        ).hasRole("COMPRADOR")
 
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/v1/users/*",
-                                "/api/v1/usuarios/*"
-                        ).hasRole("ADMIN_STYLERADAR")
+                                "/api/v1/users/*"
+                        ).authenticated()
 
                         .requestMatchers(
-                                "/api/v1/users/**",
-                                "/api/v1/usuarios/**"
+                                "/api/v1/users/*/**"
+                        ).hasRole("COMPRADOR")
+
+                        .requestMatchers(
+                                "/api/v1/users/**"
                         ).authenticated()
 
                         .anyRequest().denyAll()

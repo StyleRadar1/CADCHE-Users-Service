@@ -53,6 +53,15 @@ class CorreoVerificadoInternalRouteTest {
 
     @Test
     void rutaAcordadaPorMsAuthRequiereAutenticacionDeServicioYMarcaElCorreo() throws Exception {
+        mockMvc.perform(patch("/api/v1/internal/users/144/email-verification")
+                        .header(HttpHeaders.AUTHORIZATION, authorization()))
+                .andExpect(status().isNoContent());
+
+        verify(useCase).ejecutar(144L);
+    }
+
+    @Test
+    void mantieneLaRutaDeRespaldoParaVersionesAnterioresDeMsAuth() throws Exception {
         mockMvc.perform(patch("/api/v1/internal/usuarios/144/correo-verificado")
                         .header(HttpHeaders.AUTHORIZATION, authorization()))
                 .andExpect(status().isNoContent());
@@ -61,15 +70,15 @@ class CorreoVerificadoInternalRouteTest {
     }
 
     @Test
-    void rechazaSolicitudesSinAutenticacionYNoExponeRutasSinApiV1() throws Exception {
-        mockMvc.perform(patch("/api/v1/internal/usuarios/145/correo-verificado")
+    void rechazaSolicitudesSinAutenticacionYNoExponeRutasAntiguas() throws Exception {
+        mockMvc.perform(patch("/api/v1/internal/users/145/email-verification")
                         .header(HttpHeaders.AUTHORIZATION, authorization()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(patch("/internal/api/v1/usuarios/144/correo-verificado"))
                 .andExpect(status().isForbidden());
 
-        mockMvc.perform(patch("/api/v1/internal/usuarios/144/correo-verificado"))
+        mockMvc.perform(patch("/api/v1/internal/users/144/email-verification"))
                 .andExpect(status().isUnauthorized());
 
         verify(useCase).ejecutar(145L);

@@ -137,7 +137,7 @@ class GestionEstadoCuentaEndpointTest {
     void detalleInexistenteDevuelve404() throws Exception {
         when(detalleUseCase.ejecutar(999L)).thenThrow(new UsuarioNoEncontradoException(999L));
 
-        mockMvc.perform(get("/api/v1/admin/usuarios/999")
+        mockMvc.perform(get("/api/v1/admin/users/999")
                         .header("Authorization", "Bearer " + token("ADMIN_STYLERADAR")))
                 .andExpect(status().isNotFound());
     }

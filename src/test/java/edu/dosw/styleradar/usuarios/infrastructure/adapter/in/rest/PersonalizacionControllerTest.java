@@ -75,7 +75,7 @@ class PersonalizacionControllerTest {
                 .thenReturn(respuestaEsperada);
 
         ResponseEntity<PageResponseDTO<CatalogoItemResponseDTO>> respuesta =
-                controller.feed(request);
+                controller.feed(144L, request);
 
         assertEquals(200, respuesta.getStatusCode().value());
         assertSame(respuestaEsperada, respuesta.getBody());
@@ -127,7 +127,7 @@ class PersonalizacionControllerTest {
                 .thenReturn(pagina);
 
         ResponseEntity<RecomendacionesResponseDTO> respuesta =
-                controller.recomendaciones(request);
+                controller.recomendaciones(144L, request);
 
         assertEquals(200, respuesta.getStatusCode().value());
         assertSame(pagina.getContent(), respuesta.getBody().getContent());

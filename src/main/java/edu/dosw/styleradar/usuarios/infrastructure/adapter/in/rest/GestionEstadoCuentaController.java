@@ -29,10 +29,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.GestionEs
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping({
-        "/api/v1/admin/users",
-        "/api/v1/admin/usuarios"
-})
+@RequestMapping("/api/v1/admin/users")
 public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
 
     private final CambiarEstadoCuentaUseCase cambiarEstadoCuentaUseCase;
@@ -102,10 +99,7 @@ public class GestionEstadoCuentaController implements GestionEstadoCuentaApi {
         );
     }
 
-    @PatchMapping({
-            "/{id}/status",
-            "/{id}/estado"
-    })
+    @PatchMapping("/{id}/status")
     @Override
     public ResponseEntity<CuentaAdministrativaResponseDTO> cambiar(
             @PathVariable("id") Long id,

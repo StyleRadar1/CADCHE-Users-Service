@@ -10,11 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping({
-        "/api/v1/internal/users",
-        "/api/v1/internal/usuarios",
-        "/internal/api/v1/usuarios"
-})
 public class VerificarCredencialesController {
 
     private final VerificarCredencialesUseCase verificarCredencialesUseCase;
@@ -25,8 +20,8 @@ public class VerificarCredencialesController {
     }
 
     @PostMapping({
-            "/verify-credentials",
-            "/verificar-credenciales"
+            "/api/v1/internal/users/verify-credentials",
+            "/internal/api/v1/usuarios/verificar-credenciales"
     })
     public ResponseEntity<?> verificar(
             @Valid @RequestBody VerificarCredencialesRequestDTO request) {

@@ -37,7 +37,7 @@ import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.UsuarioAp
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping({"/api/v1/users", "/api/v1/usuarios"})
+@RequestMapping("/api/v1/users")
 public class UsuarioController implements UsuarioApi {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
@@ -72,31 +72,19 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
-    @Override
-    public ResponseEntity<UsuarioResponseDTO> obtenerPerfil() {
-
-        Long usuarioId = usuarioAutenticadoId();
-
-        return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
-    }
-
     @GetMapping("/{id}")
     @Override
     public ResponseEntity<UsuarioResponseDTO> obtenerPorId(
             @PathVariable("id") Long id) {
 
+        validarConsultaUsuario(id);
         return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(id));
     }
 
     @Override
-    @PutMapping({
-            "/{id}/style-preferences",
-            "/me/style-preferences",
-            "/me/preferencias-estilo",
-            "/me/preferencias"
-    })
+    @PutMapping("/{id}/style-preferences")
     public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
@@ -110,19 +98,10 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
-    public ResponseEntity<UsuarioResponseDTO> actualizarPreferenciasEstilo(
-            ActualizarPreferenciasEstiloRequestDTO request) {
-        return actualizarPreferenciasEstilo(null, request);
-    }
-
     @Override
-    @PutMapping({
-            "/{id}/sizes",
-            "/me/usual-sizes",
-            "/me/tallas-habituales"
-    })
+    @PutMapping("/{id}/sizes")
     public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
@@ -136,19 +115,10 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(obtenerUsuarioUseCase.obtener(usuarioId));
     }
 
-    public ResponseEntity<UsuarioResponseDTO> actualizarTallasHabituales(
-            ActualizarTallasHabitualesRequestDTO request) {
-        return actualizarTallasHabituales(null, request);
-    }
-
     @Override
-    @PostMapping({
-            "/{id}/saved-searches",
-            "/me/saved-searches",
-            "/me/busquedas-guardadas"
-    })
+    @PostMapping("/{id}/saved-searches")
     public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
         Long usuarioId = usuarioAutenticadoId();
@@ -179,18 +149,9 @@ public class UsuarioController implements UsuarioApi {
                 .body(aRespuesta(guardada));
     }
 
-    public ResponseEntity<BusquedaGuardadaResponseDTO> guardarBusqueda(
-            GuardarBusquedaRequestDTO request) {
-        return guardarBusqueda(null, request);
-    }
-
-    @PutMapping({
-            "/{id}/saved-searches/{busquedaId}",
-            "/me/saved-searches/{busquedaId}",
-            "/me/busquedas-guardadas/{busquedaId}"
-    })
+    @PutMapping("/{id}/saved-searches/{busquedaId}")
     public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @PathVariable("busquedaId") Long busquedaId,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
@@ -230,19 +191,10 @@ public class UsuarioController implements UsuarioApi {
         return ResponseEntity.ok(aRespuesta(guardada));
     }
 
-    public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
-            Long busquedaId, GuardarBusquedaRequestDTO request) {
-        return actualizarBusquedaGuardada(null, busquedaId, request);
-    }
-
     @Override
-    @GetMapping({
-            "/{id}/saved-searches",
-            "/me/saved-searches",
-            "/me/busquedas-guardadas"
-    })
+    @GetMapping("/{id}/saved-searches")
     public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas(
-            @PathVariable(value = "id", required = false) Long id) {
+            @PathVariable("id") Long id) {
 
         Long usuarioId = usuarioAutenticadoId();
         validarUsuarioSolicitado(id, usuarioId);
@@ -255,18 +207,10 @@ public class UsuarioController implements UsuarioApi {
         );
     }
 
-    public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas() {
-        return obtenerBusquedasGuardadas(null);
-    }
-
-    @DeleteMapping({
-            "/{id}/saved-searches/{busquedaId}",
-            "/me/saved-searches/{busquedaId}",
-            "/me/busquedas-guardadas/{busquedaId}"
-    })
+    @DeleteMapping("/{id}/saved-searches/{busquedaId}")
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
-            @PathVariable(value = "id", required = false) Long id,
+            @PathVariable("id") Long id,
             @PathVariable("busquedaId") Long busquedaId) {
 
         Long usuarioId = usuarioAutenticadoId();
@@ -289,10 +233,6 @@ public class UsuarioController implements UsuarioApi {
         }
 
         return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<Void> eliminarBusquedaGuardada(Long busquedaId) {
-        return eliminarBusquedaGuardada(null, busquedaId);
     }
 
     private void publicarEventoBusqueda(
@@ -347,8 +287,23 @@ public class UsuarioController implements UsuarioApi {
     }
 
     private void validarUsuarioSolicitado(Long idSolicitado, Long idAutenticado) {
-        if (idSolicitado != null && !idSolicitado.equals(idAutenticado)) {
+        if (!idSolicitado.equals(idAutenticado)) {
             throw new AccessDeniedException("Solo puede consultar su propio perfil");
+        }
+    }
+
+    private void validarConsultaUsuario(Long idSolicitado) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        boolean administrador = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN_STYLERADAR"
+                        .equals(authority.getAuthority()));
+
+        if (!administrador
+                && !idSolicitado.equals(usuarioAutenticadoId())) {
+            throw new AccessDeniedException(
+                    "Solo puede consultar su propio perfil"
+            );
         }
     }
 }

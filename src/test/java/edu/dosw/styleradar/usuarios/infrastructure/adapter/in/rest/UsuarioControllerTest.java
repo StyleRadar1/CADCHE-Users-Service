@@ -151,7 +151,7 @@ class UsuarioControllerTest {
                 .thenReturn(esperado);
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
-                controller.obtenerPerfil();
+                controller.obtenerPorId(144L);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
@@ -194,27 +194,25 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void debeLanzarExcepcionSiUsuarioNoExisteAlObtenerPerfil() {
+    void debeLanzarExcepcionSiElUsuarioAutenticadoNoExiste() {
 
         when(obtenerUsuarioUseCase.obtener(144L))
                 .thenThrow(new UsuarioNoEncontradoException(144L));
 
         assertThrows(
                 UsuarioNoEncontradoException.class,
-                () -> controller.obtenerPerfil()
+                () -> controller.obtenerPorId(144L)
         );
     }
 
     @Test
-    void debeLanzarExcepcionSiUsuarioNoExisteAlConsultarPorId() {
-
-        when(obtenerUsuarioUseCase.obtener(999L))
-                .thenThrow(new UsuarioNoEncontradoException(999L));
-
+    void rechazaConsultarElPerfilDeOtroUsuario() {
         assertThrows(
-                UsuarioNoEncontradoException.class,
+                org.springframework.security.access.AccessDeniedException.class,
                 () -> controller.obtenerPorId(999L)
         );
+
+        verifyNoInteractions(obtenerUsuarioUseCase);
     }
 
     @Test
@@ -285,7 +283,7 @@ class UsuarioControllerTest {
                 .thenReturn(esperado);
 
         ResponseEntity<UsuarioResponseDTO> respuesta =
-                controller.actualizarTallasHabituales(request);
+                controller.actualizarTallasHabituales(144L, request);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertEquals(144L, respuesta.getBody().getId());
@@ -313,7 +311,7 @@ class UsuarioControllerTest {
                 .thenReturn(crearBusqueda(10L));
 
         ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
-                controller.guardarBusqueda(request);
+                controller.guardarBusqueda(144L, request);
 
         assertEquals(HttpStatus.CREATED, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
@@ -375,7 +373,7 @@ class UsuarioControllerTest {
                 .thenReturn(actualizada);
 
         ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
-                controller.actualizarBusquedaGuardada(5L, request);
+                controller.actualizarBusquedaGuardada(144L, 5L, request);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
@@ -398,7 +396,7 @@ class UsuarioControllerTest {
                 .thenReturn(Optional.empty());
 
         ResponseEntity<BusquedaGuardadaResponseDTO> respuesta =
-                controller.actualizarBusquedaGuardada(99L, request);
+                controller.actualizarBusquedaGuardada(144L, 99L, request);
 
         assertEquals(HttpStatus.NOT_FOUND, respuesta.getStatusCode());
 
@@ -413,7 +411,7 @@ class UsuarioControllerTest {
                 .thenReturn(List.of());
 
         ResponseEntity<List<BusquedaGuardadaResponseDTO>> respuesta =
-                controller.obtenerBusquedasGuardadas();
+                controller.obtenerBusquedasGuardadas(144L);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
@@ -434,7 +432,7 @@ class UsuarioControllerTest {
                 .thenReturn(true);
 
         ResponseEntity<Void> respuesta =
-                controller.eliminarBusquedaGuardada(5L);
+                controller.eliminarBusquedaGuardada(144L, 5L);
 
         assertEquals(HttpStatus.NO_CONTENT, respuesta.getStatusCode());
         assertNull(respuesta.getBody());

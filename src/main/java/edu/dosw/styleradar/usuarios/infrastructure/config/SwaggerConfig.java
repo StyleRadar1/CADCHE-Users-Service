@@ -19,6 +19,11 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class SwaggerConfig {
 
+    private static final Set<String> INTERNAL_FALLBACK_PATHS = Set.of(
+            "/internal/api/v1/usuarios/verificar-credenciales",
+            "/api/v1/internal/usuarios/{id}/correo-verificado"
+    );
+
     @Bean
     OpenAPI usersServiceOpenAPI() {
         return new OpenAPI()
@@ -53,7 +58,7 @@ public class SwaggerConfig {
 
     @Bean
     OpenApiCustomizer usersAuthenticationDocumentation() {
-        Set<String> publicPosts = Set.of("/api/v1/usuarios");
+        Set<String> publicPosts = Set.of("/api/v1/users");
         return api -> {
             if (api.getPaths() == null) {
                 return;
@@ -61,11 +66,13 @@ public class SwaggerConfig {
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
                 boolean publicRoute = method == PathItem.HttpMethod.POST && publicPosts.contains(path);
                 String scheme = path.startsWith("/api/v1/internal/")
+                        || path.startsWith("/internal/api/v1/")
                         ? "serviceBasicAuth" : "bearerAuth";
                 operation.setSecurity(publicRoute
                         ? List.of()
                         : List.of(new SecurityRequirement().addList(scheme)));
             }));
+            INTERNAL_FALLBACK_PATHS.forEach(api.getPaths()::remove);
         };
     }
 }
