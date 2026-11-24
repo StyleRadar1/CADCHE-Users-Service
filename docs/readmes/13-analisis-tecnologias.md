@@ -6,7 +6,7 @@ El microservicio `ms-usuarios` utiliza diferentes tecnologías y herramientas pa
 
 | Tecnología | Versión | Análisis y propósito |
 |---|---|---|
-| Java | 17 | Lenguaje principal del microservicio. Permite implementar la lógica de negocio y aprovechar las características del ecosistema Java. |
+| Java | 21 LTS | Lenguaje principal del microservicio. Permite implementar la lógica de negocio y aprovechar las características del ecosistema Java. |
 | Spring Boot | 3.2.12 | Facilita la configuración y construcción de la aplicación, además de proporcionar integración con diferentes componentes. |
 | Maven | 3.9.9 (imagen de construcción Docker) | Gestiona las dependencias y automatiza la compilación y ejecución de pruebas. |
 

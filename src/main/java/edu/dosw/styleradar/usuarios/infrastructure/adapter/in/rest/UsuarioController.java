@@ -108,8 +108,7 @@ public class UsuarioController implements UsuarioApi {
             @PathVariable("id") Long id,
             @Valid @RequestBody ActualizarPreferenciasEstiloRequestDTO request) {
 
-        Long usuarioId = usuarioAutenticadoId();
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id);
 
         actualizarPreferenciasUseCase.actualizar(
                 usuarioId,
@@ -125,8 +124,7 @@ public class UsuarioController implements UsuarioApi {
             @PathVariable("id") Long id,
             @Valid @RequestBody ActualizarTallasHabitualesRequestDTO request) {
 
-        Long usuarioId = usuarioAutenticadoId();
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id);
 
         actualizarTallasUseCase.actualizar(
                 usuarioId,
@@ -142,8 +140,7 @@ public class UsuarioController implements UsuarioApi {
             @PathVariable("id") Long id,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
-        Long usuarioId = usuarioAutenticadoId();
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id);
 
         BusquedaGuardada busqueda = new BusquedaGuardada(
                 null,
@@ -170,14 +167,12 @@ public class UsuarioController implements UsuarioApi {
                 .body(aRespuesta(guardada));
     }
 
-    @PutMapping("/{id}/saved-searches/{busquedaId}")
     public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
             @PathVariable("id") Long id,
             @PathVariable("busquedaId") Long busquedaId,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
-        Long usuarioId = usuarioAutenticadoId();
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id);
 
         Optional<BusquedaGuardada> encontrada =
                 busquedasRepository.buscarPorIdYUsuarioId(busquedaId, usuarioId);
@@ -217,8 +212,7 @@ public class UsuarioController implements UsuarioApi {
     public ResponseEntity<List<BusquedaGuardadaResponseDTO>> obtenerBusquedasGuardadas(
             @PathVariable("id") Long id) {
 
-        Long usuarioId = usuarioAutenticadoId();
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id);
 
         return ResponseEntity.ok(
                 busquedasRepository.buscarPorUsuarioId(usuarioId)
@@ -234,8 +228,7 @@ public class UsuarioController implements UsuarioApi {
             @PathVariable("id") Long id,
             @PathVariable("busquedaId") Long busquedaId) {
 
-        Long usuarioId = usuarioAutenticadoId();
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id);
 
         Optional<BusquedaGuardada> encontrada =
                 busquedasRepository.buscarPorIdYUsuarioId(busquedaId, usuarioId);
@@ -311,6 +304,20 @@ public class UsuarioController implements UsuarioApi {
         if (!idSolicitado.equals(idAutenticado)) {
             throw new AccessDeniedException("Solo puede consultar su propio perfil");
         }
+    }
+
+    private Long usuarioObjetivo(Long idSolicitado) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        boolean administrador = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN_STYLERADAR"
+                        .equals(authority.getAuthority()));
+        if (administrador) {
+            return idSolicitado;
+        }
+        Long usuarioId = usuarioAutenticadoId();
+        validarUsuarioSolicitado(idSolicitado, usuarioId);
+        return usuarioId;
     }
 
     private void validarConsultaUsuario(Long idSolicitado) {

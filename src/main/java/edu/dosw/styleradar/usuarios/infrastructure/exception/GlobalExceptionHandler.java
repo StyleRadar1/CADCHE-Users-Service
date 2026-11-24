@@ -1,6 +1,5 @@
 package edu.dosw.styleradar.usuarios.infrastructure.exception;
 
-import java.time.LocalDateTime;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class GlobalExceptionHandler {
                         nombreCampoApi(bindingResult.getTarget(), error.getField()),
                         error.getDefaultMessage()));
 
-        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_DATA",
                 "La solicitud contiene datos inválidos",
                 request.getRequestURI(), validationErrors);
     }
@@ -66,7 +65,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleInvalidHttpRequest(
             Exception exception, HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST",
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_DATA",
                 "La solicitud contiene parámetros inválidos",
                 request.getRequestURI(), Map.of());
     }
@@ -116,7 +115,7 @@ public class GlobalExceptionHandler {
             CambioEstadoNoPermitidoException exception,
             HttpServletRequest request) {
 
-        return buildResponse(HttpStatus.FORBIDDEN, "ACCOUNT_STATE_CHANGE_FORBIDDEN",
+        return buildResponse(HttpStatus.FORBIDDEN, exception.getCode(),
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
     }
@@ -167,16 +166,17 @@ public class GlobalExceptionHandler {
             Map<String, String> validationErrors) {
 
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
-                .timestamp(LocalDateTime.now())
+                .title(status.getReasonPhrase())
                 .status(status.value())
                 .code(code)
-                .error(status.getReasonPhrase())
-                .message(message)
-                .path(path)
-                .validationErrors(validationErrors)
+                .detail(message)
+                .instance(path)
+                .errors(validationErrors)
                 .build();
 
-        return ResponseEntity.status(status).body(errorResponse);
+        return ResponseEntity.status(status)
+                .contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+                .body(errorResponse);
     }
 
     private String nombreCampoApi(Object target, String nombreCampoJava) {

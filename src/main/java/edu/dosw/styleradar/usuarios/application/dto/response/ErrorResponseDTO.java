@@ -1,36 +1,56 @@
 package edu.dosw.styleradar.usuarios.application.dto.response;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 @Builder
-@Schema(description = "Estructura estándar de error retornada por el microservicio")
+@Schema(description = "Problem response con código estable y errores de validación")
 public class ErrorResponseDTO {
 
-    @Schema(description = "Fecha y hora en que ocurrió el error", example = "2026-11-03T01:30:00")
-    LocalDateTime timestamp;
+    @Schema(example = "about:blank")
+    @Builder.Default
+    String type = "about:blank";
 
-    @Schema(description = "Código de estado HTTP", example = "400")
+    @Schema(example = "Bad Request")
+    String title;
+
+    @Schema(example = "400")
     int status;
 
-    @Schema(description = "Stable machine-readable error code", example = "VALIDATION_ERROR")
+    @Schema(example = "La solicitud contiene datos inválidos")
+    String detail;
+
+    @Schema(example = "/api/v1/users")
+    String instance;
+
+    @Schema(example = "INVALID_DATA")
     String code;
 
-    @Schema(description = "Nombre estándar del estado HTTP", example = "Bad Request")
-    String error;
+    @Schema(example = "{\"email\":\"El formato no es válido\"}")
+    Map<String, String> errors;
 
-    @Schema(description = "Mensaje descriptivo del error", example = "La solicitud contiene datos inválidos")
-    String path;
+    /** Alias internos para mantener compatibilidad con consumidores Java existentes. */
+    public String getMessage() {
+        return detail;
+    }
 
-    @Schema(description = "Explicación detallada del fallo", example = "La solicitud contiene datos inválidos")
-    String message;
+    @JsonIgnore
+    public String getPath() {
+        return instance;
+    }
 
-    @Schema(description = "Errores de validación por campo cuando aplica", example = "{\"email\":\"El formato del email es inválido\"}")
-    Map<String, String> validationErrors;
+    @JsonIgnore
+    public Map<String, String> getValidationErrors() {
+        return errors;
+    }
+
+    @JsonIgnore
+    public String getError() {
+        return title;
+    }
 }
-

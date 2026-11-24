@@ -38,7 +38,7 @@
 <h3>Tecnologías y Dependencias Principales</h3>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/JAVA-17_LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17" />
+    <img src="https://img.shields.io/badge/JAVA-21_LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21" />
     <img src="https://img.shields.io/badge/SPRING_BOOT-3.2.12-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot 3.2.12" />
     <img src="https://img.shields.io/badge/POSTGRESQL-RELATIONAL_DB-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
     <img src="https://img.shields.io/badge/FLYWAY-10.20.1-CC0200?style=for-the-badge" alt="Flyway 10.20.1" />
