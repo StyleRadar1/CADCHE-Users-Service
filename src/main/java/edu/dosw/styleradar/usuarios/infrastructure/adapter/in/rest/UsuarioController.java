@@ -168,8 +168,8 @@ public class UsuarioController implements UsuarioApi {
     }
 
     public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
-            @PathVariable("id") Long id,
-            @PathVariable("busquedaId") Long busquedaId,
+            Long id,
+            Long busquedaId,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
         Long usuarioId = usuarioObjetivo(id);
