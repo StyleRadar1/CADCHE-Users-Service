@@ -6,7 +6,7 @@ El stack del microservicio `ms-usuarios` cumple con el estándar unificado de ar
 
 | Capa / Componente | Tecnología | Versión | Justificación técnica |
 |---|---|---|---|
-| **Lenguaje Core** | Java LTS | `17 / 21 LTS` | Records inmutables para DTOs, tipado seguro y alto desempeño de ejecución. |
+| **Lenguaje Core** | Java LTS | `21 LTS` | Records inmutables para DTOs, tipado seguro y alto desempeño de ejecución. |
 | **Framework Empresarial** | Spring Boot | `3.2.12` | Gestión declarativa de configuración, Spring Web, Spring Validation y Actuator. |
 | **Base de Datos** | PostgreSQL con soporte JSONB | `16` | Integridad relacional ACID para perfiles y tallas, combinada con columnas JSONB indexadas con GIN para búsquedas guardadas. |
 | **Caché en Memoria** | Redis | `7.x` | Almacenamiento en caché de perfiles y preferencias de estilo de usuarios activos. |

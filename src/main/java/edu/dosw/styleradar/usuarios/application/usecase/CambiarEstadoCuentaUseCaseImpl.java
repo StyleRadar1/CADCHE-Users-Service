@@ -42,12 +42,14 @@ public class CambiarEstadoCuentaUseCaseImpl implements CambiarEstadoCuentaUseCas
 
         if (usuarioId.equals(administradorId)) {
             throw new CambioEstadoNoPermitidoException(
-                    "Un administrador no puede cambiar el estado de su propia cuenta");
+                    "Un administrador no puede cambiar el estado de su propia cuenta",
+                    "SELF_STATUS_CHANGE_NOT_ALLOWED");
         }
 
         if (usuario.getEstado() == nuevoEstado) {
             throw new CambioEstadoNoPermitidoException(
-                    "La cuenta ya tiene el estado solicitado");
+                    "La cuenta ya tiene el estado solicitado",
+                    "STATUS_ALREADY_SET");
         }
 
         if (usuario.getRol() == Rol.ADMIN_STYLERADAR
@@ -55,7 +57,8 @@ public class CambiarEstadoCuentaUseCaseImpl implements CambiarEstadoCuentaUseCas
                 && nuevoEstado != EstadoCuenta.ACTIVA
                 && usuarioRepositoryPort.contarAdministradoresActivos() <= 1) {
             throw new CambioEstadoNoPermitidoException(
-                    "No se puede cambiar el estado del último administrador activo");
+                    "No se puede cambiar el estado del último administrador activo",
+                    "LAST_ACTIVE_ADMIN");
         }
 
         EstadoCuenta estadoAnterior = usuario.getEstado();

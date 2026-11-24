@@ -43,8 +43,7 @@ public class PersonalizacionController implements PersonalizacionApi {
                 SecurityContextHolder.getContext().getAuthentication();
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
-        Long usuarioId = Long.valueOf(jwt.getSubject());
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id, authentication, jwt);
 
         PageResponseDTO<CatalogoItemResponseDTO> respuesta =
                 obtenerFeedPersonalizadoUseCase.obtener(
@@ -66,8 +65,7 @@ public class PersonalizacionController implements PersonalizacionApi {
                 SecurityContextHolder.getContext().getAuthentication();
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
-        Long usuarioId = Long.valueOf(jwt.getSubject());
-        validarUsuarioSolicitado(id, usuarioId);
+        Long usuarioId = usuarioObjetivo(id, authentication, jwt);
 
         return ResponseEntity.ok(obtenerRecomendacionesUseCase.obtener(
                 usuarioId,
@@ -76,9 +74,17 @@ public class PersonalizacionController implements PersonalizacionApi {
         ));
     }
 
-    private void validarUsuarioSolicitado(Long idSolicitado, Long idAutenticado) {
+    private Long usuarioObjetivo(Long idSolicitado, Authentication authentication, Jwt jwt) {
+        boolean administrador = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN_STYLERADAR"
+                        .equals(authority.getAuthority()));
+        Long idAutenticado = Long.valueOf(jwt.getSubject());
+        if (administrador) {
+            return idSolicitado;
+        }
         if (!idSolicitado.equals(idAutenticado)) {
             throw new AccessDeniedException("Solo puede consultar sus propias recomendaciones");
         }
+        return idAutenticado;
     }
 }

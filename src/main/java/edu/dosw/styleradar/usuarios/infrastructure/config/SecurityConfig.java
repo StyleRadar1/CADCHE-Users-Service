@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 
 @Configuration
 @EnableWebSecurity
@@ -102,7 +104,8 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain internalSecurityFilterChain(
             HttpSecurity http,
-            AuthenticationProvider authenticationProvider) throws Exception {
+            AuthenticationProvider authenticationProvider,
+            ObjectMapper objectMapper) throws Exception {
 
         http
                 .securityMatcher(
@@ -121,6 +124,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().hasRole("SERVICE")
                 )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) ->
+                                escribirErrorSeguridad(objectMapper, request, response,
+                                        401, "Unauthorized", "AUTHENTICATION_REQUIRED",
+                                        "Se requiere autenticación de servicio"))
+                        .accessDeniedHandler((request, response, exception) ->
+                                escribirErrorSeguridad(objectMapper, request, response,
+                                        403, "Forbidden", "ACCESS_DENIED",
+                                        "No tiene permiso para acceder a este recurso")))
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
@@ -131,7 +143,8 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain apiSecurityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationConverter jwtAuthenticationConverter)
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            ObjectMapper objectMapper)
             throws Exception {
 
         http
@@ -175,9 +188,8 @@ public class SecurityConfig {
                                 "/api/v1/users/*"
                         ).authenticated()
 
-                        .requestMatchers(
-                                "/api/v1/users/*/**"
-                        ).hasRole("COMPRADOR")
+                        .requestMatchers("/api/v1/users/*/**")
+                        .hasAnyRole("COMPRADOR", "ADMIN_STYLERADAR")
 
                         .requestMatchers(
                                 "/api/v1/users/**"
@@ -186,12 +198,29 @@ public class SecurityConfig {
                         .anyRequest().denyAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint((request, response, exception) ->
+                                escribirErrorSeguridad(objectMapper, request, response,
+                                        401, "Unauthorized", "AUTHENTICATION_REQUIRED",
+                                        "Se requiere autenticación"))
+                        .accessDeniedHandler((request, response, exception) ->
+                                escribirErrorSeguridad(objectMapper, request, response,
+                                        403, "Forbidden", "ACCESS_DENIED",
+                                        "No tiene permiso para acceder a este recurso"))
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(
                                         jwtAuthenticationConverter
                                 )
                         )
-                );
+                )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) ->
+                                escribirErrorSeguridad(objectMapper, request, response,
+                                        401, "Unauthorized", "AUTHENTICATION_REQUIRED",
+                                        "Se requiere autenticación"))
+                        .accessDeniedHandler((request, response, exception) ->
+                                escribirErrorSeguridad(objectMapper, request, response,
+                                        403, "Forbidden", "ACCESS_DENIED",
+                                        "No tiene permiso para acceder a este recurso")));
 
         return http.build();
     }
@@ -208,6 +237,26 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    private void escribirErrorSeguridad(
+            ObjectMapper objectMapper,
+            jakarta.servlet.http.HttpServletRequest request,
+            jakarta.servlet.http.HttpServletResponse response,
+            int status,
+            String title,
+            String code,
+            String detail) throws java.io.IOException {
+        response.setStatus(status);
+        response.setContentType("application/problem+json");
+        objectMapper.writeValue(response.getOutputStream(), ErrorResponseDTO.builder()
+                .title(title)
+                .status(status)
+                .detail(detail)
+                .instance(request.getRequestURI())
+                .code(code)
+                .errors(Map.of())
+                .build());
     }
 }
 

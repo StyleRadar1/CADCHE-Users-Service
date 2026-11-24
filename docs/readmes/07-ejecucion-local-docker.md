@@ -8,7 +8,7 @@ Antes de ejecutar el servicio se necesita:
 
 | Herramienta | Uso |
 |---|---|
-| Java 17 | Ejecución de la aplicación. |
+| Java 21 | Ejecución de la aplicación. |
 | Maven | Compilación y gestión de dependencias. |
 | PostgreSQL | Persistencia de información. |
 | Docker Desktop | Ejecución mediante contenedores. |

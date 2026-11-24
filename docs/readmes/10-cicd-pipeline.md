@@ -13,12 +13,12 @@ El flujo de integración continua se ejecuta cuando:
 - Se realiza un `push` a cualquier rama.
 - Se crea o actualiza un Pull Request dirigido a las ramas `develop` o `main`.
 
-El proceso utiliza Ubuntu como entorno de ejecución y Java 17 con Maven.
+El proceso utiliza Ubuntu como entorno de ejecución y Java 21 con Maven.
 
 Las principales actividades son:
 
 1. Descargar el código del repositorio.
-2. Configurar Java 17.
+2. Configurar Java 21.
 3. Ejecutar `mvn clean verify`.
 4. Realizar análisis estático con SpotBugs.
 5. Generar y guardar el reporte de cobertura JaCoCo.
