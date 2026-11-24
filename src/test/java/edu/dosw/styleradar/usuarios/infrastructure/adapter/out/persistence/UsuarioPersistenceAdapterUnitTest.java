@@ -171,6 +171,21 @@ class UsuarioPersistenceAdapterUnitTest {
     }
 
     @Test
+    void actualizaNombreYConservaTelefonoYBarrioSiSeOmiten() {
+        UsuarioEntity entity = crearEntity();
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+        when(repository.saveAndFlush(entity)).thenReturn(entity);
+
+        Usuario actualizado = adapter.actualizarDatosPersonales(
+                1L, "Laura Gómez", null, null).orElseThrow();
+
+        assertEquals("Laura Gómez", actualizado.getNombre());
+        assertEquals("3001234567", actualizado.getTelefono());
+        assertEquals("Chapinero", actualizado.getBarrio());
+        verify(repository).saveAndFlush(entity);
+    }
+
+    @Test
     void debeBuscarUsuarioPorEmail() {
         when(repository.findByEmail("julian@gmail.com"))
                 .thenReturn(Optional.of(crearEntity()));

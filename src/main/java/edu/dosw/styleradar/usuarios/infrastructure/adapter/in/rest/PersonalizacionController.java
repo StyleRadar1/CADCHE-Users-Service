@@ -15,6 +15,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.CatalogoItemRespons
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.RecomendacionesResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerFeedPersonalizadoUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerRecomendacionesUseCase;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest.doc.PersonalizacionApi;
 import jakarta.validation.Valid;
 
@@ -23,10 +24,13 @@ import jakarta.validation.Valid;
 public class PersonalizacionController implements PersonalizacionApi {
 
     private final ObtenerFeedPersonalizadoUseCase obtenerFeedPersonalizadoUseCase;
+    private final ObtenerRecomendacionesUseCase obtenerRecomendacionesUseCase;
 
     public PersonalizacionController(
-            ObtenerFeedPersonalizadoUseCase obtenerFeedPersonalizadoUseCase) {
+            ObtenerFeedPersonalizadoUseCase obtenerFeedPersonalizadoUseCase,
+            ObtenerRecomendacionesUseCase obtenerRecomendacionesUseCase) {
         this.obtenerFeedPersonalizadoUseCase = obtenerFeedPersonalizadoUseCase;
+        this.obtenerRecomendacionesUseCase = obtenerRecomendacionesUseCase;
     }
 
     @Override
@@ -65,20 +69,11 @@ public class PersonalizacionController implements PersonalizacionApi {
         Long usuarioId = Long.valueOf(jwt.getSubject());
         validarUsuarioSolicitado(id, usuarioId);
 
-        PageResponseDTO<CatalogoItemResponseDTO> pagina =
-                obtenerFeedPersonalizadoUseCase.obtener(
-                        usuarioId,
-                        request.getPage(),
-                        request.getSize()
-                );
-
-        return ResponseEntity.ok(
-                new RecomendacionesResponseDTO(
-                        pagina,
-                        false,
-                        "Recommendations generated successfully"
-                )
-        );
+        return ResponseEntity.ok(obtenerRecomendacionesUseCase.obtener(
+                usuarioId,
+                request.getPage(),
+                request.getSize()
+        ));
     }
 
     private void validarUsuarioSolicitado(Long idSolicitado, Long idAutenticado) {

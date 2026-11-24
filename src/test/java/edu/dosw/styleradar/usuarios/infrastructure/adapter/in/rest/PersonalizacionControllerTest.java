@@ -5,6 +5,7 @@ import edu.dosw.styleradar.usuarios.application.dto.response.CatalogoItemRespons
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.RecomendacionesResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerFeedPersonalizadoUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerRecomendacionesUseCase;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.when;
 class PersonalizacionControllerTest {
 
     private ObtenerFeedPersonalizadoUseCase obtenerFeedPersonalizadoUseCase;
+    private ObtenerRecomendacionesUseCase obtenerRecomendacionesUseCase;
     private PersonalizacionController controller;
 
     @BeforeEach
@@ -34,9 +36,11 @@ class PersonalizacionControllerTest {
 
         obtenerFeedPersonalizadoUseCase =
                 mock(ObtenerFeedPersonalizadoUseCase.class);
+        obtenerRecomendacionesUseCase = mock(ObtenerRecomendacionesUseCase.class);
 
         controller = new PersonalizacionController(
-                obtenerFeedPersonalizadoUseCase
+                obtenerFeedPersonalizadoUseCase,
+                obtenerRecomendacionesUseCase
         );
 
         Jwt jwt = Jwt.withTokenValue("token-de-prueba")
@@ -112,35 +116,22 @@ class PersonalizacionControllerTest {
         PersonalizacionRequestDTO request =
                 new PersonalizacionRequestDTO();
 
-        PageResponseDTO<CatalogoItemResponseDTO> pagina =
-                new PageResponseDTO<>(
-                        Collections.emptyList(),
-                        0,
-                        20,
-                        0,
-                        0,
+        RecomendacionesResponseDTO respuestaEsperada =
+                new RecomendacionesResponseDTO(
+                        new PageResponseDTO<>(Collections.emptyList(), 0, 20, 0, 0, true, true),
                         true,
-                        true
-                );
+                        "No hay preferencias de estilo ni tallas registradas.");
 
-        when(obtenerFeedPersonalizadoUseCase.obtener(144L, 0, 20))
-                .thenReturn(pagina);
+        when(obtenerRecomendacionesUseCase.obtener(144L, 0, 20))
+                .thenReturn(respuestaEsperada);
 
         ResponseEntity<RecomendacionesResponseDTO> respuesta =
                 controller.recomendaciones(144L, request);
 
         assertEquals(200, respuesta.getStatusCode().value());
-        assertSame(pagina.getContent(), respuesta.getBody().getContent());
-        assertEquals(
-                false,
-                respuesta.getBody().isGeneralSinPreferencias()
-        );
-        assertEquals(
-                "Recommendations generated successfully",
-                respuesta.getBody().getMensaje()
-        );
+        assertSame(respuestaEsperada, respuesta.getBody());
+        verify(obtenerRecomendacionesUseCase).obtener(144L, 0, 20);
 
-        verify(obtenerFeedPersonalizadoUseCase)
-                .obtener(144L, 0, 20);
+        org.mockito.Mockito.verifyNoInteractions(obtenerFeedPersonalizadoUseCase);
     }
 }

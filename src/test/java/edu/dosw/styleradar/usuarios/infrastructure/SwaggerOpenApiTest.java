@@ -48,6 +48,9 @@ class SwaggerOpenApiTest {
     void debeExponerEspecificacionOpenApiYEndpointsDeUsuarios() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.servers[0].url").value("/"))
+                .andExpect(jsonPath("$.paths['/api/v1/users/{id}'].put").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/admin/users/{id}'].delete").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/internal/users/verify-credentials'].post")
                         .exists())
                 .andExpect(jsonPath("$.paths['/api/v1/internal/users/{id}/email-verification'].patch")
@@ -61,6 +64,13 @@ class SwaggerOpenApiTest {
     @Test
     void recomendacionesDebeRequerirSesion() throws Exception {
         mockMvc.perform(get("/api/v1/users/144/recommendations"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void eliminacionAdministrativaDebeRequerirSesion() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete("/api/v1/admin/users/144"))
                 .andExpect(status().isUnauthorized());
     }
 }

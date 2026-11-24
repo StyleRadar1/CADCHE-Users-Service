@@ -37,6 +37,8 @@ public class SwaggerConfig {
                                 .scheme("basic")
                                 .description("Credenciales de servicio interno configuradas en INTERNAL_AUTH_USERNAME y INTERNAL_AUTH_PASSWORD")))
                 .servers(List.of(
+                        new Server().url("/")
+                                .description("Servidor donde se sirve Swagger"),
                         new Server().url("http://localhost:8120")
                                 .description("Servidor local ms-usuarios"),
                         new Server().url("http://localhost:8080")

@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.in.rest;
 
 import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarPreferenciasEstiloRequestDTO;
+import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarDatosUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.ActualizarTallasHabitualesRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.GuardarBusquedaRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
@@ -13,6 +14,7 @@ import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import edu.dosw.styleradar.usuarios.domain.model.Talla;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarPreferenciasEstiloUseCase;
+import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarDatosUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ActualizarTallasHabitualesUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
@@ -43,6 +45,7 @@ class UsuarioControllerTest {
 
     private RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private ActualizarPreferenciasEstiloUseCase actualizarPreferenciasUseCase;
+    private ActualizarDatosUsuarioUseCase actualizarDatosUsuarioUseCase;
     private ActualizarTallasHabitualesUseCase actualizarTallasUseCase;
     private ObtenerUsuarioUseCase obtenerUsuarioUseCase;
     private BusquedaGuardadaRepositoryPort busquedasRepository;
@@ -56,6 +59,7 @@ class UsuarioControllerTest {
         registrarUsuarioUseCase = mock(RegistrarUsuarioUseCase.class);
         actualizarPreferenciasUseCase =
                 mock(ActualizarPreferenciasEstiloUseCase.class);
+        actualizarDatosUsuarioUseCase = mock(ActualizarDatosUsuarioUseCase.class);
         actualizarTallasUseCase =
                 mock(ActualizarTallasHabitualesUseCase.class);
         obtenerUsuarioUseCase = mock(ObtenerUsuarioUseCase.class);
@@ -65,6 +69,7 @@ class UsuarioControllerTest {
 
         controller = new UsuarioController(
                 registrarUsuarioUseCase,
+                actualizarDatosUsuarioUseCase,
                 actualizarPreferenciasUseCase,
                 actualizarTallasUseCase,
                 obtenerUsuarioUseCase,
@@ -80,6 +85,30 @@ class UsuarioControllerTest {
         SecurityContextHolder.getContext().setAuthentication(
                 new JwtAuthenticationToken(jwt)
         );
+    }
+
+    @Test
+    void debeActualizarDatosPersonalesDelUsuarioAutenticado() {
+        var request = new ActualizarDatosUsuarioRequestDTO(
+                "Laura Gómez", "+57 300 123 4567", "Chapinero");
+        when(obtenerUsuarioUseCase.obtener(144L)).thenReturn(crearRespuestaUsuario());
+
+        var respuesta = controller.actualizarDatosPersonales(144L, request);
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertEquals(144L, respuesta.getBody().getId());
+        verify(actualizarDatosUsuarioUseCase).actualizar(
+                144L, "Laura Gómez", "+57 300 123 4567", "Chapinero");
+    }
+
+    @Test
+    void rechazaActualizarDatosPersonalesDeOtroUsuario() {
+        var request = new ActualizarDatosUsuarioRequestDTO(
+                "Laura Gómez", null, null);
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> controller.actualizarDatosPersonales(145L, request));
+        verifyNoInteractions(actualizarDatosUsuarioUseCase);
     }
 
     @AfterEach

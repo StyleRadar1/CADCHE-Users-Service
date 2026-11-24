@@ -23,6 +23,7 @@ La documentación de la API de `ms-usuarios` utiliza OpenAPI 3.0 y permite consu
 |---|---|---|---|
 | `POST` | `/api/v1/users` | Registro de perfil de usuario comprador (`SR-RF-01`, `SR-RNF-02`). | Público |
 | `GET` | `/api/v1/users/{id}` | Consulta del perfil propio por ID; un administrador puede consultar cualquier cuenta (`SR-RF-01`, `SR-RF-66`). | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `PUT` | `/api/v1/users/{id}` | Actualiza nombre y, si se envían, teléfono y barrio; devuelve el perfil completo. El ID debe coincidir con el del token. | `COMPRADOR` |
 | `PUT` | `/api/v1/users/{id}/style-preferences` | Actualización de preferencias de estilo (`SR-RF-03`). El ID debe corresponder al usuario autenticado. | `COMPRADOR` |
 | `PUT` | `/api/v1/users/{id}/sizes` | Configuración de tallas habituales (`SR-RF-04`). El ID debe corresponder al usuario autenticado. | `COMPRADOR` |
 | `GET` | `/api/v1/users/{id}/feed` | Feed paginado de prendas sugeridas (`SR-RF-05`). | `COMPRADOR` |
@@ -33,6 +34,21 @@ La documentación de la API de `ms-usuarios` utiliza OpenAPI 3.0 y permite consu
 | `GET` | `/api/v1/admin/users` | Listado paginado y filtrable de usuarios (`SR-RF-66`). | `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/admin/users/{id}` | Consulta administrativa del detalle de una cuenta. | `ADMIN_STYLERADAR` |
 | `PATCH` | `/api/v1/admin/users/{id}/status` | Cambio de estado de cuenta con motivo (`SR-RF-66`). | `ADMIN_STYLERADAR` |
+| `DELETE` | `/api/v1/admin/users/{id}` | Eliminación de cuenta (`SR-RF-115`); el front debe pedir confirmación antes de llamar. | `ADMIN_STYLERADAR` |
 | `GET` | `/actuator/health` | Consulta del estado operativo del microservicio. | Público |
+
+### Actualizar datos personales (`PUT /api/v1/users/{id}`)
+
+Requiere JWT de comprador y que `{id}` coincida con el `sub` del token. `name` es obligatorio; `phone` y `neighborhood` son opcionales. Si se omiten, se conservan los valores almacenados. La respuesta es el perfil completo, con la misma estructura que `GET /api/v1/users/{id}`.
+
+```json
+{
+  "name": "Laura Gómez",
+  "phone": "+573001234567",
+  "neighborhood": "Chapinero"
+}
+```
+
+Respuestas: `200` con perfil actualizado, `400` con errores por campo en `validationErrors`, `401` si falta o es inválido el JWT, y `403` si el ID de ruta no corresponde al usuario autenticado.
 
 ## 4.3. C
