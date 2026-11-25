@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import edu.dosw.styleradar.usuarios.application.dto.serialization.ApiEnumSerializer;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "InternalUserCredentialsResponse")
 public record VerificarCredencialesResponseDTO(
         Long id,
         String email,

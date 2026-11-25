@@ -205,7 +205,7 @@ class RequestDTOTest {
         dto.setNombre("Laura Gomez");
         dto.setEmail("laura@styleradar.com");
         dto.setTelefono("+57 300 123 4567");
-        dto.setPassword("StyleRadar2026");
+        dto.setPassword("StyleRadar2026*");
         dto.setAceptaHabeasData(true);
 
         assertTrue(validator.validate(dto).isEmpty());
@@ -219,7 +219,7 @@ class RequestDTOTest {
 
         assertFalse(validator.validate(dto).isEmpty());
 
-        dto.setPassword("StyleRadar2026");
+        dto.setPassword("StyleRadar2026*");
         dto.setAceptaHabeasData(false);
 
         assertFalse(validator.validate(dto).isEmpty());
@@ -230,7 +230,7 @@ class RequestDTOTest {
         RegistrarUsuarioRequestDTO dto = new RegistrarUsuarioRequestDTO();
         dto.setNombre("Laura Gomez");
         dto.setEmail("laura@styleradar.com");
-        dto.setPassword("StyleRadar2026");
+        dto.setPassword("StyleRadar2026*");
         dto.setAceptaHabeasData(true);
         dto.setAccountType("FOUNDATION_REPRESENTATIVE");
 
@@ -240,10 +240,30 @@ class RequestDTOTest {
 
     @Test
     void roleInvalidoSeReportaEnElCampoDelContrato() {
-        CambiarRolUsuarioRequestDTO dto = new CambiarRolUsuarioRequestDTO("BUYER");
+        CambiarRolUsuarioRequestDTO dto = new CambiarRolUsuarioRequestDTO("UNKNOWN_ROLE");
 
         assertTrue(validator.validate(dto).stream()
                 .anyMatch(error -> "role".equals(error.getPropertyPath().toString())));
+    }
+
+    @Test
+    void contrasenasDebenIncluirMayusculaMinusculaNumeroYSimbolo() {
+        RegistrarUsuarioRequestDTO registro = new RegistrarUsuarioRequestDTO();
+        registro.setNombre("Laura Gomez");
+        registro.setEmail("laura@styleradar.com");
+        registro.setPassword("StyleRadar2026");
+        registro.setAceptaHabeasData(true);
+        assertTrue(validator.validate(registro).stream()
+                .anyMatch(error -> "password".equals(error.getPropertyPath().toString())));
+
+        CambiarContrasenaRequestDTO cambio =
+                new CambiarContrasenaRequestDTO("CurrentPass2026*", "WeakPass2026");
+        assertTrue(validator.validate(cambio).stream()
+                .anyMatch(error -> "newPassword".equals(error.getPropertyPath().toString())));
+
+        CambiarContrasenaRequestDTO valido =
+                new CambiarContrasenaRequestDTO("CurrentPass2026*", "NewPass2026*");
+        assertTrue(validator.validate(valido).isEmpty());
     }
 
     @Test

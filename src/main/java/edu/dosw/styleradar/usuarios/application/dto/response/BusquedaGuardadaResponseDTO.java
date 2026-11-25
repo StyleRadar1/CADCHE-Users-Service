@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @NoArgsConstructor
 @SuperBuilder
-@Schema(description = "Búsqueda guardada en el perfil del comprador con texto, filtros y ubicación (SR-RF-28)")
+@Schema(name = "SavedSearchResponse", description = "Saved search criteria and location")
 public class BusquedaGuardadaResponseDTO extends BusquedaFiltrosDTO {
 
     @Schema(description = "Identificador único de la búsqueda guardada", example = "5")

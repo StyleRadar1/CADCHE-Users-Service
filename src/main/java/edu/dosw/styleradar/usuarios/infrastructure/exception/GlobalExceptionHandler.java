@@ -24,6 +24,7 @@ import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictiva
 import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoPorEmailException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
@@ -147,6 +148,14 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(), Map.of());
     }
 
+    @ExceptionHandler(UsuarioNoEncontradoPorEmailException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUsuarioNoEncontradoPorEmail(
+            UsuarioNoEncontradoPorEmailException exception,
+            HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, "USER_NOT_FOUND",
+                exception.getMessage(), request.getRequestURI(), Map.of());
+    }
+
     @ExceptionHandler(CatalogoNoDisponibleException.class)
     public ResponseEntity<ErrorResponseDTO> handleCatalogoNoDisponible(
             CatalogoNoDisponibleException exception,
@@ -183,6 +192,7 @@ public class GlobalExceptionHandler {
             Map<String, String> validationErrors) {
 
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .type(tipoUriError(code))
                 .title(status.getReasonPhrase())
                 .status(status.value())
                 .code(code)
@@ -194,6 +204,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status)
                 .contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
                 .body(errorResponse);
+    }
+
+    private String tipoUriError(String code) {
+        String slug = code.toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+        return "https://api.styleradar.com/errors/" + slug;
     }
 
     private String nombreCampoApi(Object target, String nombreCampoJava) {

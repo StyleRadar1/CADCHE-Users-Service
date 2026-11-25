@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "Respuesta de recomendaciones de prendas según el perfil del comprador")
+@Schema(name = "RecommendationsResponse", description = "Garment recommendations for a user profile")
 public class RecomendacionesResponseDTO
         extends PageResponseDTO<CatalogoItemResponseDTO> {
 

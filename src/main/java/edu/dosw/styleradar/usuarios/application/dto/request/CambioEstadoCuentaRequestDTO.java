@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-@Schema(description = "Solicitud administrativa para cambiar el estado de una cuenta de usuario (SR-RF-66)")
+@Schema(name = "ChangeUserStatusRequest", description = "Administrative user status change request")
 public class CambioEstadoCuentaRequestDTO {
 
     @NotNull

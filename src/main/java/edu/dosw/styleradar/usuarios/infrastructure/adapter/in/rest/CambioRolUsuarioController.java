@@ -31,8 +31,8 @@ public class CambioRolUsuarioController {
 
     @PatchMapping("/{id}/role")
     @Operation(
-            summary = "Cambiar rol de usuario",
-            description = "Solo ADMIN_STYLERADAR. Permite COMPRADOR, ADMIN_ALMACEN, REPRESENTANTE_FUNDACION y ADMIN_STYLERADAR.")
+            summary = "Change a user's role",
+            description = "Only STYLERADAR_ADMIN. Accepts BUYER, STORE_ADMIN, FOUNDATION_REPRESENTATIVE, and STYLERADAR_ADMIN; legacy Spanish values remain accepted.")
     public ResponseEntity<CuentaAdministrativaResponseDTO> cambiarRol(
             @PathVariable("id") Long id,
             @Valid @RequestBody CambiarRolUsuarioRequestDTO request) {

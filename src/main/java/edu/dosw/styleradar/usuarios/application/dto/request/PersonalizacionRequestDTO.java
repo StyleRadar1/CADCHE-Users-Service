@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-@Schema(description = "Parámetros de paginación para consultar el feed personalizado y recomendaciones (SR-RF-05 / SR-RF-06)")
+@Schema(name = "PersonalizationPageRequest", description = "Pagination for personalized feed and recommendations")
 public class PersonalizacionRequestDTO {
 
     @NotNull

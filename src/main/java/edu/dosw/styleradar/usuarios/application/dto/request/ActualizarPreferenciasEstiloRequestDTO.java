@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Solicitud para actualizar las preferencias de estilo")
+@Schema(name = "UpdateStylePreferencesRequest", description = "User style preferences")
 public class ActualizarPreferenciasEstiloRequestDTO {
 
     @NotEmpty(message = "Debe seleccionar al menos un estilo")

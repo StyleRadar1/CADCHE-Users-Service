@@ -17,6 +17,7 @@ La comunicación asíncrona entre microservicios se realiza mediante **RabbitMQ 
 | `styleradar.usuarios.usuario.registrado` | `ms-estadisticas` | Cuando se crea una cuenta nueva mediante registro normal o Google. El evento incluye `eventId`, `eventType`, `occurredAt` y el rol, sin datos personales. |
 | `usuario.perfil.actualizado` | `ms-busqueda` | Cuando el comprador actualiza sus preferencias de estilo o tallas por tipo de prenda (`SR-RF-03`, `SR-RF-04`), para recalcular el feed y las recomendaciones (`SR-RF-05`, `SR-RF-06`). |
 | `usuario.estado.cambiado` | `ms-auth`, `ms-segunda-mano` | Cuando `ADMIN_STYLERADAR` cambia el estado de una cuenta a `ACTIVO`, `INACTIVO` o `BLOQUEADO` (`SR-RF-66`). En `ms-auth`, este evento permite revocar las sesiones del usuario. |
+| `user.password.changed` | `ms-auth` | Después de que el usuario cambia su contraseña o ms-auth completa un restablecimiento; incluye `eventId`, `eventType`, `userId` y `changedAt` para invalidar sesiones activas. |
 
 Para `ms-estadisticas`, `ms-usuarios` no publica eventos de sesiones ni de estado de fundaciones; esos eventos no forman parte del contrato vigente.
 
@@ -84,6 +85,19 @@ Se publica en `styleradar.exchange` con la routing key `styleradar.usuarios.usua
   "data": {
     "rol": "BUYER"
   }
+}
+```
+
+## 5.8. Evento de cambio de contraseña para ms-auth
+
+Se publica en `styleradar.exchange` con la routing key `user.password.changed` después de guardar el hash BCrypt de una contraseña nueva. ms-auth puede usar `changedAt` para revocar las sesiones emitidas antes del cambio.
+
+```json
+{
+  "eventId": "550e8400-e29b-41d4-a716-446655440021",
+  "eventType": "user.password.changed",
+  "userId": 123,
+  "changedAt": "2026-11-25T16:30:00Z"
 }
 ```
 
