@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import edu.dosw.styleradar.usuarios.application.validation.CredentialComplexityPolicy;
 
+@Schema(name = "ChangePasswordRequest")
 public record CambiarContrasenaRequestDTO(
         @NotBlank(message = "La contraseña actual es obligatoria")
         @JsonProperty("currentPassword")
@@ -14,6 +17,8 @@ public record CambiarContrasenaRequestDTO(
         @NotBlank(message = "La contraseña nueva es obligatoria")
         @Size(min = 8, max = 72, message = "La contraseña debe tener entre 8 y 72 caracteres")
         @JsonProperty("newPassword")
+        @Pattern(regexp = CredentialComplexityPolicy.COMPLEXITY_PATTERN,
+                message = "Debe incluir mayúscula, minúscula, número y símbolo")
         @Schema(description = "Nueva contraseña", example = "NewPass2026*")
         String newPassword) {
 }

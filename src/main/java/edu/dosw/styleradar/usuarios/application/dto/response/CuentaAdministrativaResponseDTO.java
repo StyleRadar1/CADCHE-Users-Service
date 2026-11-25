@@ -11,7 +11,7 @@ import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "Estado operativo y auditoría administrativa de una cuenta de usuario (SR-RF-66)")
+@Schema(name = "AdminUserResponse", description = "Administrative account status and audit details")
 public record CuentaAdministrativaResponseDTO(
         @Schema(description = "Identificador único de la cuenta", example = "12")
         Long id,

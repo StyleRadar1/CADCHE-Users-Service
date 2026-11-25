@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Solicitud para configurar las tallas habituales por tipo de prenda")
+@Schema(name = "UpdateUsualSizesRequest", description = "Usual sizes by garment type")
 public class ActualizarTallasHabitualesRequestDTO {
 
     @Schema(description = "Tallas alfabéticas habituales", example = "[\"M\",\"L\"]")

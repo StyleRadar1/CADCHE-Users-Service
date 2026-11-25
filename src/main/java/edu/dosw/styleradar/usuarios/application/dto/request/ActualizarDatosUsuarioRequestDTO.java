@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "Datos personales editables del comprador")
+@Schema(name = "UpdateUserProfileRequest", description = "Editable user profile data")
 public record ActualizarDatosUsuarioRequestDTO(
         @NotBlank(message = "El nombre es obligatorio")
         @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")

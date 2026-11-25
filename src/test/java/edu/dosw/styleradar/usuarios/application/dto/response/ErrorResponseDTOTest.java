@@ -20,7 +20,7 @@ class ErrorResponseDTOTest {
                 .errors(Map.of("email", "Formato inválido"))
                 .build();
 
-        assertEquals("about:blank", response.getType());
+        assertEquals("https://api.styleradar.com/errors/internal-error", response.getType());
         assertEquals("Datos inválidos", response.getMessage());
         assertEquals("/api/v1/users", response.getPath());
         assertEquals(Map.of("email", "Formato inválido"), response.getValidationErrors());

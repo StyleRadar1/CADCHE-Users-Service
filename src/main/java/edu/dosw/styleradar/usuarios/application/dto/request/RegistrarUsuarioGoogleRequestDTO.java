@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "Identidad de Google validada por ms-auth")
+@Schema(name = "GoogleUserRegistrationRequest", description = "Google identity validated by ms-auth")
 public record RegistrarUsuarioGoogleRequestDTO(
         @NotBlank(message = "El email es obligatorio")
         @Email(message = "El formato del email es inválido")

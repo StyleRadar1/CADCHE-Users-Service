@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Respuesta paginada estándar")
+@Schema(name = "PageResponse", description = "Standard paginated response")
 public class PageResponseDTO<T> {
 
     @Schema(description = "Elementos contenidos en la página actual")
