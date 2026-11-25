@@ -66,6 +66,25 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     }
 
     @Override
+    @Transactional
+    public Optional<Usuario> actualizarRol(Long usuarioId, Rol nuevoRol) {
+        return usuarioJpaRepository.findById(usuarioId).map(entity -> {
+            entity.setRol(nuevoRol);
+            return convertirADominio(usuarioJpaRepository.saveAndFlush(entity));
+        });
+    }
+
+    @Override
+    @Transactional
+    public boolean actualizarPasswordHash(Long usuarioId, String passwordHash) {
+        return usuarioJpaRepository.findById(usuarioId).map(entity -> {
+            entity.setPasswordHash(passwordHash);
+            usuarioJpaRepository.saveAndFlush(entity);
+            return true;
+        }).orElse(false);
+    }
+
+    @Override
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioJpaRepository.findByEmail(email)
                 .map(this::convertirADominio);

@@ -1,8 +1,11 @@
 package edu.dosw.styleradar.usuarios.application;
 
+import java.util.UUID;
+
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.application.usecase.RegistrarUsuarioUseCaseImpl;
+import edu.dosw.styleradar.usuarios.domain.event.UsuarioRegistradoEvent;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
@@ -11,6 +14,7 @@ import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRegistradoEventPublisherPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -105,6 +109,13 @@ class RegistrarUsuarioUseCaseTest {
 
             return true;
         }));
+
+        ArgumentCaptor<UsuarioRegistradoEvent> eventoCaptor =
+                ArgumentCaptor.forClass(UsuarioRegistradoEvent.class);
+        verify(eventoRegistroPublisher).publicar(eventoCaptor.capture());
+        assertDoesNotThrow(() -> UUID.fromString(eventoCaptor.getValue().eventId()));
+        assertEquals(response.getFechaRegistro(), eventoCaptor.getValue().occurredAt());
+        assertEquals(Rol.COMPRADOR, eventoCaptor.getValue().rol());
     }
 
     @Test
@@ -129,6 +140,38 @@ class RegistrarUsuarioUseCaseTest {
     }
 
     @Test
+    void registraCuentaStoreConRolAdminAlmacenYPublicaEseRol() {
+        RegistrarUsuarioRequestDTO request = crearRequest();
+        request.setAccountType("STORE");
+        when(usuarioRepository.existePorEmail("laura@gmail.com")).thenReturn(false);
+        when(usuarioRepository.guardar(any(Usuario.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        UsuarioResponseDTO response = useCase.registrar(request);
+
+        assertEquals(Rol.ADMIN_ALMACEN, response.getRol());
+        verify(usuarioRepository).guardar(argThat(usuario ->
+                usuario.getRol() == Rol.ADMIN_ALMACEN));
+        verify(eventoRegistroPublisher).publicar(argThat(evento ->
+                evento.rol() == Rol.ADMIN_ALMACEN));
+    }
+
+    @Test
+    void cuandoAccountTypeSeOmiteUsaBuyer() {
+        RegistrarUsuarioRequestDTO request = crearRequest();
+        assertEquals("BUYER", request.getAccountType());
+        assertEquals("BUYER", RegistrarUsuarioRequestDTO.builder().build().getAccountType());
+
+        when(usuarioRepository.existePorEmail("laura@gmail.com")).thenReturn(false);
+        when(usuarioRepository.guardar(any(Usuario.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        UsuarioResponseDTO response = useCase.registrar(request);
+
+        assertEquals(Rol.COMPRADOR, response.getRol());
+    }
+
+    @Test
     void noDebeRegistrarUnCorreoExistente() {
 
         RegistrarUsuarioRequestDTO request = crearRequest();
@@ -142,6 +185,7 @@ class RegistrarUsuarioUseCaseTest {
         );
 
         verify(usuarioRepository, never()).guardar(any(Usuario.class));
+        verifyNoInteractions(eventoRegistroPublisher);
     }
 
     private RegistrarUsuarioRequestDTO crearRequest() {

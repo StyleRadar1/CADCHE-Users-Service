@@ -226,6 +226,27 @@ class RequestDTOTest {
     }
 
     @Test
+    void accountTypeInvalidoSeReportaEnElCampoDelContrato() {
+        RegistrarUsuarioRequestDTO dto = new RegistrarUsuarioRequestDTO();
+        dto.setNombre("Laura Gomez");
+        dto.setEmail("laura@styleradar.com");
+        dto.setPassword("StyleRadar2026");
+        dto.setAceptaHabeasData(true);
+        dto.setAccountType("FOUNDATION_REPRESENTATIVE");
+
+        assertTrue(validator.validate(dto).stream()
+                .anyMatch(error -> "accountType".equals(error.getPropertyPath().toString())));
+    }
+
+    @Test
+    void roleInvalidoSeReportaEnElCampoDelContrato() {
+        CambiarRolUsuarioRequestDTO dto = new CambiarRolUsuarioRequestDTO("BUYER");
+
+        assertTrue(validator.validate(dto).stream()
+                .anyMatch(error -> "role".equals(error.getPropertyPath().toString())));
+    }
+
+    @Test
     void debeValidarDatosPersonalesYPermitirOmitirTelefonoOBarrio() {
         ActualizarDatosUsuarioRequestDTO valido =
                 new ActualizarDatosUsuarioRequestDTO("Laura Gómez", null, null);

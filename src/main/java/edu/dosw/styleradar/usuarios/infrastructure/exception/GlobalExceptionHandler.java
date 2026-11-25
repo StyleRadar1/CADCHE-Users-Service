@@ -19,6 +19,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.ContrasenaActualIncorrectaException;
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
@@ -70,6 +71,13 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(), Map.of());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidData(
+            IllegalArgumentException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_DATA",
+                exception.getMessage(), request.getRequestURI(), Map.of());
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponseDTO> handleMethodNotSupported(
             HttpRequestMethodNotSupportedException exception,
@@ -88,6 +96,15 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, "EMAIL_ALREADY_REGISTERED",
                 exception.getMessage(),
                 request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(ContrasenaActualIncorrectaException.class)
+    public ResponseEntity<ErrorResponseDTO> handleContrasenaActualIncorrecta(
+            ContrasenaActualIncorrectaException exception,
+            HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "INVALID_CURRENT_PASSWORD",
+                exception.getMessage(), request.getRequestURI(),
+                Map.of("currentPassword", exception.getMessage()));
     }
 
     @ExceptionHandler(IdentidadExternaConflictivaException.class)

@@ -296,4 +296,46 @@ class UsuarioPersistenceAdapterUnitTest {
         assertTrue(resultado.isEmpty());
         verify(repository, never()).saveAndFlush(any());
     }
+
+    @Test
+    void actualizaRolYDevuelveLaCuenta() {
+        UsuarioEntity entity = crearEntity();
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+        when(repository.saveAndFlush(entity)).thenReturn(entity);
+
+        Optional<Usuario> result = adapter.actualizarRol(1L, Rol.ADMIN_ALMACEN);
+
+        assertTrue(result.isPresent());
+        assertEquals(Rol.ADMIN_ALMACEN, entity.getRol());
+        assertEquals(Rol.ADMIN_ALMACEN, result.orElseThrow().getRol());
+        verify(repository).saveAndFlush(entity);
+    }
+
+    @Test
+    void noActualizaRolSiLaCuentaNoExiste() {
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        assertTrue(adapter.actualizarRol(404L, Rol.ADMIN_ALMACEN).isEmpty());
+        verify(repository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void actualizaHashDeContrasena() {
+        UsuarioEntity entity = crearEntity();
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+        when(repository.saveAndFlush(entity)).thenReturn(entity);
+
+        assertTrue(adapter.actualizarPasswordHash(1L, "bcrypt-hash-nuevo"));
+
+        assertEquals("bcrypt-hash-nuevo", entity.getPasswordHash());
+        verify(repository).saveAndFlush(entity);
+    }
+
+    @Test
+    void noActualizaHashSiLaCuentaNoExiste() {
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        assertFalse(adapter.actualizarPasswordHash(404L, "bcrypt-hash-nuevo"));
+        verify(repository, never()).saveAndFlush(any());
+    }
 }

@@ -36,8 +36,8 @@ import jakarta.validation.Valid;
 public interface UsuarioApi {
 
     @Operation(
-            summary = "Register buyer",
-            description = "Public endpoint. Creates a buyer account with an encrypted BCrypt password, validates email uniqueness and records Habeas Data consent.",
+            summary = "Register user account",
+            description = "Public endpoint. accountType defaults to BUYER; STORE creates an ADMIN_ALMACEN account. Other privileged roles cannot be selected publicly.",
             security = {},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
@@ -46,7 +46,7 @@ public interface UsuarioApi {
                             schema = @Schema(implementation = RegistrarUsuarioRequestDTO.class),
                             examples = @ExampleObject(
                                     name = "RegisterUser",
-                                    value = "{\"name\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"phone\":\"+57 300 123 4567\",\"password\":\"StyleRadar2026*\",\"dataPolicyAccepted\":true}"
+                                    value = "{\"name\":\"Laura Gómez\",\"email\":\"laura.gomez@styleradar.com\",\"phone\":\"+57 300 123 4567\",\"password\":\"StyleRadar2026*\",\"dataPolicyAccepted\":true,\"accountType\":\"BUYER\"}"
                             )
                     )
             )

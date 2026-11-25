@@ -6,6 +6,7 @@ import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoExce
 import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.ContrasenaActualIncorrectaException;
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +52,28 @@ class GlobalExceptionHandlerTest {
         assertEquals(409, response.getBody().getStatus());
         assertTrue(response.getBody().getMessage().contains("test@email.com"));
         assertEquals("/api/v1/users", response.getBody().getPath());
+    }
+
+    @Test
+    void convierteDatosInvalidosEnProblemDetailConCodigo() {
+        ResponseEntity<ErrorResponseDTO> response =
+                handler.handleInvalidData(new IllegalArgumentException("Rol no permitido"), request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("INVALID_DATA", response.getBody().getCode());
+        assertEquals("Rol no permitido", response.getBody().getDetail());
+        assertTrue(response.getBody().getErrors().isEmpty());
+    }
+
+    @Test
+    void devuelveCodigoCuandoLaContrasenaActualEsIncorrecta() {
+        ResponseEntity<ErrorResponseDTO> response = handler.handleContrasenaActualIncorrecta(
+                new ContrasenaActualIncorrectaException(), request);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("INVALID_CURRENT_PASSWORD", response.getBody().getCode());
+        assertEquals("/api/v1/users", response.getBody().getInstance());
+        assertTrue(response.getBody().getErrors().containsKey("currentPassword"));
     }
 
     @Test
