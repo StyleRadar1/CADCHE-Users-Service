@@ -66,7 +66,7 @@ class MedidasCorporalesInternalRouteTest {
 
         when(useCase.obtener(144L)).thenReturn(medidas);
 
-        mockMvc.perform(get("/api/v1/internal/usuarios/144/medidas")
+        mockMvc.perform(get("/api/v1/internal/users/144/measurements")
                         .header(HttpHeaders.AUTHORIZATION, authorization()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.heightCm").value(175.0))
@@ -80,7 +80,7 @@ class MedidasCorporalesInternalRouteTest {
     @Test
     void debeRechazarConsultaSinAutenticacion() throws Exception {
 
-        mockMvc.perform(get("/api/v1/internal/usuarios/144/medidas"))
+        mockMvc.perform(get("/api/v1/internal/users/144/measurements"))
                 .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(useCase);
@@ -96,7 +96,7 @@ class MedidasCorporalesInternalRouteTest {
                         null
                 );
 
-        mockMvc.perform(get("/api/v1/internal/usuarios/144/medidas")
+        mockMvc.perform(get("/api/v1/internal/users/144/measurements")
                         .header(HttpHeaders.AUTHORIZATION, credencialesIncorrectas))
                 .andExpect(status().isUnauthorized());
 
@@ -116,7 +116,7 @@ class MedidasCorporalesInternalRouteTest {
 
         when(useCase.obtener(144L)).thenReturn(medidas);
 
-        mockMvc.perform(get("/api/v1/internal/usuarios/144/medidas")
+        mockMvc.perform(get("/api/v1/internal/users/144/measurements")
                         .header(HttpHeaders.AUTHORIZATION, authorization()))
                 .andExpect(status().isOk());
 

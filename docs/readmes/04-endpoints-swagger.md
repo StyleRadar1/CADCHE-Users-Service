@@ -30,11 +30,12 @@ La verificación HTTP confirma que los endpoints responden desde el entorno de r
 | `GET` | `/api/v1/users/{id}/recommendations` | Recomendaciones personalizadas (`SR-RF-06`). Compradores consultan las propias; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `POST` | `/api/v1/users/{id}/saved-searches` | Registro de filtros y coordenadas de búsquedas frecuentes (`SR-RF-28`). | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/users/{id}/saved-searches` | Consulta de búsquedas guardadas. | `COMPRADOR` o `ADMIN_STYLERADAR` |
-| `DELETE` | `/api/v1/users/{id}/saved-searches/{busquedaId}` | Eliminación de una búsqueda guardada. | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `DELETE` | `/api/v1/users/{id}/saved-searches/{searchId}` | Eliminación de una búsqueda guardada. | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/admin/users` | Listado paginado y filtrable de usuarios (`SR-RF-66`). | `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/admin/users/{id}` | Consulta administrativa del detalle de una cuenta. | `ADMIN_STYLERADAR` |
 | `PATCH` | `/api/v1/admin/users/{id}/status` | Cambio de estado de cuenta con motivo (`SR-RF-66`). | `ADMIN_STYLERADAR` |
 | `DELETE` | `/api/v1/admin/users/{id}` | Eliminación de cuenta (`SR-RF-115`); el front debe pedir confirmación antes de llamar. | `ADMIN_STYLERADAR` |
+| `GET` | `/api/v1/internal/users/{userId}/measurements` | Consulta interna de medidas corporales. | Basic Auth de servicio |
 | `GET` | `/actuator/health` | Consulta del estado operativo del microservicio. | Público |
 
 ### Actualizar datos personales (`PUT /api/v1/users/{id}`)
