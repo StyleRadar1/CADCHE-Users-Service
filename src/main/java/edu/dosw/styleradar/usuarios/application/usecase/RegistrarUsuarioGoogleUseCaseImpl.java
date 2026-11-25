@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioGoogleRequestDTO;
+import edu.dosw.styleradar.usuarios.domain.event.UsuarioRegistradoEvent;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.model.Email;
@@ -17,6 +18,7 @@ import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioGoogleUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRegistradoEventPublisherPort;
 
 @Service
 public class RegistrarUsuarioGoogleUseCaseImpl implements RegistrarUsuarioGoogleUseCase {
@@ -25,12 +27,15 @@ public class RegistrarUsuarioGoogleUseCaseImpl implements RegistrarUsuarioGoogle
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UsuarioRepositoryPort usuarioRepository;
+    private final UsuarioRegistradoEventPublisherPort eventoRegistroPublisher;
     private final PasswordEncoder passwordEncoder;
 
     public RegistrarUsuarioGoogleUseCaseImpl(
             UsuarioRepositoryPort usuarioRepository,
+            UsuarioRegistradoEventPublisherPort eventoRegistroPublisher,
             PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.eventoRegistroPublisher = eventoRegistroPublisher;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -75,11 +80,14 @@ public class RegistrarUsuarioGoogleUseCaseImpl implements RegistrarUsuarioGoogle
                 providerId
         );
 
+        Usuario guardado;
         try {
-            return usuarioRepository.guardar(nuevo);
+            guardado = usuarioRepository.guardar(nuevo);
         } catch (EmailYaRegistradoException exception) {
             return resolverCreacionConcurrente(email, providerId, exception);
         }
+        eventoRegistroPublisher.publicar(UsuarioRegistradoEvent.desde(guardado));
+        return guardado;
     }
 
     private Usuario resolverUsuarioExistente(Usuario usuario, String providerId) {
