@@ -15,8 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -133,5 +135,27 @@ class PersonalizacionControllerTest {
         verify(obtenerRecomendacionesUseCase).obtener(144L, 0, 20);
 
         org.mockito.Mockito.verifyNoInteractions(obtenerFeedPersonalizadoUseCase);
+    }
+
+    @Test
+    void permiteAlAdministradorConsultarRecomendacionesDeOtroUsuario() {
+        Jwt jwt = Jwt.withTokenValue("token-admin")
+                .header("alg", "HS256")
+                .claim("sub", "144")
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(
+                jwt, List.of(new SimpleGrantedAuthority("ROLE_ADMIN_STYLERADAR"))));
+        RecomendacionesResponseDTO expected = new RecomendacionesResponseDTO(
+                new PageResponseDTO<>(Collections.emptyList(), 0, 20, 0, 0, true, true),
+                true,
+                "Sin resultados");
+        when(obtenerRecomendacionesUseCase.obtener(999L, 0, 20)).thenReturn(expected);
+
+        ResponseEntity<RecomendacionesResponseDTO> response =
+                controller.recomendaciones(999L, new PersonalizacionRequestDTO());
+
+        assertEquals(200, response.getStatusCode().value());
+        assertSame(expected, response.getBody());
+        verify(obtenerRecomendacionesUseCase).obtener(999L, 0, 20);
     }
 }

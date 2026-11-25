@@ -21,9 +21,10 @@ La verificación HTTP confirma que los endpoints responden desde el entorno de r
 
 | Método | Endpoint | Descripción | Rol requerido |
 |---|---|---|---|
-| `POST` | `/api/v1/users` | Registro de perfil de usuario comprador (`SR-RF-01`, `SR-RNF-02`). | Público |
+| `POST` | `/api/v1/users` | Registro público; `accountType` acepta `BUYER` (predeterminado) o `STORE`. Las cuentas `STORE` nacen con rol `ADMIN_ALMACEN`. | Público |
 | `GET` | `/api/v1/users/{id}` | Consulta del perfil propio por ID; un administrador puede consultar cualquier cuenta (`SR-RF-01`, `SR-RF-66`). | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `PUT` | `/api/v1/users/{id}` | Actualiza nombre y, si se envían, teléfono y barrio; devuelve el perfil completo. El ID debe coincidir con el del token. | `COMPRADOR` |
+| `PUT` | `/api/v1/users/{id}/password` | Cambia la contraseña propia validando `currentPassword`; guarda el nuevo hash BCrypt. | Usuario autenticado; ID propio |
 | `PUT` | `/api/v1/users/{id}/style-preferences` | Actualización de preferencias de estilo (`SR-RF-03`). Compradores solo pueden modificar las propias; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `PUT` | `/api/v1/users/{id}/sizes` | Configuración de tallas habituales (`SR-RF-04`). Compradores solo pueden modificar las propias; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/users/{id}/feed` | Feed paginado de prendas sugeridas (`SR-RF-05`). Compradores consultan el propio; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
@@ -34,6 +35,7 @@ La verificación HTTP confirma que los endpoints responden desde el entorno de r
 | `GET` | `/api/v1/admin/users` | Listado paginado y filtrable de usuarios (`SR-RF-66`). | `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/admin/users/{id}` | Consulta administrativa del detalle de una cuenta. | `ADMIN_STYLERADAR` |
 | `PATCH` | `/api/v1/admin/users/{id}/status` | Cambio de estado de cuenta con motivo (`SR-RF-66`). | `ADMIN_STYLERADAR` |
+| `PATCH` | `/api/v1/admin/users/{id}/role` | Asigna `COMPRADOR`, `ADMIN_ALMACEN`, `REPRESENTANTE_FUNDACION` o `ADMIN_STYLERADAR`. | `ADMIN_STYLERADAR` |
 | `DELETE` | `/api/v1/admin/users/{id}` | Eliminación de cuenta (`SR-RF-115`); el front debe pedir confirmación antes de llamar. | `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/internal/users/{userId}/measurements` | Consulta interna de medidas corporales. | Basic Auth de servicio |
 | `GET` | `/actuator/health` | Consulta del estado operativo del microservicio. | Público |

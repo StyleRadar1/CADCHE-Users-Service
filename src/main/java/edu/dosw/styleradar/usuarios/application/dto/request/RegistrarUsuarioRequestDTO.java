@@ -70,6 +70,13 @@ public class RegistrarUsuarioRequestDTO {
     @JsonAlias({"acceptsDataProcessing", "aceptaHabeasData"})
     private Boolean aceptaHabeasData;
 
+    @NotBlank(message = "El tipo de cuenta es obligatorio")
+    @Pattern(regexp = "^(BUYER|STORE)$", message = "Debe ser BUYER o STORE")
+    @Builder.Default
+    @Schema(description = "Tipo de cuenta pública", example = "BUYER", defaultValue = "BUYER")
+    @JsonProperty("accountType")
+    private String accountType = "BUYER";
+
     @Schema(description = "Estatura en centímetros", example = "175.0")
     private Double heightCm;
 

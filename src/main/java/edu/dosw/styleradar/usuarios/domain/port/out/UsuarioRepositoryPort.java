@@ -19,6 +19,10 @@ public interface UsuarioRepositoryPort {
     Optional<Usuario> actualizarDatosPersonales(
             Long usuarioId, String nombre, String telefono, String barrio);
 
+    Optional<Usuario> actualizarRol(Long usuarioId, Rol nuevoRol);
+
+    boolean actualizarPasswordHash(Long usuarioId, String passwordHash);
+
     Optional<Usuario> buscarPorEmail(String email);
 
     Optional<Usuario> buscarPorProveedorYId(String provider, String providerId);

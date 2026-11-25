@@ -180,6 +180,11 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.PUT,
+                                "/api/v1/users/*/password"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
                                 "/api/v1/users/*"
                         ).hasRole("COMPRADOR")
 
