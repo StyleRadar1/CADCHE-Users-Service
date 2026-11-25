@@ -408,13 +408,13 @@ public interface UsuarioApi {
                     )
             )
     })
-    @DeleteMapping("/{id}/saved-searches/{busquedaId}")
+    @DeleteMapping("/{id}/saved-searches/{searchId}")
     ResponseEntity<Void> eliminarBusquedaGuardada(
             @PathVariable("id") Long id,
             @Parameter(
                     description = "Saved search identifier",
                     example = "5"
             )
-            @PathVariable("busquedaId") Long busquedaId
+            @PathVariable("searchId") Long searchId
     );
 }
