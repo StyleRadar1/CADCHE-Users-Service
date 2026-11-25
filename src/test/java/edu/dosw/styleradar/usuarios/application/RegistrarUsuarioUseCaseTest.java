@@ -8,6 +8,7 @@ import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRegistradoEventPublisherPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,15 +21,18 @@ import static org.mockito.Mockito.*;
 class RegistrarUsuarioUseCaseTest {
 
     private UsuarioRepositoryPort usuarioRepository;
+    private UsuarioRegistradoEventPublisherPort eventoRegistroPublisher;
     private PasswordEncoder passwordEncoder;
     private RegistrarUsuarioUseCaseImpl useCase;
 
     @BeforeEach
     void setUp() {
         usuarioRepository = mock(UsuarioRepositoryPort.class);
+        eventoRegistroPublisher = mock(UsuarioRegistradoEventPublisherPort.class);
         passwordEncoder = new BCryptPasswordEncoder();
         useCase = new RegistrarUsuarioUseCaseImpl(
                 usuarioRepository,
+                eventoRegistroPublisher,
                 passwordEncoder
         );
     }

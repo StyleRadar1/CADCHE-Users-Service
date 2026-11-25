@@ -29,18 +29,23 @@ import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRegistradoEventPublisherPort;
 
 class RegistrarUsuarioGoogleUseCaseTest {
 
     private UsuarioRepositoryPort repository;
+    private UsuarioRegistradoEventPublisherPort eventoRegistroPublisher;
     private PasswordEncoder passwordEncoder;
     private RegistrarUsuarioGoogleUseCaseImpl useCase;
 
     @BeforeEach
     void setUp() {
         repository = org.mockito.Mockito.mock(UsuarioRepositoryPort.class);
+        eventoRegistroPublisher = org.mockito.Mockito.mock(
+                UsuarioRegistradoEventPublisherPort.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        useCase = new RegistrarUsuarioGoogleUseCaseImpl(repository, passwordEncoder);
+        useCase = new RegistrarUsuarioGoogleUseCaseImpl(
+                repository, eventoRegistroPublisher, passwordEncoder);
     }
 
     @Test
