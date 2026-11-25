@@ -80,6 +80,8 @@ El despliegue en producción se ejecuta únicamente cuando se realiza un `push` 
 
 Antes del despliegue, el pipeline verifica que la variable `PROD_DATABASE_VERIFIED` tenga el valor `true`.
 
+Esta variable se configura en GitHub, en **Settings → Secrets and variables → Actions → Variables**. Establécela en `true` únicamente después de confirmar que PostgreSQL de PROD existe, que `DB_URL` apunta a esa instancia y que la aplicación puede conectarse. Después de guardar la variable, se puede volver a ejecutar el job fallido de despliegue.
+
 También comprueba que el App Service tenga configuradas las variables necesarias para la conexión a PostgreSQL y la seguridad:
 
 - `DB_URL`

@@ -25,10 +25,17 @@
 
   <p align="center">
     <img src="https://img.shields.io/badge/DEV_LOCAL-CONFIGURADO-16A34A?style=for-the-badge" alt="Desarrollo local" />
-    <img src="https://img.shields.io/badge/QA_CLOUD-POR_VALIDAR-6B7280?style=for-the-badge" alt="QA" />
-    <img src="https://img.shields.io/badge/PROD_CLOUD-POR_VALIDAR-6B7280?style=for-the-badge" alt="Producción" />
+    <a href="https://styleradar-qa-app.azurewebsites.net/actuator/health"><img src="https://img.shields.io/badge/QA_HEALTH-UP-16A34A?style=for-the-badge" alt="QA health UP" /></a>
+    <a href="https://styleradar-prod-app.azurewebsites.net/actuator/health"><img src="https://img.shields.io/badge/PROD_HEALTH-UP-16A34A?style=for-the-badge" alt="Producción health UP" /></a>
     <img src="https://img.shields.io/badge/CI_CD-GITHUB_ACTIONS-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI CD" />
   </p>
+
+  <p align="center">
+    <a href="https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html">Swagger QA</a> ·
+    <a href="https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html">Swagger PROD</a>
+  </p>
+
+  <p align="center"><sub>Health check y Swagger respondieron HTTP 200 el 24/11/2026. Esto confirma disponibilidad de los endpoints, no la versión desplegada.</sub></p>
 
   <p align="center">
     <img src="https://img.shields.io/badge/TESTS-JUNIT_5-25A162?style=for-the-badge&logo=junit5&logoColor=white" alt="JUnit 5" />
