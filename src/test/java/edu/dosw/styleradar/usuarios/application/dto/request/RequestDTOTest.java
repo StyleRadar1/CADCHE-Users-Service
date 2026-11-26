@@ -239,6 +239,22 @@ class RequestDTOTest {
     }
 
     @Test
+    void aceptaStoreAdminComoAliasDeStoreEnRegistro() {
+        RegistrarUsuarioRequestDTO dto = new RegistrarUsuarioRequestDTO();
+        dto.setNombre("Laura Gomez");
+        dto.setEmail("laura@styleradar.com");
+        dto.setPassword("StyleRadar2026*");
+        dto.setAceptaHabeasData(true);
+        dto.setAccountType("STORE_ADMIN");
+
+        assertTrue(validator.validate(dto).isEmpty());
+        assertTrue(dto.esCuentaTienda());
+
+        dto.setAccountType("STORE");
+        assertTrue(dto.esCuentaTienda());
+    }
+
+    @Test
     void roleInvalidoSeReportaEnElCampoDelContrato() {
         CambiarRolUsuarioRequestDTO dto = new CambiarRolUsuarioRequestDTO("UNKNOWN_ROLE");
 

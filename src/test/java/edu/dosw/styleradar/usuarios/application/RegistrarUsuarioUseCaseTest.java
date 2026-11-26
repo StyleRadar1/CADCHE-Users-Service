@@ -157,6 +157,21 @@ class RegistrarUsuarioUseCaseTest {
     }
 
     @Test
+    void registraAliasStoreAdminComoCuentaDeTienda() {
+        RegistrarUsuarioRequestDTO request = crearRequest();
+        request.setAccountType("STORE_ADMIN");
+        when(usuarioRepository.existePorEmail("laura@gmail.com")).thenReturn(false);
+        when(usuarioRepository.guardar(any(Usuario.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        UsuarioResponseDTO response = useCase.registrar(request);
+
+        assertEquals(Rol.ADMIN_ALMACEN, response.getRol());
+        verify(eventoRegistroPublisher).publicar(argThat(evento ->
+                evento.rol() == Rol.ADMIN_ALMACEN));
+    }
+
+    @Test
     void cuandoAccountTypeSeOmiteUsaBuyer() {
         RegistrarUsuarioRequestDTO request = crearRequest();
         assertEquals("BUYER", request.getAccountType());

@@ -55,6 +55,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals(409, response.getBody().getStatus());
         assertTrue(response.getBody().getMessage().contains("test@email.com"));
+        assertEquals(exception.getMessage(), response.getBody().getErrors().get("email"));
         assertEquals("/api/v1/users", response.getBody().getPath());
     }
 
