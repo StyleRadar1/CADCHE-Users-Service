@@ -117,7 +117,7 @@ public class GlobalExceptionHandler {
 
         return buildResponse(HttpStatus.CONFLICT, "EMAIL_ALREADY_REGISTERED",
                 exception.getMessage(),
-                request.getRequestURI(), Map.of());
+                request.getRequestURI(), Map.of("email", exception.getMessage()));
     }
 
     @ExceptionHandler(ContrasenaActualIncorrectaException.class)

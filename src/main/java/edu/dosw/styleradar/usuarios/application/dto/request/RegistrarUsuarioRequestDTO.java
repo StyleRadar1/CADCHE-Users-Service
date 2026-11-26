@@ -73,11 +73,18 @@ public class RegistrarUsuarioRequestDTO {
     private Boolean aceptaHabeasData;
 
     @NotBlank(message = "El tipo de cuenta es obligatorio")
-    @Pattern(regexp = "^(BUYER|STORE)$", message = "Debe ser BUYER o STORE")
+    @Pattern(regexp = "^(BUYER|STORE|STORE_ADMIN)$",
+            message = "Debe ser BUYER, STORE o STORE_ADMIN")
     @Builder.Default
-    @Schema(description = "Tipo de cuenta pública", example = "BUYER", defaultValue = "BUYER")
+    @Schema(description = "Tipo de cuenta pública. STORE_ADMIN es alias de STORE",
+            allowableValues = {"BUYER", "STORE", "STORE_ADMIN"},
+            example = "BUYER", defaultValue = "BUYER")
     @JsonProperty("accountType")
     private String accountType = "BUYER";
+
+    public boolean esCuentaTienda() {
+        return "STORE".equals(accountType) || "STORE_ADMIN".equals(accountType);
+    }
 
     @Schema(description = "Estatura en centímetros", example = "175.0")
     private Double heightCm;

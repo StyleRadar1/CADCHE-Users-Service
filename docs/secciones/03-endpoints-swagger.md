@@ -16,7 +16,7 @@ OpenAPI JSON: `/v3/api-docs` en cada URL base. El health check indica disponibil
 
 | Método | Ruta | Acceso |
 |---|---|---|
-| `POST` | `/api/v1/users` | Público; registro. `accountType` puede ser `BUYER` (predeterminado) o `STORE`; solo estos tipos pueden seleccionarse públicamente. |
+| `POST` | `/api/v1/users` | Público; registro. `accountType` puede ser `BUYER` (predeterminado), `STORE` o `STORE_ADMIN` (alias de `STORE`). Otros roles privilegiados no se pueden elegir públicamente. |
 | `GET` | `/api/v1/users/{id}` | JWT; el usuario consulta su cuenta y `ADMIN_STYLERADAR` puede consultar otras cuentas. |
 | `PUT` | `/api/v1/users/{id}` | JWT del mismo usuario; actualiza `name`, `phone` y `neighborhood`. |
 | `PUT` | `/api/v1/users/{id}/password` | JWT del mismo usuario; cambia contraseña validando la actual. |

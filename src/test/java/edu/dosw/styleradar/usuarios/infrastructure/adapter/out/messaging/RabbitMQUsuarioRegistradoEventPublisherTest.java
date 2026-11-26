@@ -9,6 +9,7 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import edu.dosw.styleradar.usuarios.domain.event.UsuarioRegistradoEvent;
@@ -30,12 +31,16 @@ class RabbitMQUsuarioRegistradoEventPublisherTest {
 
         ArgumentCaptor<UsuarioRegistradoMessage> messageCaptor =
                 ArgumentCaptor.forClass(UsuarioRegistradoMessage.class);
+        ArgumentCaptor<CorrelationData> correlationCaptor =
+                ArgumentCaptor.forClass(CorrelationData.class);
         verify(rabbitTemplate).convertAndSend(
                 eq("styleradar.exchange"),
                 eq("styleradar.usuarios.usuario.registrado"),
-                messageCaptor.capture());
+                messageCaptor.capture(),
+                correlationCaptor.capture());
 
         UsuarioRegistradoMessage message = messageCaptor.getValue();
+        assertEquals(event.eventId(), correlationCaptor.getValue().getId());
         assertEquals(event.eventId(), message.eventId());
         assertEquals("styleradar.usuarios.usuario.registrado", message.eventType());
         assertEquals("2026-11-24T16:30:00Z", message.occurredAt());
