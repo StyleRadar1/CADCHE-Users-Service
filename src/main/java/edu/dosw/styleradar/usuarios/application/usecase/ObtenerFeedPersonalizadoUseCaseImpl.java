@@ -8,7 +8,7 @@ import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerFeedPersonalizadoUseCa
 import edu.dosw.styleradar.usuarios.domain.port.out.CatalogoClientPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.PreferenciaEstiloRepositoryPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.TallaRepositoryPort;
-import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class ObtenerFeedPersonalizadoUseCaseImpl
         implements ObtenerFeedPersonalizadoUseCase {
@@ -51,11 +52,13 @@ public class ObtenerFeedPersonalizadoUseCaseImpl
                     estilos,
                     tallas
             );
-        } catch (Exception exception) {
-            throw new CatalogoNoDisponibleException(
-                    "El catálogo no está disponible en este momento",
-                    exception
-            );
+            if (prendasCatalogo == null) {
+                prendasCatalogo = List.of();
+            }
+        } catch (RuntimeException exception) {
+            log.warn("Catálogo no disponible para feed de usuario {}; degradando a lista vacía: {}",
+                    usuarioId, exception.getMessage());
+            prendasCatalogo = List.of();
         }
 
         List<CatalogoItemResponseDTO> prendas = prendasCatalogo.stream()

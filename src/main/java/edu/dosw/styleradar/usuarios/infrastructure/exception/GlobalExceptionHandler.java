@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
@@ -77,6 +79,25 @@ public class GlobalExceptionHandler {
             IllegalArgumentException exception, HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_DATA",
                 exception.getMessage(), request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
+            AccessDeniedException exception,
+            HttpServletRequest request) {
+        log.warn("Acceso denegado (403) en ruta {}", request.getRequestURI());
+        return buildResponse(HttpStatus.FORBIDDEN, "ACCESS_DENIED",
+                "Acceso denegado: no cuenta con permisos suficientes",
+                request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleResourceNotFound(
+            NoResourceFoundException exception,
+            HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
+                "El recurso solicitado no existe",
+                request.getRequestURI(), Map.of());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

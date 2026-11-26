@@ -179,6 +179,29 @@ class ObtenerRecomendacionesUseCaseImplTest {
                 .obtenerPrendasDisponibles(anySet(), anyMap());
     }
 
+    @Test
+    void debeDegradarAListaVaciaSinGuardarEnCacheCuandoElCatalogoFalla() {
+        when(preferenciasRepository.buscarPorUsuarioId(usuarioId))
+                .thenReturn(Set.of(Estilo.URBANO));
+
+        when(tallasRepository.buscarPorUsuarioId(usuarioId))
+                .thenReturn(Map.of(TipoPrenda.SUPERIOR, Set.of("M")));
+
+        when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
+                .thenThrow(new RuntimeException("Timeout catálogo"))
+                .thenReturn(List.of(crearPrenda(1L, Estilo.URBANO, List.of(Talla.M), 5)));
+
+        RecomendacionesResponseDTO fallido = useCase.obtener(usuarioId, 0, 20);
+        assertTrue(fallido.getContent().isEmpty());
+        assertEquals(0, fallido.getTotalElements());
+        assertFalse(fallido.isGeneralSinPreferencias());
+
+        RecomendacionesResponseDTO recuperado = useCase.obtener(usuarioId, 0, 20);
+        assertEquals(1, recuperado.getTotalElements());
+        assertEquals("1", recuperado.getContent().get(0).getItemId());
+        verify(catalogoClient, times(2)).obtenerPrendasDisponibles(anySet(), anyMap());
+    }
+
     private CatalogoItemResponseDTO crearPrenda(
             Long itemId,
             Estilo estilo,

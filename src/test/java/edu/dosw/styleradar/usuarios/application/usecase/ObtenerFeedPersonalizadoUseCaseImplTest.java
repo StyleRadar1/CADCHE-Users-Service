@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import edu.dosw.styleradar.usuarios.application.dto.response.CatalogoItemResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
-import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoItem;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.Talla;
@@ -276,7 +275,7 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
     }
 
     @Test
-    void debeConvertirErrorDelCatalogoEnExcepcionEspecifica() {
+    void debeDegradarAListaVaciaCuandoElCatalogoFalla() {
 
         when(preferenciasRepository.buscarPorUsuarioId(usuarioId))
                 .thenReturn(Set.of(Estilo.URBANO));
@@ -290,17 +289,12 @@ class ObtenerFeedPersonalizadoUseCaseImplTest {
         when(catalogoClient.obtenerPrendasDisponibles(anySet(), anyMap()))
                 .thenThrow(new RuntimeException("Catálogo no disponible"));
 
-        CatalogoNoDisponibleException excepcion = assertThrows(
-                CatalogoNoDisponibleException.class,
-                () -> useCase.obtener(usuarioId, 0, 20)
-        );
+        PageResponseDTO<CatalogoItemResponseDTO> resultado =
+                useCase.obtener(usuarioId, 0, 20);
 
-        assertEquals(
-                "El catálogo no está disponible en este momento",
-                excepcion.getMessage()
-        );
-
-        assertNotNull(excepcion.getCause());
+        assertTrue(resultado.getContent().isEmpty());
+        assertEquals(0, resultado.getTotalElements());
+        assertEquals(0, resultado.getTotalPages());
 
         verify(catalogoClient).obtenerPrendasDisponibles(anySet(), anyMap());
     }
