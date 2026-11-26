@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-@Schema(description = "Filtros y paginación para la consulta administrativa de cuentas de usuario (SR-RF-66)")
+@Schema(name = "AdminUsersQuery", description = "Administrative user filters and pagination")
 public class CuentasConsultaRequestDTO {
 
     @Schema(description = "Optional effective account status filter",

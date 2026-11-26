@@ -180,6 +180,11 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.PUT,
+                                "/api/v1/users/*/password"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
                                 "/api/v1/users/*"
                         ).hasRole("COMPRADOR")
 
@@ -250,6 +255,8 @@ public class SecurityConfig {
         response.setStatus(status);
         response.setContentType("application/problem+json");
         objectMapper.writeValue(response.getOutputStream(), ErrorResponseDTO.builder()
+                .type("https://api.styleradar.com/errors/"
+                        + code.toLowerCase(java.util.Locale.ROOT).replace('_', '-'))
                 .title(title)
                 .status(status)
                 .detail(detail)

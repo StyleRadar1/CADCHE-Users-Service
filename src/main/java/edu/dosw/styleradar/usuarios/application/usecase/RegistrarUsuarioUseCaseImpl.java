@@ -3,12 +3,14 @@ package edu.dosw.styleradar.usuarios.application.usecase;
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioRequestDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.UsuarioResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.event.UsuarioRegistradoEvent;
 import edu.dosw.styleradar.usuarios.domain.model.Email;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.in.RegistrarUsuarioUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRegistradoEventPublisherPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +22,15 @@ import java.util.HashSet;
 public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
 
     private final UsuarioRepositoryPort usuarioRepository;
+    private final UsuarioRegistradoEventPublisherPort eventoRegistroPublisher;
     private final PasswordEncoder passwordEncoder;
 
     public RegistrarUsuarioUseCaseImpl(
             UsuarioRepositoryPort usuarioRepository,
+            UsuarioRegistradoEventPublisherPort eventoRegistroPublisher,
             PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.eventoRegistroPublisher = eventoRegistroPublisher;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -46,7 +51,9 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
                 request.getTelefono(),
                 passwordEncoder.encode(request.getPassword()),
                 request.getAceptaHabeasData(),
-                Rol.COMPRADOR,
+                "STORE".equals(request.getAccountType())
+                        ? Rol.ADMIN_ALMACEN
+                        : Rol.COMPRADOR,
                 EstadoCuenta.ACTIVA,
                 Instant.now(),
                 null,
@@ -61,6 +68,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         );
 
         Usuario guardado = usuarioRepository.guardar(usuario);
+        eventoRegistroPublisher.publicar(UsuarioRegistradoEvent.desde(guardado));
 
         UsuarioResponseDTO response = new UsuarioResponseDTO();
         response.setId(guardado.getId());

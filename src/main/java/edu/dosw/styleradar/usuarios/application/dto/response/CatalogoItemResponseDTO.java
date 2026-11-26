@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Ítem de catálogo proyectado dentro del feed personalizado o recomendaciones del usuario (SR-RF-05 / SR-RF-06)")
+@Schema(name = "CatalogItemResponse", description = "Catalog item shown in user feed or recommendations")
 public class CatalogoItemResponseDTO {
 
     @Schema(description = "Identificador UUID de la publicación en el catálogo", example = "3f6c1a2e-8b1d-4c7a-9f2e-1a2b3c4d5e6f")

@@ -4,20 +4,22 @@ import edu.dosw.styleradar.usuarios.application.dto.response.CatalogoItemRespons
 import edu.dosw.styleradar.usuarios.application.dto.response.PageResponseDTO;
 import edu.dosw.styleradar.usuarios.application.dto.response.RecomendacionesResponseDTO;
 import edu.dosw.styleradar.usuarios.application.service.RecomendacionesCache;
-import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import edu.dosw.styleradar.usuarios.domain.port.in.ObtenerRecomendacionesUseCase;
 import edu.dosw.styleradar.usuarios.domain.port.out.CatalogoClientPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.PreferenciaEstiloRepositoryPort;
 import edu.dosw.styleradar.usuarios.domain.port.out.TallaRepositoryPort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class ObtenerRecomendacionesUseCaseImpl
         implements ObtenerRecomendacionesUseCase {
@@ -67,19 +69,26 @@ public class ObtenerRecomendacionesUseCaseImpl
 
         String claveCache = usuarioId + "-" + estilos + "-" + tallas;
 
-        List<CatalogoItemResponseDTO> recomendaciones =
-                recomendacionesCache.obtener(claveCache)
-                        .orElseGet(() -> {
-                            List<CatalogoItemResponseDTO> calculadas =
-                                    calcularRecomendaciones(estilos, tallas);
-
-                            recomendacionesCache.guardar(
-                                    claveCache,
-                                    calculadas
-                            );
-
-                            return calculadas;
-                        });
+        Optional<List<CatalogoItemResponseDTO>> enCache = recomendacionesCache.obtener(claveCache);
+        List<CatalogoItemResponseDTO> recomendaciones;
+        if (enCache.isPresent()) {
+            recomendaciones = enCache.get();
+        } else {
+            try {
+                recomendaciones = calcularRecomendaciones(estilos, tallas);
+                recomendacionesCache.guardar(claveCache, recomendaciones);
+            } catch (RuntimeException exception) {
+                log.warn("Catálogo no disponible para recomendaciones de usuario {}; degradando a lista vacía: {}",
+                        usuarioId, exception.getMessage());
+                return crearRespuesta(
+                        List.of(),
+                        page,
+                        size,
+                        false,
+                        "Recomendaciones temporalmente no disponibles."
+                );
+            }
+        }
 
         return crearRespuesta(
                 recomendaciones,
@@ -94,18 +103,12 @@ public class ObtenerRecomendacionesUseCaseImpl
             Set<Estilo> estilos,
             Map<TipoPrenda, Set<String>> tallas) {
 
-        List<CatalogoItemResponseDTO> prendasCatalogo;
-
-        try {
-            prendasCatalogo = catalogoClient.obtenerPrendasDisponibles(
-                    estilos,
-                    tallas
-            );
-        } catch (Exception exception) {
-            throw new CatalogoNoDisponibleException(
-                    "El catálogo no está disponible en este momento",
-                    exception
-            );
+        List<CatalogoItemResponseDTO> prendasCatalogo = catalogoClient.obtenerPrendasDisponibles(
+                estilos,
+                tallas
+        );
+        if (prendasCatalogo == null) {
+            return List.of();
         }
 
         return prendasCatalogo.stream()

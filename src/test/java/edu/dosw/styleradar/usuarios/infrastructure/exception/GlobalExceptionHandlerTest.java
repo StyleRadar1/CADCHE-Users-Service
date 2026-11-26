@@ -6,14 +6,18 @@ import edu.dosw.styleradar.usuarios.domain.exception.CambioEstadoNoPermitidoExce
 import edu.dosw.styleradar.usuarios.domain.exception.CatalogoNoDisponibleException;
 import edu.dosw.styleradar.usuarios.domain.exception.CuentaNoActivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
+import edu.dosw.styleradar.usuarios.domain.exception.ContrasenaActualIncorrectaException;
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
@@ -21,6 +25,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Map;
 
@@ -51,6 +56,28 @@ class GlobalExceptionHandlerTest {
         assertEquals(409, response.getBody().getStatus());
         assertTrue(response.getBody().getMessage().contains("test@email.com"));
         assertEquals("/api/v1/users", response.getBody().getPath());
+    }
+
+    @Test
+    void convierteDatosInvalidosEnProblemDetailConCodigo() {
+        ResponseEntity<ErrorResponseDTO> response =
+                handler.handleInvalidData(new IllegalArgumentException("Rol no permitido"), request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("INVALID_DATA", response.getBody().getCode());
+        assertEquals("Rol no permitido", response.getBody().getDetail());
+        assertTrue(response.getBody().getErrors().isEmpty());
+    }
+
+    @Test
+    void devuelveCodigoCuandoLaContrasenaActualEsIncorrecta() {
+        ResponseEntity<ErrorResponseDTO> response = handler.handleContrasenaActualIncorrecta(
+                new ContrasenaActualIncorrectaException(), request);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("INVALID_CURRENT_PASSWORD", response.getBody().getCode());
+        assertEquals("/api/v1/users", response.getBody().getInstance());
+        assertTrue(response.getBody().getErrors().containsKey("currentPassword"));
     }
 
     @Test
@@ -213,5 +240,26 @@ class GlobalExceptionHandlerTest {
 
         assertEquals("Debe seleccionar un estilo",
                 response.getBody().getValidationErrors().get("styles"));
+    }
+
+    @Test
+    void debeManejarAccessDeniedCon403ProblemJson() {
+        ResponseEntity<ErrorResponseDTO> response = handler.handleAccessDenied(
+                new AccessDeniedException("Acceso denegado"), request);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_PROBLEM_JSON, response.getHeaders().getContentType());
+        assertEquals("ACCESS_DENIED", response.getBody().getCode());
+        assertEquals("/api/v1/users", response.getBody().getInstance());
+    }
+
+    @Test
+    void debeManejarRecursoNoEncontradoCon404ProblemJson() {
+        ResponseEntity<ErrorResponseDTO> response = handler.handleResourceNotFound(
+                new NoResourceFoundException(HttpMethod.GET, "/api/v1/inexistente"), request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_PROBLEM_JSON, response.getHeaders().getContentType());
+        assertEquals("RESOURCE_NOT_FOUND", response.getBody().getCode());
     }
 }

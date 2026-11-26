@@ -4,10 +4,10 @@ La documentación de la API de `ms-usuarios` utiliza OpenAPI 3.0 y permite consu
 
 ## 4.1. Enlaces por entorno
 
-| Entorno | Estado documentado | URL base | Swagger UI | Health Check |
+| Entorno | Verificación (24/11/2026) | URL base | Swagger UI | Health Check |
 |---|---|---|---|---|
-| **Producción (PROD)** | No confirmado | `https://styleradar-prod-app.azurewebsites.net` | [Swagger PROD](https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html) | [Health PROD](https://styleradar-prod-app.azurewebsites.net/actuator/health) |
-| **Calidad (QA)** | Pendiente de validar | `https://styleradar-qa-app.azurewebsites.net` | [Swagger QA](https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html) | [Health QA](https://styleradar-qa-app.azurewebsites.net/actuator/health) |
+| **Producción (PROD)** | Health y Swagger responden HTTP 200 | `https://styleradar-prod-app.azurewebsites.net` | [Swagger PROD](https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html) | [Health PROD](https://styleradar-prod-app.azurewebsites.net/actuator/health) |
+| **Calidad (QA)** | Health y Swagger responden HTTP 200 | `https://styleradar-qa-app.azurewebsites.net` | [Swagger QA](https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html) | [Health QA](https://styleradar-qa-app.azurewebsites.net/actuator/health) |
 | **Desarrollo local (DEV)** | Local | `http://localhost:8120` | [Swagger local](http://localhost:8120/swagger-ui.html) | [Health local](http://localhost:8120/actuator/health) |
 
 **Especificación OpenAPI (JSON):**
@@ -15,26 +15,31 @@ La documentación de la API de `ms-usuarios` utiliza OpenAPI 3.0 y permite consu
 - Local: `http://localhost:8120/v3/api-docs`
 - QA y PROD: `/v3/api-docs` en los respectivos dominios.
 
-> Estado documentado en el README original el 15/11/2026: el endpoint `/actuator/health` de PROD respondió HTTP 403 desde el entorno de revisión y QA no respondió antes del timeout. Esto no permite confirmar si los servicios están detenidos o restringidos por red.
+La verificación HTTP confirma que los endpoints responden desde el entorno de revisión; no identifica qué versión de la aplicación está desplegada.
 
 ## 4.2. Tabla de endpoints expuestos
 
 | Método | Endpoint | Descripción | Rol requerido |
 |---|---|---|---|
-| `POST` | `/api/v1/users` | Registro de perfil de usuario comprador (`SR-RF-01`, `SR-RNF-02`). | Público |
+| `POST` | `/api/v1/users` | Registro público; `accountType` acepta `BUYER` (predeterminado) o `STORE`. Las cuentas `STORE` nacen con rol `ADMIN_ALMACEN`. La contraseña requiere entre 8 y 72 caracteres, con mayúscula, minúscula, número y símbolo. | Público |
 | `GET` | `/api/v1/users/{id}` | Consulta del perfil propio por ID; un administrador puede consultar cualquier cuenta (`SR-RF-01`, `SR-RF-66`). | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `PUT` | `/api/v1/users/{id}` | Actualiza nombre y, si se envían, teléfono y barrio; devuelve el perfil completo. El ID debe coincidir con el del token. | `COMPRADOR` |
-| `PUT` | `/api/v1/users/{id}/style-preferences` | Actualización de preferencias de estilo (`SR-RF-03`). El ID debe corresponder al usuario autenticado. | `COMPRADOR` |
-| `PUT` | `/api/v1/users/{id}/sizes` | Configuración de tallas habituales (`SR-RF-04`). El ID debe corresponder al usuario autenticado. | `COMPRADOR` |
-| `GET` | `/api/v1/users/{id}/feed` | Feed paginado de prendas sugeridas (`SR-RF-05`). | `COMPRADOR` |
-| `GET` | `/api/v1/users/{id}/recommendations` | Recomendaciones personalizadas (`SR-RF-06`). | `COMPRADOR` |
-| `POST` | `/api/v1/users/{id}/saved-searches` | Registro de filtros y coordenadas de búsquedas frecuentes (`SR-RF-28`). | `COMPRADOR` |
-| `GET` | `/api/v1/users/{id}/saved-searches` | Consulta de búsquedas guardadas. | `COMPRADOR` |
-| `DELETE` | `/api/v1/users/{id}/saved-searches/{busquedaId}` | Eliminación de una búsqueda guardada. | `COMPRADOR` |
+| `PUT` | `/api/v1/users/{id}/password` | Cambia la contraseña propia validando `currentPassword`; guarda el nuevo hash BCrypt y emite `user.password.changed`. La nueva contraseña exige entre 8 y 72 caracteres, con mayúscula, minúscula, número y símbolo. | Usuario autenticado; ID propio |
+| `PUT` | `/api/v1/users/{id}/style-preferences` | Actualización de preferencias de estilo (`SR-RF-03`). Compradores solo pueden modificar las propias; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `PUT` | `/api/v1/users/{id}/sizes` | Configuración de tallas habituales (`SR-RF-04`). Compradores solo pueden modificar las propias; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `GET` | `/api/v1/users/{id}/feed` | Feed paginado de prendas sugeridas (`SR-RF-05`). Compradores consultan el propio; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `GET` | `/api/v1/users/{id}/recommendations` | Recomendaciones personalizadas (`SR-RF-06`). Compradores consultan las propias; el admin puede usar cualquier ID. | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `POST` | `/api/v1/users/{id}/saved-searches` | Registro de filtros y coordenadas de búsquedas frecuentes (`SR-RF-28`). | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `GET` | `/api/v1/users/{id}/saved-searches` | Consulta de búsquedas guardadas. | `COMPRADOR` o `ADMIN_STYLERADAR` |
+| `DELETE` | `/api/v1/users/{id}/saved-searches/{searchId}` | Eliminación de una búsqueda guardada. | `COMPRADOR` o `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/admin/users` | Listado paginado y filtrable de usuarios (`SR-RF-66`). | `ADMIN_STYLERADAR` |
 | `GET` | `/api/v1/admin/users/{id}` | Consulta administrativa del detalle de una cuenta. | `ADMIN_STYLERADAR` |
 | `PATCH` | `/api/v1/admin/users/{id}/status` | Cambio de estado de cuenta con motivo (`SR-RF-66`). | `ADMIN_STYLERADAR` |
+| `PATCH` | `/api/v1/admin/users/{id}/role` | Asigna `BUYER`, `STORE_ADMIN`, `FOUNDATION_REPRESENTATIVE` o `STYLERADAR_ADMIN`; acepta los nombres antiguos en español como alias. | `STYLERADAR_ADMIN` |
 | `DELETE` | `/api/v1/admin/users/{id}` | Eliminación de cuenta (`SR-RF-115`); el front debe pedir confirmación antes de llamar. | `ADMIN_STYLERADAR` |
+| `GET` | `/api/v1/internal/users/{userId}/measurements` | Consulta interna de medidas corporales. | Basic Auth de servicio |
+| `POST` | `/api/v1/internal/users/lookup` | Busca por correo para recuperación de contraseña; devuelve el contrato de verificación de credenciales o `404` si no existe. | Basic Auth de servicio |
+| `PUT` | `/api/v1/internal/users/{id}/password` | Restablece la contraseña después de que ms-auth verifica el código; requiere cuenta activa y emite evento para revocar sesiones. | Basic Auth de servicio |
 | `GET` | `/actuator/health` | Consulta del estado operativo del microservicio. | Público |
 
 ### Actualizar datos personales (`PUT /api/v1/users/{id}`)
@@ -49,6 +54,23 @@ Requiere JWT de comprador y que `{id}` coincida con el `sub` del token. `name` e
 }
 ```
 
-Respuestas: `200` con perfil actualizado, `400` con errores por campo en `validationErrors`, `401` si falta o es inválido el JWT, y `403` si el ID de ruta no corresponde al usuario autenticado.
+Respuestas: `200` con perfil actualizado, `400` con errores por campo en `errors`, `401` con código `AUTHENTICATION_REQUIRED` si falta o es inválido el JWT, y `403` con código `ACCESS_DENIED` si el ID no corresponde al usuario autenticado.
 
-## 4.3. C
+### Formato de error
+
+Los errores de la API usan ProblemDetail e incluyen `type`, `title`, `status`, `detail`, `instance`, `code` y `errors`. `type` usa `https://api.styleradar.com/errors/<code-en-minúsculas-con-guiones>`. Los errores de validación usan el código `INVALID_DATA`; `errors` contiene los mensajes asociados a los campos cuando aplica.
+
+```json
+{
+  "type": "https://api.styleradar.com/errors/invalid-data",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "La solicitud contiene datos inválidos",
+  "instance": "/api/v1/users",
+  "code": "INVALID_DATA",
+  "errors": {
+    "email": "El formato del email es inválido"
+  },
+  "message": "La solicitud contiene datos inválidos"
+}
+```

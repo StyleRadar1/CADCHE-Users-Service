@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Medidas corporales del usuario expresadas en centímetros")
+@Schema(name = "BodyMeasurementsResponse", description = "User body measurements in centimeters")
 public class MedidasCorporalesResponseDTO {
 
     @Schema(description = "Estatura en centímetros", example = "175.0")

@@ -5,13 +5,18 @@ import edu.dosw.styleradar.usuarios.domain.model.EstadoItem;
 import edu.dosw.styleradar.usuarios.domain.model.Estilo;
 import edu.dosw.styleradar.usuarios.domain.model.TipoPrenda;
 import edu.dosw.styleradar.usuarios.domain.port.out.CatalogoClientPort;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriBuilder;
 
 import java.text.Normalizer;
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,9 +26,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Component
 @Profile("!mock-catalogo")
 public class CatalogoRestAdapter implements CatalogoClientPort {
+
+    private static final int DEFAULT_CONNECT_TIMEOUT_MS = 3000;
+    private static final int DEFAULT_READ_TIMEOUT_MS = 5000;
 
     private final RestClient restClient;
 
@@ -33,10 +42,27 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
 
     public CatalogoRestAdapter(
             RestClient.Builder restClientBuilder,
-            @Value("${styleradar.catalogo.base-url}") String baseUrl) {
+            String baseUrl) {
 
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
+                .build();
+    }
+
+    @Autowired
+    public CatalogoRestAdapter(
+            RestClient.Builder restClientBuilder,
+            @Value("${styleradar.catalogo.base-url}") String baseUrl,
+            @Value("${styleradar.catalogo.connect-timeout-ms:" + DEFAULT_CONNECT_TIMEOUT_MS + "}") int connectTimeoutMs,
+            @Value("${styleradar.catalogo.read-timeout-ms:" + DEFAULT_READ_TIMEOUT_MS + "}") int readTimeoutMs) {
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeoutMs > 0 ? connectTimeoutMs : DEFAULT_CONNECT_TIMEOUT_MS));
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMs > 0 ? readTimeoutMs : DEFAULT_READ_TIMEOUT_MS));
+
+        this.restClient = restClientBuilder
+                .baseUrl(baseUrl)
+                .requestFactory(requestFactory)
                 .build();
     }
 
@@ -139,17 +165,22 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
     private List<CatalogoPrendaApiDTO> consultar(
             String nombreParametro,
             String valorParametro) {
+        try {
+            CatalogoPrendaApiDTO[] respuesta = restClient.get()
+                    .uri(uriBuilder -> construirUri(
+                            uriBuilder,
+                            nombreParametro,
+                            valorParametro
+                    ))
+                    .retrieve()
+                    .body(CatalogoPrendaApiDTO[].class);
 
-        CatalogoPrendaApiDTO[] respuesta = restClient.get()
-                .uri(uriBuilder -> construirUri(
-                        uriBuilder,
-                        nombreParametro,
-                        valorParametro
-                ))
-                .retrieve()
-                .body(CatalogoPrendaApiDTO[].class);
-
-        return respuesta == null ? List.of() : List.of(respuesta);
+            return respuesta == null ? List.of() : List.of(respuesta);
+        } catch (RestClientException | IllegalArgumentException ex) {
+            log.warn("No fue posible consultar catálogo ({}={}); se degrada a lista vacía: {}",
+                    nombreParametro, valorParametro, ex.getMessage());
+            return List.of();
+        }
     }
 
     private java.net.URI construirUri(
@@ -157,7 +188,7 @@ public class CatalogoRestAdapter implements CatalogoClientPort {
             String nombreParametro,
             String valorParametro) {
 
-        return uriBuilder.path("/api/v1/prendas")
+        return uriBuilder.path("/api/v1/garments")
                 .queryParam(nombreParametro, valorParametro)
                 .build();
     }

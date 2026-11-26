@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @NoArgsConstructor
 @SuperBuilder
-@Schema(description = "Criterios de búsqueda (texto, filtros y ubicación) para almacenar en el perfil del comprador (SR-RF-05 / SR-RF-28)")
+@Schema(name = "SaveSearchRequest", description = "Search filters and location to save to a user profile")
 public class GuardarBusquedaRequestDTO extends BusquedaFiltrosDTO {
 
     @NotBlank(message = "El nombre de la búsqueda guardada es obligatorio")

@@ -9,12 +9,12 @@ import lombok.Value;
 
 @Value
 @Builder
-@Schema(description = "Problem response con código estable y errores de validación")
+@Schema(name = "ApiError", description = "Problem response with stable code and validation errors")
 public class ErrorResponseDTO {
 
-    @Schema(example = "about:blank")
+    @Schema(example = "https://api.styleradar.com/errors/invalid-data")
     @Builder.Default
-    String type = "about:blank";
+    String type = "https://api.styleradar.com/errors/internal-error";
 
     @Schema(example = "Bad Request")
     String title;

@@ -169,13 +169,13 @@ public class UsuarioController implements UsuarioApi {
 
     public ResponseEntity<BusquedaGuardadaResponseDTO> actualizarBusquedaGuardada(
             Long id,
-            Long busquedaId,
+            Long searchId,
             @Valid @RequestBody GuardarBusquedaRequestDTO request) {
 
         Long usuarioId = usuarioObjetivo(id);
 
         Optional<BusquedaGuardada> encontrada =
-                busquedasRepository.buscarPorIdYUsuarioId(busquedaId, usuarioId);
+                busquedasRepository.buscarPorIdYUsuarioId(searchId, usuarioId);
 
         if (encontrada.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -222,22 +222,22 @@ public class UsuarioController implements UsuarioApi {
         );
     }
 
-    @DeleteMapping("/{id}/saved-searches/{busquedaId}")
+    @DeleteMapping("/{id}/saved-searches/{searchId}")
     @Override
     public ResponseEntity<Void> eliminarBusquedaGuardada(
             @PathVariable("id") Long id,
-            @PathVariable("busquedaId") Long busquedaId) {
+            @PathVariable("searchId") Long searchId) {
 
         Long usuarioId = usuarioObjetivo(id);
 
         Optional<BusquedaGuardada> encontrada =
-                busquedasRepository.buscarPorIdYUsuarioId(busquedaId, usuarioId);
+                busquedasRepository.buscarPorIdYUsuarioId(searchId, usuarioId);
 
         if (encontrada.isPresent()) {
             BusquedaGuardada busqueda = encontrada.get();
 
             boolean eliminada = busquedasRepository.eliminarPorIdYUsuarioId(
-                    busquedaId,
+                    searchId,
                     usuarioId
             );
 

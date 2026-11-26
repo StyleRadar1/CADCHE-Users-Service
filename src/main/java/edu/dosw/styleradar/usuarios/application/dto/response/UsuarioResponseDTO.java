@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Representación del perfil de usuario comprador, sus preferencias de estilo y tallas habituales por tipo de prenda")
+@Schema(name = "UserResponse", description = "User profile, style preferences and usual sizes")
 public class UsuarioResponseDTO {
 
     @Schema(description = "Identificador único del usuario", example = "12")

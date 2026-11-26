@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import edu.dosw.styleradar.usuarios.application.validation.CredentialComplexityPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Datos requeridos para registrar un usuario comprador")
+@Schema(name = "RegisterUserRequest", description = "Public account registration request")
 public class RegistrarUsuarioRequestDTO {
 
     @NotBlank(message = "El nombre es obligatorio")
@@ -54,8 +55,9 @@ public class RegistrarUsuarioRequestDTO {
     private String barrio;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, max = 72,
-            message = "La contraseña debe tener entre 8 y 72 caracteres")
+    @Size(min = 8, max = 72, message = "La contraseña debe tener entre 8 y 72 caracteres")
+    @Pattern(regexp = CredentialComplexityPolicy.COMPLEXITY_PATTERN,
+            message = "Debe incluir mayúscula, minúscula, número y símbolo")
     @Schema(description = "Contraseña de acceso",
             example = "StyleRadar2026*",
             requiredMode = Schema.RequiredMode.REQUIRED)
@@ -69,6 +71,13 @@ public class RegistrarUsuarioRequestDTO {
     @JsonProperty("dataPolicyAccepted")
     @JsonAlias({"acceptsDataProcessing", "aceptaHabeasData"})
     private Boolean aceptaHabeasData;
+
+    @NotBlank(message = "El tipo de cuenta es obligatorio")
+    @Pattern(regexp = "^(BUYER|STORE)$", message = "Debe ser BUYER o STORE")
+    @Builder.Default
+    @Schema(description = "Tipo de cuenta pública", example = "BUYER", defaultValue = "BUYER")
+    @JsonProperty("accountType")
+    private String accountType = "BUYER";
 
     @Schema(description = "Estatura en centímetros", example = "175.0")
     private Double heightCm;

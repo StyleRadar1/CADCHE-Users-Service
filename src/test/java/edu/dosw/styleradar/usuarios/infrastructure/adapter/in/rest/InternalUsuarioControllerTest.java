@@ -14,14 +14,14 @@ import static org.mockito.Mockito.*;
 class InternalUsuarioControllerTest {
 
     private ObtenerMedidasCorporalesUseCase obtenerMedidasCorporalesUseCase;
-    private InternalUsuarioController controller;
+    private InternalUserController controller;
 
     @BeforeEach
     void setUp() {
         obtenerMedidasCorporalesUseCase =
                 mock(ObtenerMedidasCorporalesUseCase.class);
 
-        controller = new InternalUsuarioController(
+        controller = new InternalUserController(
                 obtenerMedidasCorporalesUseCase
         );
     }
@@ -41,7 +41,7 @@ class InternalUsuarioControllerTest {
                 .thenReturn(esperado);
 
         ResponseEntity<MedidasCorporalesResponseDTO> respuesta =
-                controller.obtenerMedidas(144L);
+                controller.getMeasurements(144L);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
@@ -69,7 +69,7 @@ class InternalUsuarioControllerTest {
                 .thenReturn(esperado);
 
         ResponseEntity<MedidasCorporalesResponseDTO> respuesta =
-                controller.obtenerMedidas(144L);
+                controller.getMeasurements(144L);
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
@@ -90,7 +90,7 @@ class InternalUsuarioControllerTest {
 
         assertThrows(
                 UsuarioNoEncontradoException.class,
-                () -> controller.obtenerMedidas(999L)
+                () -> controller.getMeasurements(999L)
         );
 
         verify(obtenerMedidasCorporalesUseCase).obtener(999L);

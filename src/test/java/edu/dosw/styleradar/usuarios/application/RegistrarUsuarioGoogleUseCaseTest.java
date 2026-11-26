@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,34 +14,42 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import edu.dosw.styleradar.usuarios.application.dto.request.RegistrarUsuarioGoogleRequestDTO;
 import edu.dosw.styleradar.usuarios.application.usecase.RegistrarUsuarioGoogleUseCaseImpl;
+import edu.dosw.styleradar.usuarios.domain.event.UsuarioRegistradoEvent;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
+import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRegistradoEventPublisherPort;
 
 class RegistrarUsuarioGoogleUseCaseTest {
 
     private UsuarioRepositoryPort repository;
+    private UsuarioRegistradoEventPublisherPort eventoRegistroPublisher;
     private PasswordEncoder passwordEncoder;
     private RegistrarUsuarioGoogleUseCaseImpl useCase;
 
     @BeforeEach
     void setUp() {
         repository = org.mockito.Mockito.mock(UsuarioRepositoryPort.class);
+        eventoRegistroPublisher = org.mockito.Mockito.mock(
+                UsuarioRegistradoEventPublisherPort.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        useCase = new RegistrarUsuarioGoogleUseCaseImpl(repository, passwordEncoder);
+        useCase = new RegistrarUsuarioGoogleUseCaseImpl(
+                repository, eventoRegistroPublisher, passwordEncoder);
     }
 
     @Test
@@ -63,6 +72,13 @@ class RegistrarUsuarioGoogleUseCaseTest {
         assertNotNull(actual.getPasswordHash());
         assertTrue(actual.getPasswordHash().startsWith("$2"));
         assertTrue(!passwordEncoder.matches("StyleRadar2026*", actual.getPasswordHash()));
+
+        ArgumentCaptor<UsuarioRegistradoEvent> eventoCaptor =
+                ArgumentCaptor.forClass(UsuarioRegistradoEvent.class);
+        verify(eventoRegistroPublisher).publicar(eventoCaptor.capture());
+        assertDoesNotThrow(() -> UUID.fromString(eventoCaptor.getValue().eventId()));
+        assertEquals(actual.getFechaRegistro(), eventoCaptor.getValue().occurredAt());
+        assertEquals(Rol.COMPRADOR, eventoCaptor.getValue().rol());
     }
 
     @ParameterizedTest
@@ -79,6 +95,7 @@ class RegistrarUsuarioGoogleUseCaseTest {
         assertEquals(Boolean.TRUE, actual.getAceptaHabeasData());
         assertEquals(Boolean.FALSE, actual.getCorreoVerificado());
         verify(repository, never()).guardar(any(Usuario.class));
+        verify(eventoRegistroPublisher, never()).publicar(any(UsuarioRegistradoEvent.class));
         verify(repository, never()).vincularIdentidadGoogle(8L, "google-sub-1");
     }
 
@@ -114,6 +131,26 @@ class RegistrarUsuarioGoogleUseCaseTest {
     }
 
     @Test
+    void rechazaCuentaConSoloProviderIdSinVincularla() {
+        Usuario existente = usuario(8L, null, "google-sub-1", EstadoCuenta.ACTIVA);
+        when(repository.buscarPorEmail("usuario@gmail.com")).thenReturn(Optional.of(existente));
+
+        assertThrows(IdentidadExternaConflictivaException.class,
+                () -> useCase.ejecutar(request()));
+        verify(repository, never()).vincularIdentidadGoogle(8L, "google-sub-1");
+    }
+
+    @Test
+    void rechazaCuentaConProviderPeroSinProviderId() {
+        Usuario existente = usuario(8L, "GOOGLE", null, EstadoCuenta.ACTIVA);
+        when(repository.buscarPorEmail("usuario@gmail.com")).thenReturn(Optional.of(existente));
+
+        assertThrows(IdentidadExternaConflictivaException.class,
+                () -> useCase.ejecutar(request()));
+        verify(repository, never()).vincularIdentidadGoogle(8L, "google-sub-1");
+    }
+
+    @Test
     void rechazaVinculoConcurrenteQueNoDevuelveElUsuario() {
         when(repository.buscarPorEmail("usuario@gmail.com"))
                 .thenReturn(Optional.of(usuario(8L, null, null, EstadoCuenta.ACTIVA)));
@@ -130,6 +167,17 @@ class RegistrarUsuarioGoogleUseCaseTest {
                 .thenReturn(Optional.of(usuario(8L, null, null, EstadoCuenta.ACTIVA)));
         when(repository.vincularIdentidadGoogle(8L, "google-sub-1"))
                 .thenReturn(Optional.of(usuario(8L, "GOOGLE", "otro-sub", EstadoCuenta.ACTIVA)));
+
+        assertThrows(IdentidadExternaConflictivaException.class,
+                () -> useCase.ejecutar(request()));
+    }
+
+    @Test
+    void rechazaVinculoConcurrenteSiLaCuentaQuedaConOtroProveedor() {
+        when(repository.buscarPorEmail("usuario@gmail.com"))
+                .thenReturn(Optional.of(usuario(8L, null, null, EstadoCuenta.ACTIVA)));
+        when(repository.vincularIdentidadGoogle(8L, "google-sub-1"))
+                .thenReturn(Optional.of(usuario(8L, "FACEBOOK", "google-sub-1", EstadoCuenta.ACTIVA)));
 
         assertThrows(IdentidadExternaConflictivaException.class,
                 () -> useCase.ejecutar(request()));
