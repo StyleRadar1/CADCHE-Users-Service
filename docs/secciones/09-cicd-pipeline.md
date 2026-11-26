@@ -7,8 +7,8 @@ El pipeline está separado en tres archivos, como el repositorio base:
 | Archivo | Cuándo corre | Qué hace |
 |---|---|---|
 | [`ci.yml`](../../.github/workflows/ci.yml) | Pull Request hacia `develop` o `main`, y `push` a ramas de trabajo | Pruebas, cobertura, SpotBugs, SonarQube Cloud y construcción de la imagen Docker sin publicarla. No despliega. |
-| [`ci-qa.yml`](../../.github/workflows/ci-qa.yml) | `push` a `develop` (merge de un PR) | Lo mismo de `ci.yml`, publica la imagen con etiqueta `qa`, despliega en QA y hace smoke test. |
-| [`ci-prod.yml`](../../.github/workflows/ci-prod.yml) | `push` a `main` o etiqueta `v*.*.*` | Lo mismo, valida la configuración de PROD, publica la imagen con etiqueta `prod`, despliega en PROD y hace smoke test. |
+| [`ci-qa.yml`](../../.github/workflows/ci-qa.yml) | `push` a `develop` (merge de un PR) o ejecución manual seleccionando `develop` | Lo mismo de `ci.yml`, publica la imagen con etiqueta `qa`, despliega en QA y hace smoke test. |
+| [`ci-prod.yml`](../../.github/workflows/ci-prod.yml) | `push` a `main` (o ejecución manual seleccionando `main`) | Lo mismo, valida la configuración de PROD, publica la imagen con etiqueta `prod`, despliega en PROD y hace smoke test. |
 
 Badges:
 
@@ -19,7 +19,7 @@ Badges:
 ```text
 PR / rama de trabajo ── ci.yml ──► build + pruebas + JaCoCo ≥ 85 % ─► SpotBugs ─► SonarQube ─► docker build (sin publicar)
 develop ─────────────── ci-qa.yml ─► build + pruebas ─► SonarQube ─► imagen :qa en ACR ─► App Service QA ─► smoke test
-main / v*.*.* ───────── ci-prod.yml ► build + pruebas ─► SonarQube ─► imagen :prod en ACR ─► validaciones PROD ─► App Service PROD ─► smoke test
+main ────────────────── ci-prod.yml ► build + pruebas ─► Quality Gate Sonar ─► imagen :prod en ACR ─► validaciones PROD ─► App Service PROD ─► smoke test
 ```
 
 ## 9.1. Build y pruebas
@@ -42,7 +42,7 @@ Los tres archivos usan Ubuntu, Java 21 y el Maven Wrapper:
 | SpotBugs | Análisis estático para detectar posibles errores en el código. |
 | SonarQube Cloud | Análisis de calidad y revisión del código. |
 
-En QA y PROD la imagen solo se publica si el build y SonarQube terminan bien.
+En QA y PROD el análisis espera el resultado del Quality Gate de SonarQube; la imagen solo se publica si el build y el Quality Gate pasan.
 
 ## 9.3. Construcción y publicación de imágenes Docker
 
@@ -58,7 +58,7 @@ La imagen se construye con `Dockerfile.runtime` (usuario sin privilegios y `HEAL
 
 ## 9.4. Despliegue en QA
 
-`ci-qa.yml` despliega al hacer `push` a `develop`. Los Pull Requests ya no despliegan a QA: QA muestra siempre lo que está integrado en `develop`, como en el repositorio base.
+`ci-qa.yml` despliega al hacer `push` a `develop` o mediante ejecución manual seleccionando `develop`. Los Pull Requests ya no despliegan a QA: QA muestra siempre lo que está integrado en `develop`, como en el repositorio base. Los jobs de publicación y despliegue están restringidos a esa rama.
 
 El pipeline realiza las siguientes actividades:
 
@@ -68,7 +68,7 @@ El pipeline realiza las siguientes actividades:
 4. Activar Flyway mediante `FLYWAY_ENABLED=true`.
 5. Establecer el perfil de Spring `qa`.
 6. Reiniciar la aplicación.
-7. Smoke test: esperar a que `/actuator/health` responda 200 (hasta 5 minutos) y comprobar que `/v3/api-docs` responde 200.
+7. Smoke test: esperar a que `/actuator/health` responda 200 (hasta 5 minutos) y reintentar hasta 3 veces `/v3/api-docs` ante respuestas transitorias, con timeout por solicitud.
 
 El App Service configurado es:
 
@@ -76,7 +76,7 @@ El App Service configurado es:
 
 ## 9.5. Despliegue en producción
 
-El despliegue en producción lo hace `ci-prod.yml` cuando se realiza un `push` a la rama `main` o se publica una etiqueta `v*.*.*`.
+El despliegue en producción lo hace `ci-prod.yml` cuando se realiza un `push` a la rama `main`. No se despliega PROD desde etiquetas. La ejecución manual solo publica y despliega si se selecciona `main`.
 
 Antes del despliegue, el pipeline verifica que la variable `PROD_DATABASE_VERIFIED` tenga el valor `true`.
 
@@ -97,7 +97,7 @@ Cuando las validaciones son correctas, se configura la imagen Docker en Azure Ap
 
 ## 9.6. Secretos y variables de GitHub
 
-El pipeline utiliza secretos y variables configurados en GitHub para autenticarse en Azure y acceder a la configuración del despliegue. PROD solo se publica después de un `push` a `main` (o una etiqueta `v*.*.*`), de verificar PostgreSQL mediante `PROD_DATABASE_VERIFIED=true` y de comprobar los App Settings requeridos.
+El pipeline utiliza secretos y variables configurados en GitHub para autenticarse en Azure y acceder a la configuración del despliegue. PROD solo se publica desde `main`, después de verificar PostgreSQL mediante `PROD_DATABASE_VERIFIED=true`, aprobar el Quality Gate y comprobar los App Settings requeridos.
 
 ## 9.7. Evidencia
 
@@ -113,7 +113,7 @@ El pipeline utiliza secretos y variables configurados en GitHub para autenticars
   <img src="../evidencias/pipeline-prod.png" width="95%" alt="Ejecuciones del pipeline en main" />
 </div>
 
-Las capturas son del 25/11/2026, antes de separar el pipeline; muestran el `ci.yml` anterior.
+Las capturas son del 25/11/2026, antes de separar el pipeline; muestran el `ci.yml` anterior y no documentan el flujo vigente.
 
 ---
 

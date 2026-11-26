@@ -125,7 +125,9 @@ jobs:
             log_file=$(mktemp)
             if ./mvnw -B \
               org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
-              -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service >"$log_file" 2>&1; then
+              -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service \
+              -Dsonar.qualitygate.wait=true \
+              -Dsonar.qualitygate.timeout=300 >"$log_file" 2>&1; then
               cat "$log_file"
               rm -f "$log_file"
               exit 0
@@ -148,6 +150,7 @@ jobs:
   publish-image:
     name: Construir y publicar imagen
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
     permissions:
       contents: read
       id-token: write
@@ -191,6 +194,7 @@ jobs:
   deploy-qa:
     name: Desplegar en Azure App Service QA
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
     permissions:
       id-token: write
     needs: publish-image
@@ -248,9 +252,18 @@ jobs:
             echo "El servicio no quedó saludable tras el despliegue."
             exit 1
           fi
-          docs=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/v3/api-docs")
+          docs="000"
+          for attempt in $(seq 1 3); do
+            docs=$(curl --connect-timeout 10 --max-time 45 -sS \
+              -o /dev/null -w '%{http_code}' "$BASE_URL/v3/api-docs" || true)
+            if [[ "$docs" == "200" ]]; then
+              echo "OpenAPI respondió 200 en el intento $attempt."
+              break
+            fi
+            echo "OpenAPI respondió $docs (intento $attempt/3); se reintenta en 10s."
+            if [[ "$attempt" -lt 3 ]]; then sleep 10; fi
+          done
           if [[ "$docs" != "200" ]]; then
-            echo "OpenAPI (/v3/api-docs) respondió $docs."
+            echo "OpenAPI no quedó disponible después de 3 intentos."
             exit 1
           fi
-          echo "OpenAPI respondió 200."

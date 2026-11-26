@@ -135,7 +135,9 @@ jobs:
             log_file=$(mktemp)
             if ./mvnw -B \
               org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
-              -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service >"$log_file" 2>&1; then
+              -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service \
+              -Dsonar.qualitygate.wait=true \
+              -Dsonar.qualitygate.timeout=300 >"$log_file" 2>&1; then
               cat "$log_file"
               rm -f "$log_file"
               exit 0

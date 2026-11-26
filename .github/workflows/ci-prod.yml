@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
 
 permissions:
@@ -127,7 +125,9 @@ jobs:
             log_file=$(mktemp)
             if ./mvnw -B \
               org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
-              -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service >"$log_file" 2>&1; then
+              -Dsonar.projectKey=StyleRadar1_CADCHE-Users-Service \
+              -Dsonar.qualitygate.wait=true \
+              -Dsonar.qualitygate.timeout=300 >"$log_file" 2>&1; then
               cat "$log_file"
               rm -f "$log_file"
               exit 0
@@ -150,6 +150,7 @@ jobs:
   publish-image:
     name: Construir y publicar imagen
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       id-token: write
@@ -193,6 +194,7 @@ jobs:
   deploy-prod:
     name: Desplegar en Azure App Service PROD
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     permissions:
       id-token: write
     needs: publish-image
