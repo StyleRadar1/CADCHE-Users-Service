@@ -10,6 +10,14 @@ LABEL org.opencontainers.image.title="StyleRadar CADCHE Users Service" \
 
 WORKDIR /app
 
+# CA pública del broker compartido para conexiones AMQPS.
+COPY rabbitmq-ca.pem /tmp/rabbitmq-ca.pem
+RUN keytool -importcert -trustcacerts -noprompt \
+    -alias styleradar-rabbitmq-root-ca \
+    -file /tmp/rabbitmq-ca.pem \
+    -cacerts -storepass changeit \
+    && rm /tmp/rabbitmq-ca.pem
+
 # Usuario sin privilegios (no-root)
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 

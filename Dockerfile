@@ -20,6 +20,14 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# CA pública del broker compartido para conexiones AMQPS.
+COPY rabbitmq-ca.pem /tmp/rabbitmq-ca.pem
+RUN keytool -importcert -trustcacerts -noprompt \
+    -alias styleradar-rabbitmq-root-ca \
+    -file /tmp/rabbitmq-ca.pem \
+    -cacerts -storepass changeit \
+    && rm /tmp/rabbitmq-ca.pem
+
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 COPY --from=builder --chown=appuser:appgroup /build/target/*.jar app.jar
