@@ -31,6 +31,7 @@ public class RabbitMQConfig {
 
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(converter);
+        template.setMandatory(true);
 
         return template;
     }
