@@ -1,4 +1,4 @@
-# 10. CI/CD y Pipeline
+# 9. CI/CD y pipeline
 
 El microservicio `ms-usuarios` utiliza GitHub Actions para automatizar la integración continua, la ejecución de pruebas, el análisis de código, la construcción de imágenes Docker y el despliegue en Azure.
 
@@ -6,7 +6,7 @@ El pipeline se encuentra definido en:
 
 `.github/workflows/ci.yml`
 
-## 10.1. Integración continua (CI)
+## 9.1. Integración continua (CI)
 
 El flujo de integración continua se ejecuta cuando:
 
@@ -26,7 +26,7 @@ Las principales actividades son:
 
 Para las pruebas, el pipeline inicia un servicio PostgreSQL 16.
 
-## 10.2. Análisis de calidad
+## 9.2. Análisis de calidad
 
 El pipeline utiliza las siguientes herramientas:
 
@@ -39,7 +39,7 @@ El pipeline utiliza las siguientes herramientas:
 
 El análisis con SonarQube Cloud se ejecuta después de finalizar correctamente el trabajo de construcción y pruebas.
 
-## 10.3. Construcción y publicación de imágenes Docker
+## 9.3. Construcción y publicación de imágenes Docker
 
 Cuando se cumplen las condiciones configuradas para las ramas `develop` y `main`, el pipeline construye una imagen Docker del microservicio y la publica en Azure Container Registry (ACR).
 
@@ -57,9 +57,9 @@ También se utilizan etiquetas adicionales:
 | `main` | `prod` |
 | Pull Request hacia `develop` | `qa` |
 
-## 10.4. Despliegue en QA
+## 9.4. Despliegue en QA
 
-El despliegue en QA se ejecuta cuando se realiza un `push` a `develop` o cuando se actualiza un Pull Request hacia esa rama desde el mismo repositorio.
+El despliegue en QA se ejecuta al hacer `push` a `develop` o al abrir/actualizar un Pull Request hacia esa rama desde el mismo repositorio. Los Pull Requests desde forks no cumplen la condición de despliegue.
 
 El pipeline realiza las siguientes actividades:
 
@@ -74,7 +74,7 @@ El App Service configurado es:
 
 `styleradar-qa-app`
 
-## 10.5. Despliegue en producción
+## 9.5. Despliegue en producción
 
 El despliegue en producción se ejecuta únicamente cuando se realiza un `push` a la rama `main`.
 
@@ -95,6 +95,10 @@ Si alguna validación falla, el despliegue se detiene.
 
 Cuando las validaciones son correctas, se configura la imagen Docker en Azure App Service, se activa Flyway y se reinicia la aplicación.
 
-## 10.6. Secretos y variables de GitHub
+## 9.6. Secretos y variables de GitHub
 
-El pipeline utiliza secretos y variables configurados en GitHub para autenticarse en Azure y acceder a la configuración
+El pipeline utiliza secretos y variables configurados en GitHub para autenticarse en Azure y acceder a la configuración del despliegue. PROD solo se publica después de un `push` a `main`, de verificar PostgreSQL mediante `PROD_DATABASE_VERIFIED=true` y de comprobar los App Settings requeridos.
+
+---
+
+[← Anterior: 8. Pruebas y cobertura](08-pruebas-cobertura.md) · [Índice](../../README.md) · [Siguiente: 10. Ramas y contribución](10-ramas-contribuir.md)

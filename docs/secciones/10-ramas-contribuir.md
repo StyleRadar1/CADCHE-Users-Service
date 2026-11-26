@@ -1,8 +1,8 @@
-# 11. Ramas y contribución
+# 10. Ramas y contribución
 
 El desarrollo del microservicio `ms-usuarios` se organiza mediante Git y GitHub, utilizando ramas para separar el trabajo y facilitar la integración de nuevas funcionalidades.
 
-## 11.1. Estrategia de ramas
+## 10.1. Estrategia de ramas
 
 Se utilizan las siguientes ramas principales:
 
@@ -13,7 +13,7 @@ Se utilizan las siguientes ramas principales:
 | `feature/*` | Permite desarrollar nuevas funcionalidades de manera independiente. |
 | `fix/*` | Se utiliza para corregir errores identificados durante el desarrollo. |
 
-## 11.2. Flujo de trabajo
+## 10.2. Flujo de trabajo
 
 El flujo recomendado para contribuir al proyecto es:
 
@@ -28,7 +28,7 @@ El flujo recomendado para contribuir al proyecto es:
 
 Cuando los cambios están listos para producción, se integran en `main` mediante el proceso correspondiente.
 
-## 11.3. Convención de nombres
+## 10.3. Convención de nombres
 
 Se recomienda utilizar nombres descriptivos para las ramas:
 
@@ -45,7 +45,7 @@ feature/actualizar-perfil
 fix/validacion-usuario
 ```
 
-## 11.4. Comandos básicos de Git
+## 10.4. Comandos básicos de Git
 
 Actualizar el repositorio:
 
@@ -73,7 +73,7 @@ Subir la rama:
 git push -u origin feature/nombre-funcionalidad
 ```
 
-## 11.5. Recomendaciones para contribuir
+## 10.5. Recomendaciones para contribuir
 
 - Mantener los cambios relacionados con una sola funcionalidad.
 - Utilizar nombres claros para las ramas y los commits.
@@ -81,4 +81,8 @@ git push -u origin feature/nombre-funcionalidad
 - Revisar los cambios antes de integrarlos.
 - No subir contraseñas, tokens ni secretos al repositorio.
 - Mantener actualizada la documentación cuando se modifique el comportamiento del servicio.
+
+---
+
+[← Anterior: 9. CI/CD](09-cicd-pipeline.md) · [Índice](../../README.md) · [Siguiente: 11. Seguridad y OWASP](11-seguridad-owasp.md)
 

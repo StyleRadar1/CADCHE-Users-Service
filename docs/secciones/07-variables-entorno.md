@@ -1,10 +1,10 @@
-# 8. Variables de entorno
+# 7. Variables de entorno
 
 El microservicio `ms-usuarios` utiliza variables de entorno para configurar la conexión con la base de datos, los servicios externos, RabbitMQ y los mecanismos de seguridad.
 
 Estas variables permiten ejecutar el servicio en diferentes ambientes sin modificar directamente el código fuente.
 
-## 8.1. Variables de configuración
+## 7.1. Variables de configuración
 
 | Variable | Descripción | Valor por defecto o referencia |
 |---|---|---|
@@ -15,14 +15,18 @@ Estas variables permiten ejecutar el servicio en diferentes ambientes sin modifi
 | `INTERNAL_AUTH_USERNAME` | Usuario para la autenticación de solicitudes internas. | Configuración del ambiente |
 | `INTERNAL_AUTH_PASSWORD` | Contraseña para la autenticación de solicitudes internas. | Configuración del ambiente |
 | `JWT_SECRET_BASE64` | Secreto utilizado para validar tokens JWT. | Configuración del ambiente |
-| `JWT_SECRET` | Variable alternativa para el secreto JWT. | Configuración del ambiente |
+| `JWT_SECRET` | Nombre heredado alternativo del secreto JWT. | Configuración del ambiente |
 | `RABBITMQ_HOST` | Host del servidor RabbitMQ. | `localhost` |
 | `RABBITMQ_PORT` | Puerto de conexión de RabbitMQ. | `5672` |
 | `RABBITMQ_USERNAME` | Usuario de RabbitMQ. | `guest` |
 | `RABBITMQ_PASSWORD` | Contraseña de RabbitMQ. | `guest` |
-| `CATALOGO_API_BASE_URL` | URL base del microservicio de catálogo de artículos. | URL configurada para QA |
+| `CATALOGO_API_BASE_URL` | URL base del microservicio de catálogo. | URL QA definida en `application.yml` |
+| `styleradar.catalogo.connect-timeout-ms` | Timeout para establecer conexión al catálogo. | `3000` ms |
+| `styleradar.catalogo.read-timeout-ms` | Timeout para leer la respuesta del catálogo. | `5000` ms |
+| `SPRING_PROFILES_ACTIVE` | Perfil de configuración de Spring. | `dev` por defecto; despliegues usan `qa` o `prod` |
+| `FLYWAY_ENABLED` | Habilita migraciones de base de datos. | `false` base; `true` en QA/PROD y compose |
 
-## 8.2. Configuración por ambiente
+## 7.2. Configuración por ambiente
 
 Los valores pueden cambiar dependiendo del ambiente en el que se ejecute el microservicio:
 
@@ -30,15 +34,21 @@ Los valores pueden cambiar dependiendo del ambiente en el que se ejecute el micr
 - **Docker:** utiliza las variables configuradas en `docker-compose.yml`.
 - **QA y producción:** utiliza las variables de configuración definidas en el servicio de despliegue.
 
-## 8.3. Seguridad
+## 7.3. Seguridad
 
 Las contraseñas y secretos no deben publicarse directamente en el repositorio.
 
 Se recomienda configurar estos valores mediante variables de entorno y mantenerlos protegidos en los ambientes correspondientes.
 
-## 8.4. Consideraciones
+## 7.4. Consideraciones
 
 - La aplicación utiliza PostgreSQL como sistema de persistencia.
 - RabbitMQ se configura mediante sus variables de conexión.
 - El secreto JWT debe estar correctamente configurado para validar los tokens.
 - La configuración de la base de datos debe coincidir con el ambiente donde se ejecuta el servicio.
+
+La plantilla local está en [`.env.example`](../../.env.example). Los secretos y contraseñas reales se gestionan fuera del repositorio. No uses los valores por defecto de desarrollo en un entorno compartido o productivo.
+
+---
+
+[← Anterior: 6. Ejecución local](06-ejecucion-local-docker.md) · [Índice](../../README.md) · [Siguiente: 8. Pruebas y cobertura](08-pruebas-cobertura.md)

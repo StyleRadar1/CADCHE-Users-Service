@@ -1,8 +1,8 @@
-# 7. Cómo ejecutar local y con Docker
+# 6. Cómo ejecutar local y con Docker
 
 El microservicio `ms-usuarios` puede ejecutarse localmente mediante Maven o utilizando Docker Compose.
 
-## 7.1. Requisitos previos
+## 6.1. Requisitos previos
 
 Antes de ejecutar el servicio se necesita:
 
@@ -14,22 +14,22 @@ Antes de ejecutar el servicio se necesita:
 | Docker Desktop | Ejecución mediante contenedores. |
 | RabbitMQ | Comunicación asíncrona con otros microservicios. |
 
-## 7.2. Clonar el repositorio
+## 6.2. Clonar el repositorio
 
 ```bash
 git clone <URL_DEL_REPOSITORIO>
 cd CADCHE-Usuarios-Service
 ```
 
-## 7.3. Configuración de variables de entorno
+## 6.3. Configuración de variables de entorno
 
 Antes de ejecutar la aplicación, configura las variables requeridas en el entorno o archivo `.env`.
 
-Consulta la [Sección 8: Variables de entorno](08-variables-entorno.md).
+Consulta la [Sección 7: Variables de entorno](07-variables-entorno.md).
 
 No publiques credenciales, contraseñas ni secretos en el repositorio.
 
-## 7.4. Ejecución local con Maven
+## 6.4. Ejecución local con Maven
 
 Primero, compila el proyecto:
 
@@ -58,10 +58,10 @@ http://localhost:8120
 Swagger UI:
 
 ```text
-http://localhost:8120/swagger-ui.html
+http://localhost:8120/swagger-ui/index.html
 ```
 
-## 7.5. Ejecución con Docker Compose
+## 6.5. Ejecución con Docker Compose
 
 El repositorio incluye un `Dockerfile` y un `docker-compose.yml` para construir y ejecutar la aplicación junto con PostgreSQL.
 
@@ -99,7 +99,7 @@ docker compose down -v
 
 **Advertencia:** el último comando elimina los datos persistidos en el volumen de PostgreSQL.
 
-## 7.6. Servicios y puertos
+## 6.6. Servicios y puertos
 
 | Servicio | Puerto del contenedor | Puerto local |
 |---|---:|---:|
@@ -109,7 +109,7 @@ docker compose down -v
 
 El `docker-compose.yml` del repositorio define los contenedores de `ms-usuarios` y PostgreSQL. RabbitMQ debe estar disponible y configurado por separado.
 
-## 7.7. Verificación de funcionamiento
+## 6.7. Verificación de funcionamiento
 
 Comprueba el estado de la aplicación mediante Actuator:
 
@@ -128,9 +128,9 @@ Respuesta esperada cuando la aplicación está disponible:
 También puedes abrir Swagger UI:
 
 ```text
-http://localhost:8120/swagger-ui.html
+http://localhost:8120/swagger-ui/index.html
 ```
 
 ---
 
-[← Anterior: 6. Tecnologías y dependencias](06-tecnologias-dependencias.md) · [Índice principal](../../README.md) · [Siguiente: 8. Variables de entorno](08-variables-entorno.md)
+[← Anterior: 5. Tecnologías](05-tecnologias-dependencias.md) · [Índice principal](../../README.md) · [Siguiente: 7. Variables de entorno](07-variables-entorno.md)
