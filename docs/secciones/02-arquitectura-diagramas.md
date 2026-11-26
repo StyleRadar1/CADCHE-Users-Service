@@ -1,10 +1,10 @@
-# 3. Arquitectura hexagonal y diagramas
+# 2. Arquitectura hexagonal y diagramas
 
 El microservicio `ms-usuarios` implementa una **arquitectura hexagonal (Ports and Adapters)**, que separa las reglas de negocio de los mecanismos de entrada, persistencia e integración con otros servicios.
 
 Esta arquitectura permite mantener el dominio independiente de frameworks, bases de datos y protocolos de comunicación.
 
-## 3.1. Capas de la arquitectura
+## 2.1. Capas de la arquitectura
 
 | Capa | Responsabilidad | Componentes principales |
 |---|---|---|
@@ -13,7 +13,7 @@ Esta arquitectura permite mantener el dominio independiente de frameworks, bases
 | **Dominio (Domain Core)** | Contiene las reglas de negocio y los modelos principales. | `Usuario`, `BusquedaGuardada`, Value Objects, eventos y excepciones de dominio. |
 | **Infraestructura de salida (Driven Adapters)** | Implementa la persistencia y las integraciones externas. | Adaptadores de repositorio, RabbitMQ Publisher y clientes externos. |
 
-## 3.2. Justificación de la arquitectura
+## 2.2. Justificación de la arquitectura
 
 La arquitectura hexagonal permite:
 
@@ -22,11 +22,11 @@ La arquitectura hexagonal permite:
 - **Facilidad de pruebas:** los casos de uso pueden probarse mediante interfaces y dependencias simuladas.
 - **Mantenibilidad:** permite cambiar mecanismos de persistencia o comunicación sin modificar directamente las reglas del dominio.
 
-## 3.3. Diagramas UML del servicio
+## 2.3. Diagramas UML del servicio
 
 Los diagramas se encuentran organizados en `docs/uml/` y sus archivos editables en `docs/diagramas/drawio/`.
 
-### 3.3.1. Diagrama de clases
+### 2.3.1. Diagrama de clases
 
 Representa las entidades, modelos, enumeraciones, Value Objects y relaciones del dominio de `ms-usuarios`.
 
@@ -36,7 +36,7 @@ Representa las entidades, modelos, enumeraciones, Value Objects y relaciones del
 
 **Archivo editable:** [DiagramaClases.drawio](../diagramas/drawio/DiagramaClases.drawio).
 
-### 3.3.2. Diagrama de base de datos
+### 2.3.2. Diagrama de base de datos
 
 Representa la estructura de persistencia del microservicio, sus tablas, relaciones y atributos.
 
@@ -46,7 +46,7 @@ Representa la estructura de persistencia del microservicio, sus tablas, relacion
 
 **Archivo editable:** [DiagramaBaseDatos.drawio](../diagramas/drawio/DiagramaBaseDatos.drawio).
 
-### 3.3.3. Diagrama de componentes específico
+### 2.3.3. Diagrama de componentes específico
 
 Representa los componentes internos del microservicio, sus puertos, adaptadores y relaciones dentro de la arquitectura hexagonal.
 
@@ -56,7 +56,7 @@ Representa los componentes internos del microservicio, sus puertos, adaptadores 
 
 **Archivo editable:** [DiagramaComponentesEspecifico.drawio](../diagramas/drawio/DiagramaComponentesEspecifico.drawio).
 
-## 3.4. Estructura de paquetes
+## 2.4. Estructura de paquetes
 
 La organización principal del código fuente es la siguiente:
 
@@ -100,4 +100,4 @@ src/main/java/edu/dosw/styleradar/usuarios/
 
 ---
 
-[← Anterior: 2. Equipo y responsables](02-equipo-responsables.md) · [Índice principal](../../README.md) · [Siguiente: 4. Endpoints y Swagger](04-endpoints-swagger.md)
+[← Anterior: 1. Servicio](01-nombre-servicio-bounded-context.md) · [Índice principal](../../README.md) · [Siguiente: 3. Endpoints y Swagger](03-endpoints-swagger.md)

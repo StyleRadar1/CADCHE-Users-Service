@@ -30,4 +30,4 @@ Este microservicio encapsula exclusivamente la lógica de negocio correspondient
 
 ---
 
-[Índice principal](../../README.md) · [Siguiente: 2. Equipo y responsables](02-equipo-responsables.md)
+[Índice principal](../../README.md) · [Siguiente: 2. Arquitectura y diagramas](02-arquitectura-diagramas.md)
