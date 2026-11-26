@@ -51,7 +51,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
                 request.getTelefono(),
                 passwordEncoder.encode(request.getPassword()),
                 request.getAceptaHabeasData(),
-                "STORE".equals(request.getAccountType())
+                request.esCuentaTienda()
                         ? Rol.ADMIN_ALMACEN
                         : Rol.COMPRADOR,
                 EstadoCuenta.ACTIVA,

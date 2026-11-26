@@ -37,7 +37,7 @@ public interface UsuarioApi {
 
     @Operation(
             summary = "Register user account",
-            description = "Public endpoint. accountType defaults to BUYER; STORE creates an ADMIN_ALMACEN account. Other privileged roles cannot be selected publicly.",
+            description = "Public endpoint. accountType defaults to BUYER; STORE or STORE_ADMIN creates an ADMIN_ALMACEN account. Other privileged roles cannot be selected publicly.",
             security = {},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
