@@ -1,6 +1,6 @@
 # 11. Seguridad y revisión OWASP
 
-El documento fuente [OWASP-ms-usuarios.docx](../security/OWASP-ms-usuarios.docx) corresponde a una revisión estática fechada el 12/11/2026. No es una prueba de penetración ni valida por sí solo Azure, la red, PostgreSQL, RabbitMQ o los servicios externos. Los hallazgos de esta página se contrastaron con el código disponible el 25/11/2026; la evidencia del entorno debe verificarse por separado.
+El documento fuente [SR_CADCHE_Usuarios_Seguridad_y_OWASP_2025.md](../security/SR_CADCHE_Usuarios_Seguridad_y_OWASP_2025.md) corresponde a una revisión estática fechada el 12/11/2026. No es una prueba de penetración ni valida por sí solo Azure, la red, PostgreSQL, RabbitMQ o los servicios externos. Los hallazgos de esta página se contrastaron con el código disponible el 25/11/2026; la evidencia del entorno debe verificarse por separado.
 
 ## 11.1. Controles implementados observados en el repositorio
 
@@ -13,7 +13,8 @@ El documento fuente [OWASP-ms-usuarios.docx](../security/OWASP-ms-usuarios.docx)
 | Errores | El manejador global evita devolver trazas de excepción y usa `code` en el formato de error de la API. |
 | Trazabilidad | `CorrelationIdFilter` propaga `X-Correlation-Id` o `X-Request-Id` a MDC y a la respuesta, con sanitización del valor. |
 | Cliente de catálogo | Timeouts configurados de 3 s para conexión y 5 s para lectura; feed y recomendaciones pueden degradar a lista vacía ante indisponibilidad. |
-| Dependencias de Actions | Las acciones de GitHub usadas por el workflow están fijadas a SHA. |
+| Dependencias de Actions | Las acciones de GitHub usadas por los workflows están fijadas a SHA. |
+| Contenedor | `Dockerfile` y `Dockerfile.runtime` corren con el usuario sin privilegios `appuser` y tienen `HEALTHCHECK`. |
 
 ## 11.2. Riesgos y verificaciones pendientes
 
@@ -23,7 +24,7 @@ La revisión estática señaló configuraciones que deben tratarse como deuda ha
 - El perfil base habilita `show-sql`; los perfiles QA y PROD lo deshabilitan. Confirmar que QA/PROD activan su perfil y que los logs no exponen datos sensibles.
 - CSRF se ignora para `/api/**`. Esta configuración depende de que la API use exclusivamente bearer JWT y no autenticación basada en cookies.
 - La firma HS256 requiere un secreto de al menos 32 bytes, almacenado fuera del repositorio. Validación de issuer/audience, rotación de secretos, cifrado de conexiones y controles de red deben revisarse en los entornos.
-- El Dockerfile no declara usuario no privilegiado. El compose local publica PostgreSQL en `5432`; limitarlo a desarrollo local.
+- El compose local publica PostgreSQL y RabbitMQ en puertos del host (configurables en `.env`); usarlo solo en desarrollo local.
 - El flujo no evidencia por sí solo controles de rate limiting, alertas centralizadas, SBOM o firma de imágenes. Tampoco se configura patrón Outbox ni confirmación de publicación RabbitMQ en el código revisado.
 - La autorización por rol no sustituye las comprobaciones de propiedad del recurso; mantener y ejecutar pruebas negativas para IDs de otro usuario y operaciones administrativas.
 

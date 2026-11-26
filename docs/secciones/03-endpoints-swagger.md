@@ -12,6 +12,18 @@ La API usa el prefijo `/api/v1`. Swagger UI y OpenAPI permiten consultar los esq
 
 OpenAPI JSON: `/v3/api-docs` en cada URL base. El health check indica disponibilidad, no identifica la versión desplegada.
 
+**Evidencia Swagger QA** (captura del 25/11/2026):
+
+<div align="center">
+  <img src="../evidencias/swagger-qa.png" width="95%" alt="Swagger UI de ms-usuarios en QA" />
+</div>
+
+**Evidencia Swagger PROD** (captura del 25/11/2026):
+
+<div align="center">
+  <img src="../evidencias/swagger-prod.png" width="95%" alt="Swagger UI de ms-usuarios en PROD" />
+</div>
+
 ## 3.2. Rutas de usuarios
 
 | Método | Ruta | Acceso |

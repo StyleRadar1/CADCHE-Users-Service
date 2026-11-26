@@ -24,29 +24,45 @@ La arquitectura hexagonal permite:
 
 ## 2.3. Diagramas UML del servicio
 
-Los diagramas se encuentran organizados en `docs/uml/` y sus archivos editables en `docs/diagramas/drawio/`.
+Los diagramas y sus archivos editables (`.drawio`) están en `docs/uml/`. Usan la plantilla StyleRadar del repositorio base: logo, título «STYLERADAR — DIAGRAMA DE …», fuente Poppins y un color por tipo de elemento.
 
-### 2.3.1. Diagrama de clases
+### 2.3.1. Diagrama de componentes general
 
-Representa las entidades, modelos, enumeraciones, Value Objects y relaciones del dominio de `ms-usuarios`.
+Ubica a `ms-usuarios` dentro del ecosistema StyleRadar: el cliente web entra por el API Gateway, cada microservicio tiene su propia base de datos (`usuarios_db` para este servicio) y se comunican por RabbitMQ, con Redis y sistemas externos como Google OAuth, MercadoPago, Azure Blob Storage y FASHN AI.
+
+<div align="center">
+  <img src="../uml/DiagramaComponentesGeneral.webp" width="95%" alt="Diagrama de componentes general de StyleRadar" />
+</div>
+
+### 2.3.2. Diagrama de despliegue
+
+Muestra cómo se despliega el ecosistema: la aplicación web llega al API Gateway (8080), que enruta a cada microservicio (User en el 8120); las bases PostgreSQL, Redis y RabbitMQ corren como nodos aparte.
+
+<div align="center">
+  <img src="../uml/DiagramaDespliegue.webp" width="95%" alt="Diagrama de despliegue de StyleRadar" />
+</div>
+
+### 2.3.3. Diagrama de clases
+
+Generado desde `src/main/java/.../usuarios/domain`: el agregado `Usuario`, la entidad `BusquedaGuardada`, el value object `Email`, los enums (`Rol`, `EstadoCuenta`, `Estilo`, `TipoPrenda`, `Talla`, `EstadoItem`), los cinco eventos de dominio, las excepciones y los puertos de entrada y salida.
 
 <div align="center">
   <img src="../uml/DiagramaClases.png" width="95%" alt="Diagrama de clases de ms-usuarios" />
 </div>
 
-**Archivo editable:** [DiagramaClases.drawio](../diagramas/drawio/DiagramaClases.drawio).
+**Archivo editable:** [DiagramaClases.drawio](../uml/DiagramaClases.drawio).
 
-### 2.3.2. Diagrama de base de datos
+### 2.3.4. Diagrama de base de datos
 
-Representa la estructura de persistencia del microservicio, sus tablas, relaciones y atributos.
+Esquema real de PostgreSQL después de aplicar las migraciones Flyway V1 a V9: `usuarios` y sus tablas hijas `usuario_preferencias_estilo`, `usuario_tallas` y `busquedas_guardadas`, todas con `ON DELETE CASCADE`.
 
 <div align="center">
   <img src="../uml/DiagramaBaseDatos.png" width="95%" alt="Diagrama de base de datos de ms-usuarios" />
 </div>
 
-**Archivo editable:** [DiagramaBaseDatos.drawio](../diagramas/drawio/DiagramaBaseDatos.drawio).
+**Archivo editable:** [DiagramaBaseDatos.drawio](../uml/DiagramaBaseDatos.drawio).
 
-### 2.3.3. Diagrama de componentes específico
+### 2.3.5. Diagrama de componentes específico
 
 Representa los componentes internos del microservicio, sus puertos, adaptadores y relaciones dentro de la arquitectura hexagonal.
 
@@ -54,7 +70,7 @@ Representa los componentes internos del microservicio, sus puertos, adaptadores 
   <img src="../uml/DiagramaComponentesEspecifico.png" width="95%" alt="Diagrama de componentes específico de ms-usuarios" />
 </div>
 
-**Archivo editable:** [DiagramaComponentesEspecifico.drawio](../diagramas/drawio/DiagramaComponentesEspecifico.drawio).
+**Archivo editable:** [DiagramaComponentesEspecifico.drawio](../uml/DiagramaComponentesEspecifico.drawio).
 
 ## 2.4. Estructura de paquetes
 

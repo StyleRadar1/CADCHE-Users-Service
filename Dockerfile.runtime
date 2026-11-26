@@ -1,9 +1,33 @@
-FROM eclipse-temurin:21-jre
+# ==============================================================================
+# STYLE RADAR - Imagen de ejecución de ms-usuarios (:8120)
+# El pipeline compila y prueba el JAR antes; esta imagen solo lo ejecuta.
+# ==============================================================================
+FROM eclipse-temurin:21-jre-alpine
+
+LABEL org.opencontainers.image.title="StyleRadar CADCHE Users Service" \
+      org.opencontainers.image.description="Microservicio de usuarios, perfil de estilo y búsquedas guardadas (ms-usuarios)" \
+      org.opencontainers.image.vendor="StyleRadar Team CADche"
 
 WORKDIR /app
 
-COPY app.jar app.jar
+# Usuario sin privilegios (no-root)
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --chown=appuser:appgroup app.jar app.jar
+
+ENV TZ=America/Bogota
 
 EXPOSE 8120
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+  CMD wget -q -O /dev/null http://localhost:8120/actuator/health || exit 1
+
+USER appuser:appgroup
+
+ENTRYPOINT ["java", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-XX:InitialRAMPercentage=50.0", \
+  "-XX:+ExitOnOutOfMemoryError", \
+  "-jar", "app.jar"]

@@ -15,7 +15,21 @@ Desarrollado y mantenido por el squad `CADche` para DOSW 2026.
 - **Swagger QA:** [API QA](https://styleradar-qa-app.azurewebsites.net/swagger-ui/index.html)
 - **Swagger PROD:** [API PROD](https://styleradar-prod-app.azurewebsites.net/swagger-ui/index.html)
 
-La carpeta `docs/evidencias/` no incluye actualmente capturas de Swagger, cobertura, Docker ni Jira. Agrégalas allí cuando se recopilen; esta documentación no inventa evidencias ausentes.
+**Evidencias** (carpeta [`docs/evidencias/`](../evidencias/), 25/11/2026):
+
+| Evidencia | Dónde se muestra |
+|---|---|
+| Swagger QA y PROD | [Sección 3](03-endpoints-swagger.md) |
+| Docker Compose | [Sección 6](06-ejecucion-local-docker.md) |
+| JaCoCo | [Sección 8](08-pruebas-cobertura.md) |
+| Pipeline QA y PROD | [Sección 9](09-cicd-pipeline.md) |
+| Épica de Jira | Abajo |
+
+**Épica CADCHE-2 en Jira** (datos tomados de la API de Jira con `parent = CADCHE-2`):
+
+<div align="center">
+  <img src="../evidencias/jira-epica.png" width="95%" alt="Actividades de la épica CADCHE-2 en Jira" />
+</div>
 
 ## 12.3. Requerimientos funcionales
 

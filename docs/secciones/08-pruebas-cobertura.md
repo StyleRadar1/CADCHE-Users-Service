@@ -33,13 +33,13 @@ Desde la raíz del proyecto se pueden ejecutar los siguientes comandos:
 Ejecutar todas las pruebas:
 
 ```bash
-mvn test
+./mvnw test
 ```
 
 Compilar y ejecutar las pruebas:
 
 ```bash
-mvn clean verify
+./mvnw clean verify
 ```
 
 El segundo comando también permite generar el reporte de cobertura configurado con JaCoCo.
@@ -51,7 +51,7 @@ El proyecto utiliza JaCoCo versión `0.8.12`.
 Después de ejecutar:
 
 ```bash
-mvn clean verify
+./mvnw clean verify
 ```
 
 El reporte HTML de cobertura se genera en:
@@ -60,12 +60,30 @@ El reporte HTML de cobertura se genera en:
 
 Este reporte permite consultar qué partes del código fueron ejecutadas durante las pruebas y cuáles necesitan mayor validación.
 
-## 8.5. Consideraciones
+## 8.5. Umbral y métricas actuales
+
+`pom.xml` ejecuta `jacoco:check` en la fase `verify`: el build falla si la cobertura baja del mínimo.
+
+| Métrica | Mínimo exigido | Medición actual (25/11/2026) |
+|---|---:|---:|
+| Líneas | 85 % | 94,6 % (1.623 de 1.716) |
+| Ramas | 80 % | 82,2 % (328 de 399) |
+| Instrucciones | 85 % | 94,3 % (6.313 de 6.698) |
+
+La suite tiene 260 pruebas en 51 clases (1 omitida).
+
+**Evidencia JaCoCo:**
+
+<div align="center">
+  <img src="../evidencias/jacoco-cobertura.png" width="95%" alt="Reporte JaCoCo de ms-usuarios" />
+</div>
+
+## 8.6. Consideraciones
 
 - Las pruebas deben ejecutarse antes de realizar una entrega o integrar cambios.
 - Algunas pruebas de integración utilizan Testcontainers y requieren que Docker esté disponible.
 - Si Docker no está iniciado o no se encuentra correctamente configurado, las pruebas que dependen de contenedores pueden fallar.
-- JaCoCo genera medición e informe; `pom.xml` no configura un umbral mínimo de cobertura. La calidad del pull request depende de las condiciones activas en SonarCloud y de su reporte actual.
+- JaCoCo exige 85 % de líneas e instrucciones y 80 % de ramas; si una rama baja de ese mínimo, `./mvnw verify` y el pipeline fallan.
 
 ---
 
