@@ -18,8 +18,14 @@ services:
       INTERNAL_AUTH_PASSWORD: ${INTERNAL_AUTH_PASSWORD:?Define INTERNAL_AUTH_PASSWORD en .env}
       JWT_SECRET_BASE64: ${JWT_SECRET_BASE64:?Define JWT_SECRET_BASE64 en .env}
       FLYWAY_ENABLED: "true"
+      RABBITMQ_HOST: usuarios-rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
       usuarios-db:
+        condition: service_healthy
+      usuarios-rabbitmq:
         condition: service_healthy
     networks:
       - usuarios-network
@@ -28,7 +34,7 @@ services:
     image: postgres:15
     container_name: usuarios-db
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT_EXTERNAL:-5432}:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -40,6 +46,23 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - usuarios-network
+
+  usuarios-rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: usuarios-rabbitmq
+    ports:
+      - "${RABBITMQ_PORT_EXTERNAL:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT_EXTERNAL:-15672}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - usuarios-network
 

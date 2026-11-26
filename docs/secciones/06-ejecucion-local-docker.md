@@ -9,16 +9,16 @@ Antes de ejecutar el servicio se necesita:
 | Herramienta | Uso |
 |---|---|
 | Java 21 | Ejecución de la aplicación. |
-| Maven | Compilación y gestión de dependencias. |
-| PostgreSQL | Persistencia de información. |
+| Maven Wrapper (`./mvnw`) | Compilación y gestión de dependencias; descarga Maven 3.9.16 si no está instalado. |
+| PostgreSQL | Persistencia de información (incluido en `docker-compose.yml`). |
 | Docker Desktop | Ejecución mediante contenedores. |
-| RabbitMQ | Comunicación asíncrona con otros microservicios. |
+| RabbitMQ | Comunicación asíncrona con otros microservicios (incluido en `docker-compose.yml`). |
 
 ## 6.2. Clonar el repositorio
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
-cd CADCHE-Usuarios-Service
+git clone https://github.com/StyleRadar1/CADCHE-Users-Service.git
+cd CADCHE-Users-Service
 ```
 
 ## 6.3. Configuración de variables de entorno
@@ -34,19 +34,19 @@ No publiques credenciales, contraseñas ni secretos en el repositorio.
 Primero, compila el proyecto:
 
 ```bash
-mvn clean install
+./mvnw clean install
 ```
 
 Ejecuta las pruebas:
 
 ```bash
-mvn test
+./mvnw test
 ```
 
 Inicia la aplicación:
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 El servicio utiliza por defecto el puerto `8120`.
@@ -63,9 +63,15 @@ http://localhost:8120/swagger-ui/index.html
 
 ## 6.5. Ejecución con Docker Compose
 
-El repositorio incluye un `Dockerfile` y un `docker-compose.yml` para construir y ejecutar la aplicación junto con PostgreSQL.
+El repositorio incluye un `Dockerfile` multi-etapa y un `docker-compose.yml` que levanta la aplicación junto con PostgreSQL y RabbitMQ. La imagen corre con un usuario sin privilegios (`appuser`) y trae `HEALTHCHECK` contra `/actuator/health`. El pipeline usa `Dockerfile.runtime`, que solo empaqueta el JAR ya probado.
 
-Crea un archivo `.env` en la raíz del proyecto con las variables requeridas.
+Copia la plantilla y ajusta los valores:
+
+```bash
+cp .env.example .env
+```
+
+Si el puerto 5432 o 5672 ya está ocupado en tu equipo, cambia `POSTGRES_PORT_EXTERNAL` o `RABBITMQ_PORT_EXTERNAL` en el `.env`.
 
 Construye e inicia los contenedores:
 
@@ -104,10 +110,10 @@ docker compose down -v
 | Servicio | Puerto del contenedor | Puerto local |
 |---|---:|---:|
 | `ms-usuarios` | `8120` | `8120` |
-| `usuarios-db` | `5432` | `5432` |
-| RabbitMQ | `5672` | Según configuración externa |
+| `usuarios-db` | `5432` | `POSTGRES_PORT_EXTERNAL` (por defecto `5432`) |
+| `usuarios-rabbitmq` | `5672` / `15672` | `RABBITMQ_PORT_EXTERNAL` / `RABBITMQ_MGMT_PORT_EXTERNAL` (por defecto `5672` / `15672`) |
 
-El `docker-compose.yml` del repositorio define los contenedores de `ms-usuarios` y PostgreSQL. RabbitMQ debe estar disponible y configurado por separado.
+El `docker-compose.yml` define los tres contenedores; `ms-usuarios` espera a que la base de datos y RabbitMQ estén sanos antes de arrancar.
 
 ## 6.7. Verificación de funcionamiento
 
@@ -124,6 +130,12 @@ Respuesta esperada cuando la aplicación está disponible:
   "status": "UP"
 }
 ```
+
+**Evidencia Docker Compose** (ejecución local del 25/11/2026: los tres contenedores sanos, health `UP` y la aplicación corriendo como `appuser`):
+
+<div align="center">
+  <img src="../evidencias/docker-compose.png" width="95%" alt="docker compose ps con ms-usuarios, PostgreSQL y RabbitMQ sanos" />
+</div>
 
 También puedes abrir Swagger UI:
 

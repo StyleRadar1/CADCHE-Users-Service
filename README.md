@@ -14,8 +14,9 @@
   <p><em>Gestión de perfiles, preferencias de estilo, tallas habituales y búsquedas guardadas.</em></p>
 
   <p>
-    <a href="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml?query=branch%3Adevelop"><img src="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml/badge.svg?branch=develop&label=CI%20QA" alt="CI QA" /></a>
-    <a href="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml/badge.svg?branch=main&label=CI%20PROD" alt="CI PROD" /></a>
+    <a href="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-qa.yml"><img src="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-qa.yml/badge.svg?branch=develop&label=CI%2FCD%20QA" alt="CI/CD QA" /></a>
+    <a href="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml"><img src="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml/badge.svg?label=CI%20PR" alt="CI PR" /></a>
+    <a href="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-prod.yml"><img src="https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-prod.yml/badge.svg?branch=main&label=CI%2FCD%20PROD" alt="CI/CD PROD" /></a>
   </p>
 
 </div>

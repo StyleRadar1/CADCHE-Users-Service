@@ -25,6 +25,10 @@ Estas variables permiten ejecutar el servicio en diferentes ambientes sin modifi
 | `styleradar.catalogo.read-timeout-ms` | Timeout para leer la respuesta del catálogo. | `5000` ms |
 | `SPRING_PROFILES_ACTIVE` | Perfil de configuración de Spring. | `dev` por defecto; despliegues usan `qa` o `prod` |
 | `FLYWAY_ENABLED` | Habilita migraciones de base de datos. | `false` base; `true` en QA/PROD y compose |
+| `JPA_DDL_AUTO` | Estrategia de Hibernate sobre el esquema. | `validate` |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Base, usuario y clave del contenedor PostgreSQL local; docker-compose arma `DB_URL`, `DB_USERNAME` y `DB_PASSWORD` con ellos. | `usuarios_db` / `postgres` / `postgres` (solo local) |
+| `POSTGRES_PORT_EXTERNAL` | Puerto del host para PostgreSQL en docker-compose. | `5432` |
+| `RABBITMQ_PORT_EXTERNAL` / `RABBITMQ_MGMT_PORT_EXTERNAL` | Puertos del host para RabbitMQ y su consola en docker-compose. | `5672` / `15672` |
 
 ## 7.2. Configuración por ambiente
 

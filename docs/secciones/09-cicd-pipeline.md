@@ -2,64 +2,63 @@
 
 El microservicio `ms-usuarios` utiliza GitHub Actions para automatizar la integración continua, la ejecución de pruebas, el análisis de código, la construcción de imágenes Docker y el despliegue en Azure.
 
-El pipeline se encuentra definido en:
+El pipeline está separado en tres archivos, como el repositorio base:
 
-`.github/workflows/ci.yml`
+| Archivo | Cuándo corre | Qué hace |
+|---|---|---|
+| [`ci.yml`](../../.github/workflows/ci.yml) | Pull Request hacia `develop` o `main`, y `push` a ramas de trabajo | Pruebas, cobertura, SpotBugs, SonarQube Cloud y construcción de la imagen Docker sin publicarla. No despliega. |
+| [`ci-qa.yml`](../../.github/workflows/ci-qa.yml) | `push` a `develop` (merge de un PR) | Lo mismo de `ci.yml`, publica la imagen con etiqueta `qa`, despliega en QA y hace smoke test. |
+| [`ci-prod.yml`](../../.github/workflows/ci-prod.yml) | `push` a `main` o etiqueta `v*.*.*` | Lo mismo, valida la configuración de PROD, publica la imagen con etiqueta `prod`, despliega en PROD y hace smoke test. |
 
-## 9.1. Integración continua (CI)
+Badges:
 
-El flujo de integración continua se ejecuta cuando:
+[![CI PR](https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci.yml)
+[![CI/CD QA](https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-qa.yml/badge.svg?branch=develop)](https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-qa.yml)
+[![CI/CD PROD](https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-prod.yml/badge.svg?branch=main)](https://github.com/StyleRadar1/CADCHE-Users-Service/actions/workflows/ci-prod.yml)
 
-- Se realiza un `push` a cualquier rama.
-- Se crea o actualiza un Pull Request dirigido a las ramas `develop` o `main`.
+```text
+PR / rama de trabajo ── ci.yml ──► build + pruebas + JaCoCo ≥ 85 % ─► SpotBugs ─► SonarQube ─► docker build (sin publicar)
+develop ─────────────── ci-qa.yml ─► build + pruebas ─► SonarQube ─► imagen :qa en ACR ─► App Service QA ─► smoke test
+main / v*.*.* ───────── ci-prod.yml ► build + pruebas ─► SonarQube ─► imagen :prod en ACR ─► validaciones PROD ─► App Service PROD ─► smoke test
+```
 
-El proceso utiliza Ubuntu como entorno de ejecución y Java 21 con Maven.
+## 9.1. Build y pruebas
 
-Las principales actividades son:
+Los tres archivos usan Ubuntu, Java 21 y el Maven Wrapper:
 
 1. Descargar el código del repositorio.
 2. Configurar Java 21.
-3. Ejecutar `mvn clean verify`.
-4. Realizar análisis estático con SpotBugs.
-5. Generar y guardar el reporte de cobertura JaCoCo.
-6. Preparar los archivos necesarios para el análisis de SonarQube Cloud.
-
-Para las pruebas, el pipeline inicia un servicio PostgreSQL 16.
+3. Ejecutar `./mvnw clean verify` con un servicio PostgreSQL 16 (reintenta si Maven Central responde 429).
+4. Fallar si JaCoCo mide menos de 85 % de líneas e instrucciones o 80 % de ramas.
+5. Realizar análisis estático con SpotBugs.
+6. Guardar el reporte JaCoCo y el JAR validado.
 
 ## 9.2. Análisis de calidad
-
-El pipeline utiliza las siguientes herramientas:
 
 | Herramienta | Función |
 |---|---|
 | JUnit y Mockito | Ejecución de pruebas automatizadas. |
-| JaCoCo | Generación del reporte de cobertura. |
+| JaCoCo | Reporte de cobertura y umbral mínimo (`jacoco:check`). |
 | SpotBugs | Análisis estático para detectar posibles errores en el código. |
 | SonarQube Cloud | Análisis de calidad y revisión del código. |
 
-El análisis con SonarQube Cloud se ejecuta después de finalizar correctamente el trabajo de construcción y pruebas.
+En QA y PROD la imagen solo se publica si el build y SonarQube terminan bien.
 
 ## 9.3. Construcción y publicación de imágenes Docker
 
-Cuando se cumplen las condiciones configuradas para las ramas `develop` y `main`, el pipeline construye una imagen Docker del microservicio y la publica en Azure Container Registry (ACR).
-
-Registro utilizado:
+La imagen se construye con `Dockerfile.runtime` (usuario sin privilegios y `HEALTHCHECK`) a partir del JAR ya probado, y se publica en Azure Container Registry:
 
 `styleradarusersacr.azurecr.io`
 
-La imagen se publica utilizando el identificador del commit como etiqueta.
-
-También se utilizan etiquetas adicionales:
-
-| Rama o evento | Etiqueta |
+| Archivo | Etiquetas |
 |---|---|
-| `develop` | `qa` |
-| `main` | `prod` |
-| Pull Request hacia `develop` | `qa` |
+| `ci.yml` | Ninguna: solo valida que la imagen construye. |
+| `ci-qa.yml` | SHA del commit y `qa` |
+| `ci-prod.yml` | SHA del commit y `prod` |
 
 ## 9.4. Despliegue en QA
 
-El despliegue en QA se ejecuta al hacer `push` a `develop` o al abrir/actualizar un Pull Request hacia esa rama desde el mismo repositorio. Los Pull Requests desde forks no cumplen la condición de despliegue.
+`ci-qa.yml` despliega al hacer `push` a `develop`. Los Pull Requests ya no despliegan a QA: QA muestra siempre lo que está integrado en `develop`, como en el repositorio base.
 
 El pipeline realiza las siguientes actividades:
 
@@ -69,6 +68,7 @@ El pipeline realiza las siguientes actividades:
 4. Activar Flyway mediante `FLYWAY_ENABLED=true`.
 5. Establecer el perfil de Spring `qa`.
 6. Reiniciar la aplicación.
+7. Smoke test: esperar a que `/actuator/health` responda 200 (hasta 5 minutos) y comprobar que `/v3/api-docs` responde 200.
 
 El App Service configurado es:
 
@@ -76,7 +76,7 @@ El App Service configurado es:
 
 ## 9.5. Despliegue en producción
 
-El despliegue en producción se ejecuta únicamente cuando se realiza un `push` a la rama `main`.
+El despliegue en producción lo hace `ci-prod.yml` cuando se realiza un `push` a la rama `main` o se publica una etiqueta `v*.*.*`.
 
 Antes del despliegue, el pipeline verifica que la variable `PROD_DATABASE_VERIFIED` tenga el valor `true`.
 
@@ -93,11 +93,27 @@ También comprueba que el App Service tenga configuradas las variables necesaria
 
 Si alguna validación falla, el despliegue se detiene.
 
-Cuando las validaciones son correctas, se configura la imagen Docker en Azure App Service, se activa Flyway y se reinicia la aplicación.
+Cuando las validaciones son correctas, se configura la imagen Docker en Azure App Service, se activa Flyway y se reinicia la aplicación. Al final, el smoke test espera a que `/actuator/health` de PROD responda 200.
 
 ## 9.6. Secretos y variables de GitHub
 
-El pipeline utiliza secretos y variables configurados en GitHub para autenticarse en Azure y acceder a la configuración del despliegue. PROD solo se publica después de un `push` a `main`, de verificar PostgreSQL mediante `PROD_DATABASE_VERIFIED=true` y de comprobar los App Settings requeridos.
+El pipeline utiliza secretos y variables configurados en GitHub para autenticarse en Azure y acceder a la configuración del despliegue. PROD solo se publica después de un `push` a `main` (o una etiqueta `v*.*.*`), de verificar PostgreSQL mediante `PROD_DATABASE_VERIFIED=true` y de comprobar los App Settings requeridos.
+
+## 9.7. Evidencia
+
+**Ejecuciones en `develop` (QA):**
+
+<div align="center">
+  <img src="../evidencias/pipeline-qa.png" width="95%" alt="Ejecuciones del pipeline en develop" />
+</div>
+
+**Ejecuciones en `main` (PROD):**
+
+<div align="center">
+  <img src="../evidencias/pipeline-prod.png" width="95%" alt="Ejecuciones del pipeline en main" />
+</div>
+
+Las capturas son del 25/11/2026, antes de separar el pipeline; muestran el `ci.yml` anterior.
 
 ---
 
