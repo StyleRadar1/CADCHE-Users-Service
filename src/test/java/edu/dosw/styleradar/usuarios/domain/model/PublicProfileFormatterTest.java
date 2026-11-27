@@ -18,9 +18,11 @@ class PublicProfileFormatterTest {
             "'MARÍA CAMILA PÉREZ', 'María C.'",
             "'Juan', 'Juan'",
             "'  Carlos    Mendoza   ', 'Carlos M.'",
-            "'Andrés de la Vega', 'Andrés D.'",
+            "'Andrés de la Vega', 'Andrés V.'",
+            "'María del Carmen', 'María C.'",
             "'Ángela Gómez', 'Ángela G.'",
-            "'óscar lópez', 'Óscar L.'"
+            "'óscar lópez', 'Óscar L.'",
+            "'Juan de', 'Juan'"
     })
     void debeFormatearNombrePublicoCorrectamente(String input, String expected) {
         assertEquals(expected, PublicProfileFormatter.formatDisplayName(input));
@@ -28,7 +30,7 @@ class PublicProfileFormatterTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {"   ", "\t\n"})
+    @ValueSource(strings = {"   ", "\t\n", "\u0000\u0007"})
     void debeDevolverNullParaEntradasVaciasONulas(String input) {
         assertNull(PublicProfileFormatter.formatDisplayName(input));
     }
@@ -36,5 +38,10 @@ class PublicProfileFormatterTest {
     @Test
     void debeManejarUnSoloCaracter() {
         assertEquals("A", PublicProfileFormatter.formatDisplayName("a"));
+    }
+
+    @Test
+    void debeSanitizarCaracteresDeControl() {
+        assertEquals("Sofía L.", PublicProfileFormatter.formatDisplayName("Sofía\r\nLópez"));
     }
 }

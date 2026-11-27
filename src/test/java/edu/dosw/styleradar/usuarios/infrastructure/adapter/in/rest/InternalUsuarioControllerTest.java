@@ -49,6 +49,31 @@ class InternalUsuarioControllerTest {
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         assertEquals(175.0, respuesta.getBody().getHeightCm());
+        assertEquals(96.0, respuesta.getBody().getChestCm());
+        assertEquals(82.0, respuesta.getBody().getWaistCm());
+        assertEquals(98.0, respuesta.getBody().getHipCm());
+        verify(obtenerMedidasCorporalesUseCase).obtener(144L);
+    }
+
+    @Test
+    void debeDevolverMedidasNulasCuandoNoEstanRegistradas() {
+        MedidasCorporalesResponseDTO esperado = MedidasCorporalesResponseDTO.builder()
+                .heightCm(null)
+                .chestCm(null)
+                .waistCm(null)
+                .hipCm(null)
+                .build();
+
+        when(obtenerMedidasCorporalesUseCase.obtener(144L)).thenReturn(esperado);
+
+        ResponseEntity<MedidasCorporalesResponseDTO> respuesta = controller.getMeasurements(144L);
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+        assertNull(respuesta.getBody().getHeightCm());
+        assertNull(respuesta.getBody().getChestCm());
+        assertNull(respuesta.getBody().getWaistCm());
+        assertNull(respuesta.getBody().getHipCm());
         verify(obtenerMedidasCorporalesUseCase).obtener(144L);
     }
 
@@ -97,5 +122,6 @@ class InternalUsuarioControllerTest {
                 UsuarioNoEncontradoException.class,
                 () -> controller.getMeasurements(999L)
         );
+        verify(obtenerMedidasCorporalesUseCase).obtener(999L);
     }
 }

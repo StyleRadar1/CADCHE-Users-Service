@@ -16,8 +16,10 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import jakarta.validation.ConstraintViolationException;
 
 import edu.dosw.styleradar.usuarios.application.dto.response.ErrorResponseDTO;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
@@ -45,6 +47,41 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleBindingValidation(
             BindException exception, HttpServletRequest request) {
         return handleValidationErrors(exception.getBindingResult(), request);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(
+            ConstraintViolationException exception, HttpServletRequest request) {
+        Map<String, String> validationErrors = new LinkedHashMap<>();
+        exception.getConstraintViolations().forEach(violation -> {
+            String path = violation.getPropertyPath() != null
+                    ? violation.getPropertyPath().toString()
+                    : "param";
+            int lastDot = path.lastIndexOf('.');
+            String field = lastDot >= 0 ? path.substring(lastDot + 1) : path;
+            validationErrors.putIfAbsent(field, violation.getMessage());
+        });
+
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_DATA",
+                "La solicitud contiene datos inválidos",
+                request.getRequestURI(), validationErrors);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMethodValidation(
+            HandlerMethodValidationException exception, HttpServletRequest request) {
+        Map<String, String> validationErrors = new LinkedHashMap<>();
+        exception.getAllValidationResults().forEach(result -> {
+            String param = result.getMethodParameter().getParameterName();
+            String key = param != null ? param : "param";
+            result.getResolvableErrors().stream()
+                    .findFirst()
+                    .ifPresent(error -> validationErrors.putIfAbsent(key, error.getDefaultMessage()));
+        });
+
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_DATA",
+                "La solicitud contiene datos inválidos",
+                request.getRequestURI(), validationErrors);
     }
 
     private ResponseEntity<ErrorResponseDTO> handleValidationErrors(

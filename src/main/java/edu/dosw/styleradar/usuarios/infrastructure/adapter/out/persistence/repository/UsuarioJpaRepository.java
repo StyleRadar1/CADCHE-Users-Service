@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.repository;
 
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
+import edu.dosw.styleradar.usuarios.domain.model.PerfilPublicoUsuario;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence.entity.UsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long> {
@@ -19,6 +22,14 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
     Optional<UsuarioEntity> findByEmail(String email);
 
     Optional<UsuarioEntity> findByProviderAndProviderId(String provider, String providerId);
+
+    @Query("SELECT new edu.dosw.styleradar.usuarios.domain.model.PerfilPublicoUsuario(u.id, u.nombre, u.estado) "
+            + "FROM UsuarioEntity u WHERE u.id = :id")
+    Optional<PerfilPublicoUsuario> buscarPerfilPublicoPorId(@Param("id") Long id);
+
+    @Query("SELECT new edu.dosw.styleradar.usuarios.domain.model.PerfilPublicoUsuario(u.id, u.nombre, u.estado) "
+            + "FROM UsuarioEntity u WHERE u.id IN :ids")
+    List<PerfilPublicoUsuario> buscarPerfilesPublicosPorIds(@Param("ids") Collection<Long> ids);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE UsuarioEntity u SET u.provider = 'GOOGLE', u.providerId = :providerId "
