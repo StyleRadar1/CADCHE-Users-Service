@@ -268,7 +268,13 @@ public class UsuarioController implements UsuarioApi {
                 accion
         );
 
-        busquedaEventPublisher.publicar(evento);
+        try {
+            busquedaEventPublisher.publicar(evento);
+        } catch (RuntimeException ex) {
+            org.slf4j.LoggerFactory.getLogger(UsuarioController.class)
+                    .warn("No se pudo publicar el evento de búsqueda sincronizada {}: {}",
+                            busqueda.id(), ex.getMessage());
+        }
     }
 
     private BusquedaGuardadaResponseDTO aRespuesta(BusquedaGuardada busqueda) {
