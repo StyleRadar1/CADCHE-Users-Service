@@ -338,4 +338,18 @@ class UsuarioPersistenceAdapterUnitTest {
         assertFalse(adapter.actualizarPasswordHash(404L, "bcrypt-hash-nuevo"));
         verify(repository, never()).saveAndFlush(any());
     }
+
+    @Test
+    void debeBuscarPerfilPublicoPorIdYLote() {
+        PerfilPublicoUsuario perfil = new PerfilPublicoUsuario(7L, "Sofía López", EstadoCuenta.ACTIVA);
+        when(repository.buscarPerfilPublicoPorId(7L)).thenReturn(Optional.of(perfil));
+        when(repository.buscarPerfilesPublicosPorIds(java.util.List.of(7L)))
+                .thenReturn(java.util.List.of(perfil));
+
+        assertEquals(Optional.of(perfil), adapter.buscarPerfilPublicoPorId(7L));
+        assertEquals(java.util.List.of(perfil), adapter.buscarPerfilesPublicosPorIds(java.util.List.of(7L)));
+        assertTrue(adapter.buscarPerfilesPublicosPorIds(java.util.List.of()).isEmpty());
+        assertTrue(adapter.buscarPerfilesPublicosPorIds(null).isEmpty());
+        verify(repository, times(1)).buscarPerfilesPublicosPorIds(any());
+    }
 }

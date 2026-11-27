@@ -3,6 +3,7 @@ package edu.dosw.styleradar.usuarios.infrastructure.adapter.out.persistence;
 import edu.dosw.styleradar.usuarios.domain.exception.EmailYaRegistradoException;
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
+import edu.dosw.styleradar.usuarios.domain.model.PerfilPublicoUsuario;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.port.out.UsuarioRepositoryPort;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +49,19 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     public Optional<Usuario> buscarPorId(Long id) {
         return usuarioJpaRepository.findById(id)
                 .map(this::convertirADominio);
+    }
+
+    @Override
+    public Optional<PerfilPublicoUsuario> buscarPerfilPublicoPorId(Long id) {
+        return usuarioJpaRepository.buscarPerfilPublicoPorId(id);
+    }
+
+    @Override
+    public List<PerfilPublicoUsuario> buscarPerfilesPublicosPorIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return usuarioJpaRepository.buscarPerfilesPublicosPorIds(ids);
     }
 
     @Override

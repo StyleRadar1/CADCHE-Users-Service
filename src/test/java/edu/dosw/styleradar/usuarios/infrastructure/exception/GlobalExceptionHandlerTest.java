@@ -10,6 +10,9 @@ import edu.dosw.styleradar.usuarios.domain.exception.ContrasenaActualIncorrectaE
 import edu.dosw.styleradar.usuarios.domain.exception.IdentidadExternaConflictivaException;
 import edu.dosw.styleradar.usuarios.domain.exception.UsuarioNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -262,5 +265,23 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_PROBLEM_JSON, response.getHeaders().getContentType());
         assertEquals("RESOURCE_NOT_FOUND", response.getBody().getCode());
+    }
+
+    @Test
+    void debeManejarConstraintViolationCon400ProblemJson() {
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
+        Path path = mock(Path.class);
+        when(path.toString()).thenReturn("getPublicProfile.userId");
+        when(violation.getPropertyPath()).thenReturn(path);
+        when(violation.getMessage()).thenReturn("El identificador de usuario debe ser positivo");
+
+        ResponseEntity<ErrorResponseDTO> response = handler.handleConstraintViolation(
+                new ConstraintViolationException(java.util.Set.of(violation)), request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("INVALID_DATA", response.getBody().getCode());
+        assertEquals("El identificador de usuario debe ser positivo",
+                response.getBody().getErrors().get("userId"));
     }
 }

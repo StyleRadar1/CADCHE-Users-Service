@@ -1,10 +1,12 @@
 package edu.dosw.styleradar.usuarios.domain.port.out;
 
 import edu.dosw.styleradar.usuarios.domain.model.EstadoCuenta;
+import edu.dosw.styleradar.usuarios.domain.model.PerfilPublicoUsuario;
 import edu.dosw.styleradar.usuarios.domain.model.Usuario;
 import edu.dosw.styleradar.usuarios.domain.model.Rol;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +17,10 @@ public interface UsuarioRepositoryPort {
     Usuario guardar(Usuario usuario);
 
     Optional<Usuario> buscarPorId(Long id);
+
+    Optional<PerfilPublicoUsuario> buscarPerfilPublicoPorId(Long id);
+
+    List<PerfilPublicoUsuario> buscarPerfilesPublicosPorIds(Collection<Long> ids);
 
     Optional<Usuario> actualizarDatosPersonales(
             Long usuarioId, String nombre, String telefono, String barrio);

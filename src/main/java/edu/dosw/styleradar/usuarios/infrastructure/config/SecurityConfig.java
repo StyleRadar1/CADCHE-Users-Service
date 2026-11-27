@@ -1,5 +1,6 @@
 package edu.dosw.styleradar.usuarios.infrastructure.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -46,16 +48,47 @@ public class SecurityConfig {
     @Value("${INTERNAL_AUTH_PASSWORD}")
     private String password;
 
+    @Value("${INTERNAL_PUBLIC_PROFILE_USERNAME:}")
+    private String publicProfileUsername;
+
+    @Value("${INTERNAL_PUBLIC_PROFILE_PASSWORD:}")
+    private String publicProfilePassword;
+
     @Bean
     public UserDetailsService userDetailsService(
             PasswordEncoder passwordEncoder) {
-
-        return new InMemoryUserDetailsManager(
-                User.withUsername(username)
-                        .password(passwordEncoder.encode(password))
-                        .roles("SERVICE")
-                        .build()
+        return buildUserDetailsService(
+                passwordEncoder,
+                username,
+                password,
+                publicProfileUsername,
+                publicProfilePassword
         );
+    }
+
+    UserDetailsService buildUserDetailsService(
+            PasswordEncoder passwordEncoder,
+            String mainUsername,
+            String mainPassword,
+            String directoryUsername,
+            String directoryPassword) {
+
+        List<UserDetails> usuarios = new ArrayList<>();
+        usuarios.add(User.withUsername(mainUsername)
+                .password(passwordEncoder.encode(mainPassword))
+                .roles("SERVICE")
+                .build());
+
+        if (directoryUsername != null && !directoryUsername.isBlank()
+                && directoryPassword != null && !directoryPassword.isBlank()
+                && !directoryUsername.equals(mainUsername)) {
+            usuarios.add(User.withUsername(directoryUsername)
+                    .password(passwordEncoder.encode(directoryPassword))
+                    .roles("PUBLIC_PROFILE_SERVICE")
+                    .build());
+        }
+
+        return new InMemoryUserDetailsManager(usuarios);
     }
 
     @Bean
@@ -122,6 +155,10 @@ public class SecurityConfig {
                         ))
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/v1/internal/users/*/public-profile")
+                        .hasAnyRole("PUBLIC_PROFILE_SERVICE", "SERVICE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/internal/users/public-profiles")
+                        .hasAnyRole("PUBLIC_PROFILE_SERVICE", "SERVICE")
                         .anyRequest().hasRole("SERVICE")
                 )
                 .exceptionHandling(errors -> errors
